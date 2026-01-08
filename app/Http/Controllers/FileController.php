@@ -12,13 +12,24 @@ class FileController extends Controller
 {
     public function convertFile(Request $request)
     {
+        $uploadedFile = $request->file('file');
+        $fileInfo = null;
+
+        if ($uploadedFile) {
+            // Avoid calling $uploadedFile->getMimeType() here.
+            // If the upload is invalid (e.g. too large), the temp path can be empty and Symfony will throw.
+            $fileInfo = [
+                'name' => $uploadedFile->getClientOriginalName(),
+                'size' => $uploadedFile->getSize(),
+                'client_mime' => method_exists($uploadedFile, 'getClientMimeType') ? $uploadedFile->getClientMimeType() : null,
+                'is_valid' => method_exists($uploadedFile, 'isValid') ? $uploadedFile->isValid() : null,
+                'error' => method_exists($uploadedFile, 'getError') ? $uploadedFile->getError() : null,
+            ];
+        }
+
         \Log::info('Convert file request received', [
             'has_file' => $request->hasFile('file'),
-            'file_info' => $request->file('file') ? [
-                'name' => $request->file('file')->getClientOriginalName(),
-                'size' => $request->file('file')->getSize(),
-                'mime' => $request->file('file') ? $request->file('file')->getMimeType() : 'N/A',
-            ] : null,
+            'file_info' => $fileInfo,
             'php_upload_limits' => [
                 'upload_max_filesize' => ini_get('upload_max_filesize'),
                 'post_max_size' => ini_get('post_max_size'),
@@ -30,7 +41,7 @@ class FileController extends Controller
             'file' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB - PDF, DOC, and DOCX supported
         ]);
 
-        $file = $request->file('file');
+        $file = $uploadedFile;
 
         // Debug file upload
         if (!$file) {

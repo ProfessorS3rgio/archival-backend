@@ -9,6 +9,7 @@ import sys
 import os
 import subprocess
 import platform
+import shutil
 
 def convert_word_to_pdf_windows(input_path, output_path):
     """
@@ -82,7 +83,7 @@ def convert_word_to_pdf_linux(input_path, output_path):
         env['XDG_CACHE_HOME'] = '/tmp'
         env['DISPLAY'] = ''
 
-        # Run LibreOffice conversion
+        # Run LibreOffice conversion (LibreOffice always writes <input_basename>.pdf into outdir)
         result = subprocess.run([
             libreoffice_cmd,
             '--headless',
@@ -92,7 +93,21 @@ def convert_word_to_pdf_linux(input_path, output_path):
         ], capture_output=True, text=True, timeout=300, env=env)
 
         if result.returncode == 0:
-            return True
+            outdir = os.path.dirname(output_path) or '.'
+            produced_pdf = os.path.join(outdir, os.path.splitext(os.path.basename(input_path))[0] + '.pdf')
+
+            # If LibreOffice produced the expected file name, but caller requested a different output_path,
+            # rename it so downstream code can rely on output_path existing.
+            if os.path.exists(produced_pdf):
+                if os.path.abspath(produced_pdf) != os.path.abspath(output_path):
+                    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+                    if os.path.exists(output_path):
+                        os.remove(output_path)
+                    shutil.move(produced_pdf, output_path)
+                return True
+
+            print(f"LibreOffice conversion succeeded but output was not found: {produced_pdf}", file=sys.stderr)
+            return False
         else:
             print(f"LibreOffice conversion failed: {result.stderr}", file=sys.stderr)
             return False
