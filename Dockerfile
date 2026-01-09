@@ -12,12 +12,20 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     zip \
     unzip \
+    fontconfig \
+    fonts-dejavu \
+    fonts-liberation \
+    fonts-noto-core \
+    fonts-noto-cjk \
+    fonts-crosextra-carlito \
+    fonts-crosextra-caladea \
     nodejs \
     npm \
     python3 \
     python3-pip \
     libreoffice \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
+    && rm -rf /var/lib/apt/lists/*
 
 # Increase PHP upload limits (your /api/convert-file uploads can exceed defaults)
 RUN { \

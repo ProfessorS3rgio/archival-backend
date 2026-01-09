@@ -76,24 +76,33 @@ def convert_word_to_pdf_linux(input_path, output_path):
             print("LibreOffice not found. Please install LibreOffice.", file=sys.stderr)
             return False
 
-        # Set environment variables for headless LibreOffice
+        # Set environment variables for headless LibreOffice.
+        # Use a dedicated, writable profile dir to avoid first-run wizard prompts and
+        # to make conversion output more deterministic across runs.
         env = os.environ.copy()
+        profile_dir = '/tmp/libreoffice-profile'
+        os.makedirs(profile_dir, exist_ok=True)
         env['HOME'] = '/tmp'
         env['XDG_CONFIG_HOME'] = '/tmp'
         env['XDG_CACHE_HOME'] = '/tmp'
         env['DISPLAY'] = ''
 
         # Run LibreOffice conversion (LibreOffice always writes <input_basename>.pdf into outdir)
+        outdir = os.path.dirname(output_path) or '.'
+
         result = subprocess.run([
             libreoffice_cmd,
             '--headless',
-            '--convert-to', 'pdf',
-            '--outdir', os.path.dirname(output_path),
+            '--nologo',
+            '--nolockcheck',
+            '--norestore',
+            f'-env:UserInstallation=file://{profile_dir}',
+            '--convert-to', 'pdf:writer_pdf_Export',
+            '--outdir', outdir,
             input_path
         ], capture_output=True, text=True, timeout=300, env=env)
 
         if result.returncode == 0:
-            outdir = os.path.dirname(output_path) or '.'
             produced_pdf = os.path.join(outdir, os.path.splitext(os.path.basename(input_path))[0] + '.pdf')
 
             # If LibreOffice produced the expected file name, but caller requested a different output_path,
