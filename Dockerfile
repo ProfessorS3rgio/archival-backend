@@ -1,8 +1,6 @@
-# Use PHP 8.2 with Apache or Nginx? For Laravel, better with Nginx + PHP-FPM, but for simplicity, use php:8.2-apache
-
 FROM php:8.2-apache
 
-# Install system dependencies
+# Install system dependencies & fonts
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -13,6 +11,7 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     fontconfig \
+    ttf-mscorefonts-installer \
     fonts-dejavu \
     fonts-liberation \
     fonts-noto-core \
@@ -27,7 +26,17 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip \
     && rm -rf /var/lib/apt/lists/*
 
-# Increase PHP upload limits (your /api/convert-file uploads can exceed defaults)
+# Optional custom licensed fonts (DO NOT COMMIT)
+COPY docker/fonts/ /usr/local/share/fonts/custom/
+
+# Rebuild font cache
+RUN fc-cache -f -v
+
+# LibreOffice stable profile (important)
+RUN mkdir -p /var/lib/libreoffice-profile \
+    && chown -R www-data:www-data /var/lib/libreoffice-profile
+
+# PHP upload limits
 RUN { \
         echo 'upload_max_filesize=25M'; \
         echo 'post_max_size=30M'; \
@@ -35,43 +44,32 @@ RUN { \
         echo 'memory_limit=512M'; \
     } > /usr/local/etc/php/conf.d/99-uploads.ini
 
-# Enable Apache mod_rewrite
+# Enable Apache rewrite
 RUN a2enmod rewrite
 
-# Configure Apache to serve from public directory
+# Apache public root
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's|<Directory /var/www/html>|<Directory /var/www/html/public>|' /etc/apache2/sites-available/000-default.conf \
     && sed -i 's|AllowOverride None|AllowOverride All|' /etc/apache2/sites-available/000-default.conf
 
-# Install Composer
+# Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy application code
 COPY . .
 
-# Install PHP dependencies
 RUN composer install --optimize-autoloader
+RUN npm install && npm run build
 
-# Install Node dependencies
-RUN npm install
+RUN pip3 install --break-system-packages comtypes || true
 
-# Build Vue assets
-RUN npm run build
-
-# Install Python dependencies for the script
-RUN pip3 install --break-system-packages comtypes || true  # comtypes is Windows only, but harmless
-
-# Set permissions
+# Permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache \
     && chmod +x /var/www/html/init.sh
 
-# Expose port 80
 EXPOSE 80
 
-# Start script
 CMD ["./init.sh", "apache2-foreground"]

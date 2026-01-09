@@ -46,80 +46,73 @@ def convert_word_to_pdf_windows(input_path, output_path):
         return False
 
 def convert_word_to_pdf_linux(input_path, output_path):
-    """
-    Convert Word document (.doc or .docx) to PDF using LibreOffice on Linux
-
-    Args:
-        input_path (str): Path to input Word document
-        output_path (str): Path for output PDF file
-
-    Returns:
-        bool: True if conversion successful, False otherwise
-    """
     try:
-        # Use LibreOffice command line conversion
-        # Common LibreOffice paths
         libreoffice_paths = [
-            '/opt/libreoffice7.1/program/soffice',
-            '/opt/libreoffice7.0/program/soffice',
             '/usr/bin/libreoffice',
-            '/usr/bin/soffice'
+            '/usr/bin/soffice',
+            '/opt/libreoffice/program/soffice'
         ]
 
-        libreoffice_cmd = None
-        for path in libreoffice_paths:
-            if os.path.exists(path):
-                libreoffice_cmd = path
-                break
+        libreoffice_cmd = next((p for p in libreoffice_paths if os.path.exists(p)), None)
 
         if not libreoffice_cmd:
-            print("LibreOffice not found. Please install LibreOffice.", file=sys.stderr)
+            print("LibreOffice not found.", file=sys.stderr)
             return False
 
-        # Set environment variables for headless LibreOffice.
-        # Use a dedicated, writable profile dir to avoid first-run wizard prompts and
-        # to make conversion output more deterministic across runs.
+        # Stable, deterministic environment
         env = os.environ.copy()
-        profile_dir = '/tmp/libreoffice-profile'
+        profile_dir = '/var/lib/libreoffice-profile'
         os.makedirs(profile_dir, exist_ok=True)
-        env['HOME'] = '/tmp'
-        env['XDG_CONFIG_HOME'] = '/tmp'
-        env['XDG_CACHE_HOME'] = '/tmp'
-        env['DISPLAY'] = ''
 
-        # Run LibreOffice conversion (LibreOffice always writes <input_basename>.pdf into outdir)
+        env.update({
+            'HOME': '/tmp',
+            'XDG_CONFIG_HOME': '/tmp',
+            'XDG_CACHE_HOME': '/tmp',
+            'DISPLAY': '',
+            'LANG': 'en_US.UTF-8',
+            'LC_ALL': 'en_US.UTF-8',
+        })
+
         outdir = os.path.dirname(output_path) or '.'
 
         result = subprocess.run([
             libreoffice_cmd,
             '--headless',
             '--nologo',
-            '--nolockcheck',
-            '--norestore',
+            '--nofirststartwizard',
             f'-env:UserInstallation=file://{profile_dir}',
-            '--convert-to', 'pdf:writer_pdf_Export',
+            '--convert-to',
+            (
+                'pdf:writer_pdf_Export:'
+                'EmbedStandardFonts=true,'
+                'UseLosslessCompression=true,'
+                'ReduceImageResolution=false,'
+                'SelectPdfVersion=1'
+            ),
             '--outdir', outdir,
             input_path
         ], capture_output=True, text=True, timeout=300, env=env)
 
-        if result.returncode == 0:
-            produced_pdf = os.path.join(outdir, os.path.splitext(os.path.basename(input_path))[0] + '.pdf')
-
-            # If LibreOffice produced the expected file name, but caller requested a different output_path,
-            # rename it so downstream code can rely on output_path existing.
-            if os.path.exists(produced_pdf):
-                if os.path.abspath(produced_pdf) != os.path.abspath(output_path):
-                    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-                    if os.path.exists(output_path):
-                        os.remove(output_path)
-                    shutil.move(produced_pdf, output_path)
-                return True
-
-            print(f"LibreOffice conversion succeeded but output was not found: {produced_pdf}", file=sys.stderr)
+        if result.returncode != 0:
+            print(f"LibreOffice error: {result.stderr}", file=sys.stderr)
             return False
-        else:
-            print(f"LibreOffice conversion failed: {result.stderr}", file=sys.stderr)
+
+        produced_pdf = os.path.join(
+            outdir,
+            os.path.splitext(os.path.basename(input_path))[0] + '.pdf'
+        )
+
+        if not os.path.exists(produced_pdf):
+            print(f"PDF not produced: {produced_pdf}", file=sys.stderr)
             return False
+
+        if os.path.abspath(produced_pdf) != os.path.abspath(output_path):
+            os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+            if os.path.exists(output_path):
+                os.remove(output_path)
+            shutil.move(produced_pdf, output_path)
+
+        return True
 
     except subprocess.TimeoutExpired:
         print("LibreOffice conversion timed out", file=sys.stderr)
