@@ -20,8 +20,12 @@ if [ "${RUN_MIGRATIONS_ON_STARTUP:-false}" = "true" ] || [ "${RUN_SEED_ON_STARTU
 fi
 
 # Run Laravel commands
-if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
-  php artisan key:generate --force
+if [[ "${APP_KEY:-}" =~ ^base64: ]]; then
+  echo "APP_KEY provided via environment. Skipping key:generate."
+else
+  if ! grep -qE '^APP_KEY=base64:' .env 2>/dev/null; then
+    php artisan key:generate --force
+  fi
 fi
 
 php artisan storage:link || true

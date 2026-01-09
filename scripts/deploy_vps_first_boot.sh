@@ -10,7 +10,7 @@ export RUN_MIGRATIONS_ON_STARTUP=true
 export RUN_SEED_ON_STARTUP=true
 
 echo "First boot: enabling migrations + AdminUserSeeder..."
-docker compose -f "$COMPOSE_FILE" up -d
+docker compose -f "$COMPOSE_FILE" up -d --build
 
 echo "Now disable startup migration/seed (recommended):"
 echo "  unset RUN_MIGRATIONS_ON_STARTUP RUN_SEED_ON_STARTUP"
