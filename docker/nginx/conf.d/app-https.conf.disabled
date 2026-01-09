@@ -15,6 +15,7 @@ server {
     # Optional hardening (enable when you're sure HTTPS is stable)
     # add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
 
+    # Avoid 413 Request Entity Too Large
     client_max_body_size 30m;
 
     location / {
