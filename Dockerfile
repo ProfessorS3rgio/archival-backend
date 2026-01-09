@@ -1,5 +1,5 @@
-FROM php:8.2-apache
-
+# FROM php:8.2-apache
+FROM php:8.2-apache-bookworm
 # Install system dependencies & fonts
 RUN apt-get update && apt-get install -y \
     git \
