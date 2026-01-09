@@ -20,7 +20,7 @@ use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 // Public, signed access to private files (used by external previewers like Office Online)
-Route::get('/public/serve-file/{filename}', function ($filename) {
+Route::match(['GET', 'HEAD'], '/public/serve-file/{filename}', function ($filename) {
     if (Str::contains($filename, ['..', '\\'])) {
         abort(404);
     }

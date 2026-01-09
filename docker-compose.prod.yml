@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     depends_on:
       - mysql
     environment:
@@ -28,6 +28,28 @@ services:
     networks:
       - app-network
 
+  nginx:
+    image: nginx:stable
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - app
+    volumes:
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot_www:/var/www/certbot
+      - letsencrypt:/etc/letsencrypt
+    restart: "no"
+
   mysql:
     image: mysql:8.0
     # No published ports in production (DB stays private inside Docker network)
@@ -43,6 +65,8 @@ services:
 volumes:
   mysql_data:
   app_storage:
+  letsencrypt:
+  certbot_www:
 
 networks:
   app-network:
