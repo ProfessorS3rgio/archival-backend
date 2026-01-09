@@ -279,27 +279,31 @@ export function useFileUpload(autoFillEnabled = true) {
             previewObjects.value[index].extractedText = text
           }
         }
-      } else if (file.type.includes('word') || file.type.includes('docx') || file.type.includes('doc')) {
-        console.log('Using converted text from preview')
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        console.log('Using extracted text from preview for DOCX')
         const index = selectedFiles.value.indexOf(file)
         if (index !== -1 && previewObjects.value[index] && previewObjects.value[index].extractedText) {
           text = previewObjects.value[index].extractedText
         } else {
-          // Fallback: convert again if not available
-          const formData = new FormData()
-          formData.append('file', file)
-          const response = await axios.post('/api/convert-file', formData, {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            },
-            withCredentials: true
-          })
-          if (response.data.error) {
-            throw new Error(response.data.error)
-          }
-          text = response.data.text
+          // Fallback: extract again if not available
+          text = await extractTextFromDOCX(file)
         }
-        console.log('Extracted text from backend:', text.substring(0, 500) + '...')
+        console.log('Extracted text from DOCX:', text.substring(0, 500) + '...')
+      } else if (file.type === 'application/msword') {
+        console.log('DOC file - extracting text via backend conversion')
+        const formData = new FormData()
+        formData.append('file', file)
+        const response = await axios.post('/api/convert-file', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          },
+          withCredentials: true
+        })
+        if (response.data.error) {
+          throw new Error(response.data.error)
+        }
+        text = response.data.text
+        console.log('Extracted text from DOC via backend:', text.substring(0, 500) + '...')
       } else {
         console.log('Unsupported file type:', file.type)
         return
@@ -387,33 +391,39 @@ export function useFileUpload(autoFillEnabled = true) {
           content: null,
           extractedText: extractedText
         }
-      } else if (file.type.includes('word') || file.type.includes('docx') || file.type.includes('doc')) {
-        // Convert to PDF on backend and use for preview
-        const formData = new FormData()
-        formData.append('file', file)
-        const response = await axios.post('/api/convert-file', formData, {
+      } else if (
+        file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+        file.type === 'application/msword'
+      ) {
+        // DOCX/DOC: upload temporarily and preview via Office Online embed (requires public signed URL)
+        let extractedText = null
+        if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+          try {
+            extractedText = await extractTextFromDOCX(file)
+            console.log('DOCX text extracted successfully, length:', extractedText?.length)
+          } catch (err) {
+            console.error('Failed to extract DOCX text:', err)
+          }
+        }
+
+        const uploadForm = new FormData()
+        uploadForm.append('file', file)
+        const resp = await axios.post('/api/preview-upload', uploadForm, {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
           withCredentials: true
         })
-        if (response.data.error) {
-          throw new Error(response.data.error)
+
+        if (resp.data?.error) {
+          throw new Error(resp.data.error)
         }
-        // Create blob from base64 PDF
-        const pdfBlob = new Blob([Uint8Array.from(atob(response.data.pdf), c => c.charCodeAt(0))], { type: 'application/pdf' })
-        const objectUrl = URL.createObjectURL(pdfBlob)
-        // Create PDF file to replace the original
-        const pdfName = file.name.replace(/\.(doc|docx?)$/i, '.pdf')
-        const pdfFile = new File([pdfBlob], pdfName, { type: 'application/pdf' })
-        selectedFiles.value[index] = pdfFile
-        // Update form.files as well
-        form.files[index] = pdfFile
+
         previewObjects.value[index] = {
-          type: 'pdf',
-          url: objectUrl,
+          type: 'office',
+          url: resp.data?.url || null,
           content: null,
-          extractedText: response.data.text
+          extractedText: extractedText
         }
       }
 
@@ -444,8 +454,9 @@ export function useFileUpload(autoFillEnabled = true) {
   }
 
   const cleanupPreview = (index) => {
-    if (previewObjects.value[index] && previewObjects.value[index].url) {
-      URL.revokeObjectURL(previewObjects.value[index].url)
+    const url = previewObjects.value[index] && previewObjects.value[index].url
+    if (url && typeof url === 'string' && url.startsWith('blob:')) {
+      URL.revokeObjectURL(url)
     }
     previewObjects.value[index] = null
   }
@@ -537,8 +548,9 @@ export function useFileUpload(autoFillEnabled = true) {
 
   const cleanupAllPreviews = () => {
     previewObjects.value.forEach(preview => {
-      if (preview && preview.url) {
-        URL.revokeObjectURL(preview.url)
+      const url = preview && preview.url
+      if (url && typeof url === 'string' && url.startsWith('blob:')) {
+        URL.revokeObjectURL(url)
       }
     })
 

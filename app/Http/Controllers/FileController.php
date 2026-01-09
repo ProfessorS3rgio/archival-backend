@@ -6,10 +6,41 @@ use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Smalot\PdfParser\Parser;
 
 class FileController extends Controller
 {
+    public function previewUpload(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+        ]);
+
+        $file = $request->file('file');
+        if (!$file || !$file->isValid()) {
+            return response()->json(['error' => 'Invalid file upload'], 422);
+        }
+
+        $extension = strtolower($file->getClientOriginalExtension());
+        $name = (string) Str::uuid() . '.' . $extension;
+
+        // Store inside private disk under temp-previews/...
+        $storedPath = $file->storeAs('temp-previews', $name, 'local');
+
+        $expiresAt = now()->addMinutes(10);
+        $signedUrl = URL::temporarySignedRoute('public-serve-file', $expiresAt, [
+            'filename' => $storedPath,
+        ]);
+
+        return response()->json([
+            'url' => $signedUrl,
+            'expires_at' => $expiresAt->toIso8601String(),
+            'path' => $storedPath,
+        ]);
+    }
+
     public function convertFile(Request $request)
     {
         $uploadedFile = $request->file('file');

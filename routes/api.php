@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [AuthController::class, 'login']);
 
 Route::post('/convert-file', [FileController::class, 'convertFile']);
+Route::post('/preview-upload', [FileController::class, 'previewUpload']);
 
 // Public API endpoints (authentication disabled for development)
 Route::prefix('v1')->group(function () {

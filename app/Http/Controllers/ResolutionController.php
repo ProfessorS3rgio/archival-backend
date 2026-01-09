@@ -8,6 +8,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class ResolutionController extends Controller
@@ -275,6 +276,16 @@ class ResolutionController extends Controller
     public function edit(string $id)
     {
         $resolution = Resolution::with('files')->findOrFail($id);
+
+        // Provide a signed public URL for Office Online previewing
+        $resolution->files->transform(function ($file) {
+            $file->public_preview_url = URL::temporarySignedRoute(
+                'public-serve-file',
+                now()->addMinutes(60),
+                ['filename' => $file->file_url]
+            );
+            return $file;
+        });
 
         return Inertia::render('Forms/ResolutionForm', [
             'resolution' => $resolution,

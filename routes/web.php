@@ -16,7 +16,42 @@ use App\Http\Controllers\MemorandumOfAgreementController;
 use App\Http\Controllers\CommitteeReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
+
+// Public, signed access to private files (used by external previewers like Office Online)
+Route::get('/public/serve-file/{filename}', function ($filename) {
+    if (Str::contains($filename, ['..', '\\'])) {
+        abort(404);
+    }
+
+    $path = storage_path('app/private/' . $filename);
+
+    if (!file_exists($path)) {
+        abort(404);
+    }
+
+    $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $mime = mime_content_type($path);
+
+    if ($extension === 'pdf') {
+        $mime = 'application/pdf';
+    } elseif ($extension === 'docx') {
+        $mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    } elseif ($extension === 'doc') {
+        $mime = 'application/msword';
+    }
+
+    $headers = [
+        'Content-Type' => $mime,
+        'Content-Disposition' => 'inline',
+    ];
+
+    return response()->file($path, $headers);
+})
+    ->where('filename', '.*')
+    ->middleware('signed')
+    ->name('public-serve-file');
 
 Route::get('/', function () {
     return Auth::check() ? redirect('/dashboard') : redirect('/login');
