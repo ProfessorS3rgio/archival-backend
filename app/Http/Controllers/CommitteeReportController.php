@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\CommitteeReport;
 use App\Models\Committee;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class CommitteeReportController extends Controller
