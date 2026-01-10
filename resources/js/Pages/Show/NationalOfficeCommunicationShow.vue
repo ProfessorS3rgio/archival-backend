@@ -89,8 +89,8 @@
               <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ communication.file_name }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ formatFileSize(communication.file_size) }} â€¢ {{ communication.file_type }}
-                  <span v-if="communication.date_uploaded"> â€¢ Uploaded {{ formatDate(communication.date_uploaded) }}</span>
+                  {{ formatFileSize(communication.file_size) }} • {{ communication.file_type }}
+                  <span v-if="communication.date_uploaded"> • Uploaded {{ formatDate(communication.date_uploaded) }}</span>
                 </p>
               </div>
             </div>

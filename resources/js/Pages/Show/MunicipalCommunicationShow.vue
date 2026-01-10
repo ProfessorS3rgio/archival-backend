@@ -89,8 +89,8 @@
               <div>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ municipalCommunication.file_name }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">
-                  {{ formatFileSize(municipalCommunication.file_size) }} â€¢ {{ municipalCommunication.file_type }}
-                  <span v-if="municipalCommunication.date_uploaded"> â€¢ Uploaded {{ formatDate(municipalCommunication.date_uploaded) }}</span>
+                  {{ formatFileSize(municipalCommunication.file_size) }} • {{ municipalCommunication.file_type }}
+                  <span v-if="municipalCommunication.date_uploaded"> • Uploaded {{ formatDate(municipalCommunication.date_uploaded) }}</span>
                 </p>
               </div>
             </div>

@@ -292,8 +292,15 @@
                       class="w-full h-[600px] border border-gray-300 dark:border-gray-600 rounded"
                       type="application/pdf"
                     ></iframe>
-                  </div>
-                  <div v-else-if="previewObjects[index].type === 'docx' && previewObjects[index].content" class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
+                  </div>                  <div v-else-if="previewObjects[index].type === 'office' && previewObjects[index].url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                    <iframe
+                      :src="getOfficeEmbedUrl(previewObjects[index].url)"
+                      width="100%"
+                      height="600"
+                      frameborder="0"
+                      class="border border-gray-300 dark:border-gray-600 rounded"
+                    ></iframe>
+                  </div>                  <div v-else-if="previewObjects[index].type === 'docx' && previewObjects[index].content" class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
                     <pre class="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{{ previewObjects[index].content }}</pre>
                   </div>
                   <div v-else-if="previewObjects[index].type === 'error'" class="bg-red-50 dark:bg-red-900/20 rounded p-3">
