@@ -309,11 +309,21 @@
                       title="PDF Preview"
                     ></iframe>
                   </div>
+                  <div v-else-if="(getFileTypeFromName(file.file_name) === 'docx' || getFileTypeFromName(file.file_name) === 'doc') && file.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                    <iframe
+                      :src="getOfficeEmbedUrl(file.public_preview_url)"
+                      width="100%"
+                      height="600"
+                      frameborder="0"
+                      class="border border-gray-300 dark:border-gray-600 rounded"
+                    ></iframe>
+                  </div>
                   <div v-else class="bg-gray-100 dark:bg-gray-700 rounded p-4 text-center">
                     <svg class="w-8 h-8 text-blue-500 mx-auto mb-2" fill="currentColor" viewBox="0 0 20 20">
                       <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
                     </svg>
                     <p class="text-sm text-gray-600 dark:text-gray-400">{{ file.file_name }}</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Document preview not available. <a :href="`/serve-file/${file.file_url}`" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Click here to view</a></p>
                   </div>
                 </div>
               </div>
@@ -350,7 +360,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import axios from 'axios'
@@ -469,7 +479,7 @@ const submit = () => {
     axios.post(`/draft-resolutions/${props.draft.resolution_draft_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
-        window.location.href = '/draft-resolutions';
+        router.visit('/draft-resolutions');
       })
       .catch(error => {
         console.error('Form submission error:', error);
@@ -486,7 +496,7 @@ const submit = () => {
         selectedFiles.value = []
         cleanupAllPreviews()
         previewObjects.value = []
-        window.location.href = '/draft-resolutions';
+        router.visit('/draft-resolutions');
       })
       .catch(error => {
         console.error('Form submission error:', error.response?.data || error);

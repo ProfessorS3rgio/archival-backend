@@ -9,7 +9,7 @@ use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
-
+use Illuminate\Support\Facades\URL;
 class DraftResolutionController extends Controller
 {
     /**
@@ -98,7 +98,7 @@ class DraftResolutionController extends Controller
         // Log the creation
         LoggingService::logCreate($draft, "Created draft resolution: {$draft->title}");
 
-        return redirect()->back()->with('success', 'Draft resolution created successfully.');
+        return redirect('/draft-resolutions')->with('success', 'Draft resolution created successfully.');
     }
 
     /**
@@ -157,6 +157,16 @@ class DraftResolutionController extends Controller
     public function edit(string $id)
     {
         $draft = DraftResolution::with('files')->findOrFail($id);
+
+        // Provide a signed public URL for Office Online previewing
+        $draft->files->transform(function ($file) {
+            $file->public_preview_url = URL::temporarySignedRoute(
+                'public-serve-file',
+                now()->addMinutes(60),
+                ['filename' => $file->file_url]
+            );
+            return $file;
+        });
 
         return Inertia::render('Forms/DraftResolutionForm', [
             'draft' => $draft,
@@ -238,7 +248,7 @@ class DraftResolutionController extends Controller
         // Log the update
         LoggingService::logUpdate($draft, $oldValues, "Updated draft resolution: {$draft->title}");
 
-        return redirect()->back()->with('success', 'Draft resolution updated successfully.');
+        return redirect('/draft-resolutions')->with('success', 'Draft resolution updated successfully.');
     }
 
     /**
