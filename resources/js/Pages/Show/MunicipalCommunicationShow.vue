@@ -108,11 +108,11 @@
           </div>
           <!-- Preview content -->
           <div v-if="municipalCommunication.file_type?.includes('pdf')" class="mt-4">
-            <embed :src="`${baseUrl}/serve-file/${municipalCommunication.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
+            <embed :src="`/serve-file/${municipalCommunication.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
           </div>
           <div v-else-if="municipalCommunication.file_type?.includes('word') || municipalCommunication.file_type?.includes('docx') || municipalCommunication.file_type?.includes('doc')" class="mt-4">
             <iframe
-              :src="getOfficeEmbedUrl(municipalCommunication.public_preview_url || `${baseUrl}/serve-file/${municipalCommunication.file_url}`)"
+              :src="getOfficeEmbedUrl(municipalCommunication.public_preview_url)"
               width="100%"
               height="600"
               frameborder="0"
@@ -158,8 +158,6 @@ const props = defineProps({
 })
 
 const currentUser = computed(() => props.auth.user || {})
-
-const baseUrl = computed(() => typeof window !== 'undefined' ? window.location.origin : '')
 
 const getOfficeEmbedUrl = (fileUrl) => {
   if (!fileUrl) return ''

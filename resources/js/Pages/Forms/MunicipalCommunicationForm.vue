@@ -213,6 +213,15 @@
                       type="application/pdf"
                     ></iframe>
                   </div>
+                  <div v-else-if="(getFileTypeFromName(existingFile.file_name) === 'docx' || getFileTypeFromName(existingFile.file_name) === 'doc') && props.municipalCommunication.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                    <iframe
+                      :src="getOfficeEmbedUrl(props.municipalCommunication.public_preview_url)"
+                      width="100%"
+                      height="600"
+                      frameborder="0"
+                      class="border border-gray-300 dark:border-gray-600 rounded"
+                    ></iframe>
+                  </div>
                   <div v-else class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
                     <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ existingFile.extracted_text }}</p>
                   </div>
@@ -352,6 +361,7 @@ const {
   removeFile,
   getFileType,
   formatFileSize,
+  getOfficeEmbedUrl,
   cleanupAllPreviews
 } = useCommunicationFileUpload()
 

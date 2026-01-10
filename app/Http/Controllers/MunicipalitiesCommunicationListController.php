@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class MunicipalitiesCommunicationListController extends Controller
@@ -154,6 +155,13 @@ class MunicipalitiesCommunicationListController extends Controller
      */
     public function edit(MunicipalitiesCommunicationList $municipalCommunication)
     {
+        // Provide a signed public URL for Office Online previewing
+        $municipalCommunication->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $municipalCommunication->file_url]
+        );
+
         return Inertia::render('Forms/MunicipalCommunicationForm', [
             'municipalCommunication' => $municipalCommunication,
             'isEditing' => true,
@@ -244,7 +252,8 @@ class MunicipalitiesCommunicationListController extends Controller
         // Log the update
         LoggingService::logUpdate($municipalCommunication, $oldValues, "Updated municipal communication: {$municipalCommunication->title}");
 
-        return back()->with('success', 'Municipal communication updated successfully.');
+        return redirect()->route('municipal-communications.index')
+            ->with('success', 'Municipal communication updated successfully.');
     }
 
     /**

@@ -184,6 +184,11 @@ export function useCommunicationFileUpload() {
     form.extracted_text = texts.join('\n\n')
   }
 
+  const getOfficeEmbedUrl = (fileUrl) => {
+    if (!fileUrl) return ''
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
+  }
+
   const cleanupAllPreviews = () => {
     previewObjects.value.forEach((preview, index) => {
       if (preview && preview.url) {
@@ -204,6 +209,7 @@ export function useCommunicationFileUpload() {
     removeFile,
     getFileType,
     formatFileSize,
+    getOfficeEmbedUrl,
     cleanupAllPreviews
   }
 }

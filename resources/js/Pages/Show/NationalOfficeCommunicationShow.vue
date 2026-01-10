@@ -106,13 +106,12 @@
               Download
             </a>
           </div>
-          <!-- Preview content -->
           <div v-if="communication.file_type?.includes('pdf')" class="mt-4">
-            <embed :src="`${baseUrl}/serve-file/${communication.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
+            <embed :src="`/serve-file/${communication.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
           </div>
           <div v-else-if="communication.file_type?.includes('word') || communication.file_type?.includes('docx') || communication.file_type?.includes('doc')" class="mt-4">
             <iframe
-              :src="getOfficeEmbedUrl(communication.public_preview_url || `${baseUrl}/serve-file/${communication.file_url}`)"
+              :src="getOfficeEmbedUrl(communication.public_preview_url)"
               width="100%"
               height="600"
               frameborder="0"
@@ -158,8 +157,6 @@ const props = defineProps({
 })
 
 const currentUser = computed(() => props.auth.user || {})
-
-const baseUrl = computed(() => typeof window !== 'undefined' ? window.location.origin : '')
 
 const getOfficeEmbedUrl = (fileUrl) => {
   if (!fileUrl) return ''

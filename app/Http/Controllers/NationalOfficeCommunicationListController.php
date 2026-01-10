@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class NationalOfficeCommunicationListController extends Controller
@@ -189,6 +190,13 @@ class NationalOfficeCommunicationListController extends Controller
 
         $loadedData = $nationalOfficeCommunicationList->load(['addedBy', 'lastModifier']);
 
+        // Provide a signed public URL for Office Online previewing
+        $loadedData->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $loadedData->file_url]
+        );
+
         // Debug logging
         \Log::info('National Office Edit Method', [
             'id' => $nationalOfficeCommunicationList->national_offices_id,
@@ -282,7 +290,8 @@ class NationalOfficeCommunicationListController extends Controller
         // Log the update
         LoggingService::logUpdate($nationalOfficeCommunicationList, $oldValues, "Updated national office communication: {$nationalOfficeCommunicationList->title}");
 
-        return back()->with('success', 'National office communication updated successfully.');
+        return redirect()->route('national-office-communications.index')
+            ->with('success', 'National office communication updated successfully.');
     }
 
     /**
