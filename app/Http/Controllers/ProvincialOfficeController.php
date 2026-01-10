@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class ProvincialOfficeController extends Controller
@@ -155,6 +156,13 @@ class ProvincialOfficeController extends Controller
         }
 
         $loadedData = $provincialOffice->load(['addedBy', 'lastModifier']);
+
+        // Provide a signed public URL for Office Online previewing
+        $loadedData->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $loadedData->file_url]
+        );
 
         return Inertia::render('Forms/ProvincialOfficeForm', [
             'provincialOffice' => $loadedData,

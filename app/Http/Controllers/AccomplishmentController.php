@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class AccomplishmentController extends Controller
@@ -127,6 +128,13 @@ class AccomplishmentController extends Controller
      */
     public function edit(Accomplishment $accomplishment)
     {
+        // Provide a signed public URL for Office Online previewing
+        $accomplishment->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $accomplishment->file_url]
+        );
+
         return Inertia::render('Forms/AccomplishmentForm', [
             'accomplishment' => $accomplishment,
             'isEditing' => true,

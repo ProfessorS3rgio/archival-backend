@@ -298,6 +298,15 @@
                 <div v-if="project.file_type?.includes('pdf')" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
                   <embed :src="`${baseUrl}/serve-file/${project.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
                 </div>
+                <div v-else-if="(project.file_name?.toLowerCase().endsWith('.docx') || project.file_name?.toLowerCase().endsWith('.doc')) && project.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                  <iframe
+                    :src="getOfficeEmbedUrl(project.public_preview_url)"
+                    width="100%"
+                    height="600"
+                    frameborder="0"
+                    class="border border-gray-300 dark:border-gray-600 rounded"
+                  ></iframe>
+                </div>
                 <div v-else class="bg-gray-100 dark:bg-gray-700 rounded p-3">
                   <p class="text-sm text-gray-600 dark:text-gray-400">Preview not available for this file type. Click "Download" to view the file.</p>
                 </div>
@@ -359,8 +368,14 @@
                       type="application/pdf"
                     ></iframe>
                   </div>
-                  <div v-else-if="previewObjects[index].type === 'docx' && previewObjects[index].content" class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
-                    <pre class="text-xs text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{{ previewObjects[index].content }}</pre>
+                  <div v-else-if="(previewObjects[index].type === 'office' || previewObjects[index].type === 'docx') && previewObjects[index].url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                    <iframe
+                      :src="getOfficeEmbedUrl(previewObjects[index].url)"
+                      width="100%"
+                      height="600"
+                      frameborder="0"
+                      class="border border-gray-300 dark:border-gray-600 rounded"
+                    ></iframe>
                   </div>
                   <div v-else-if="previewObjects[index].type === 'error'" class="bg-red-50 dark:bg-red-900/20 rounded p-3">
                     <p class="text-xs text-red-600 dark:text-red-400">{{ previewObjects[index].content }}</p>
@@ -396,7 +411,7 @@
 <script setup>
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
@@ -438,6 +453,7 @@ const {
   removeFile,
   getFileType,
   formatFileSize,
+  getOfficeEmbedUrl,
   cleanupAllPreviews
 } = useFileUpload(false)
 
@@ -510,7 +526,7 @@ const submit = async () => {
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
-          window.location.href = '/projects'
+          router.visit('/projects')
         })
         .catch(error => {
           console.error('Form submission error:', error.response?.data || error)
@@ -527,7 +543,7 @@ const submit = async () => {
           selectedFiles.value = []
           cleanupAllPreviews()
           previewObjects.value = []
-          window.location.href = '/projects'
+          router.visit('/projects')
         })
         .catch(error => {
           console.error('Form submission error:', error.response?.data || error)

@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class ProjectController extends Controller
@@ -151,6 +152,13 @@ class ProjectController extends Controller
      */
     public function edit(Project $project)
     {
+        // Provide a signed public URL for Office Online previewing
+        $project->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $project->file_url]
+        );
+
         return Inertia::render('Forms/ProjectForm', [
             'project' => $project,
             'isEditing' => true,

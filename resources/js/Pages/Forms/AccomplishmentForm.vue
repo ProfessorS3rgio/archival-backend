@@ -252,7 +252,7 @@
 <script setup>
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { useForm } from '@inertiajs/vue3'
+import { useForm, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
@@ -342,7 +342,7 @@ const submit = async () => {
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
-          window.location.href = '/accomplishments'
+          router.visit('/accomplishments')
         })
         .catch(error => {
           console.error('Form submission error:', error.response?.data || error)
@@ -360,7 +360,7 @@ const submit = async () => {
           selectedFiles.value = []
           cleanupAllPreviews()
           previewObjects.value = []
-          window.location.href = '/accomplishments'
+          router.visit('/accomplishments')
         })
         .catch(error => {
           console.error('Form submission error:', error.response?.data || error)
