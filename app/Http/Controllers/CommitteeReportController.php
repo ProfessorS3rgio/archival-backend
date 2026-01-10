@@ -137,6 +137,13 @@ class CommitteeReportController extends Controller
     {
         $report = CommitteeReport::findOrFail($id);
 
+        // Provide a signed public URL for Office Online previewing
+        $report->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $report->file_url]
+        );
+
         return Inertia::render('Forms/CommitteeReportForm', [
             'report' => $report,
             'subjectOptions' => CommitteeReport::whereNotNull('subject')

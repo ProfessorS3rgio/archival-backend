@@ -213,6 +213,15 @@
                     type="application/pdf"
                   ></iframe>
                 </div>
+                <div v-else-if="getFileTypeFromName(props.provincialOffice.file_name) === 'office'" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                  <iframe
+                    :src="getOfficeEmbedUrl(props.provincialOffice.public_preview_url)"
+                    width="100%"
+                    height="600"
+                    frameborder="0"
+                    class="border border-gray-300 dark:border-gray-600 rounded"
+                  ></iframe>
+                </div>
                 <div v-else class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
                   <p class="text-xs text-gray-500 dark:text-gray-400">Document preview not available for this file type. <a :href="`/serve-file/${props.provincialOffice.file_url}`" target="_blank" class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300">Click here to view</a></p>
                 </div>
@@ -434,7 +443,7 @@ const getFileTypeFromName = (fileName) => {
   if (!fileName) return 'unknown'
   const extension = fileName.split('.').pop().toLowerCase()
   if (extension === 'pdf') return 'pdf'
-  if (['doc', 'docx'].includes(extension)) return 'docx'
+  if (['doc', 'docx'].includes(extension)) return 'office'
   return 'unknown'
 }
 

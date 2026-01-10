@@ -7,6 +7,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class MemorandumOfAgreementController extends Controller
@@ -124,6 +125,13 @@ class MemorandumOfAgreementController extends Controller
      */
     public function edit(MemorandumOfAgreement $memorandumOfAgreement)
     {
+        // Provide a signed public URL for Office Online previewing
+        $memorandumOfAgreement->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $memorandumOfAgreement->file_url]
+        );
+
         return Inertia::render('Forms/MemorandumOfAgreementForm', [
             'memorandumOfAgreement' => $memorandumOfAgreement,
             'isEditing' => true,

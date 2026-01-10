@@ -215,7 +215,7 @@
                   type="application/pdf"
                 ></iframe>
               </div>
-              <div v-else-if="(getFileTypeFromName(props.report.file_name) === 'docx' || getFileTypeFromName(props.report.file_name) === 'doc') && props.report.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+              <div v-else-if="getFileTypeFromName(props.report.file_name) === 'office' && props.report.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
                 <iframe
                   :src="getOfficeEmbedUrl(props.report.public_preview_url)"
                   width="100%"
@@ -403,7 +403,7 @@ const getFileTypeFromName = (fileName) => {
   if (!fileName) return 'unknown'
   const extension = fileName.split('.').pop().toLowerCase()
   if (extension === 'pdf') return 'pdf'
-  if (['doc', 'docx'].includes(extension)) return 'docx'
+  if (['doc', 'docx'].includes(extension)) return 'office'
   return 'unknown'
 }
 
