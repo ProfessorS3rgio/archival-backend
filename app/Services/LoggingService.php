@@ -9,6 +9,23 @@ use Illuminate\Support\Facades\Request;
 
 class LoggingService
 {
+    private static function sanitizeValues(string $targetTable, ?array $values): ?array
+    {
+        if (!$values) return $values;
+
+        // Never persist secrets (or secret-ish values) in logs.
+        if ($targetTable === 'users') {
+            unset(
+                $values['password'],
+                $values['remember_token'],
+                $values['two_factor_secret'],
+                $values['two_factor_recovery_codes']
+            );
+        }
+
+        return $values;
+    }
+
     /**
      * Log a create action
      * 
@@ -132,6 +149,9 @@ class LoggingService
         ?array $newValues,
         ?string $description
     ): SystemLog {
+        $oldValues = self::sanitizeValues($targetTable, $oldValues);
+        $newValues = self::sanitizeValues($targetTable, $newValues);
+
         return SystemLog::create([
             'user_id' => Auth::id(),
             'action' => $action,

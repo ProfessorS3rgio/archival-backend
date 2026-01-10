@@ -83,7 +83,7 @@
               @click="userMenuOpen = !userMenuOpen"
               class="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             >
-              <span class="mr-2">Admin</span>
+              <span class="mr-2">{{ userRoleLabel }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
               </svg>
@@ -115,8 +115,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link, router } from '@inertiajs/vue3'
+import { computed, ref } from 'vue'
+import { Link, router, usePage } from '@inertiajs/vue3'
 import ThemeToggler from '@/ComponentsOld/common/ThemeToggler.vue'
 
 defineProps({
@@ -129,6 +129,16 @@ defineProps({
 const isMobileOpen = ref(false)
 const isApplicationMenuOpen = ref(false)
 const userMenuOpen = ref(false)
+
+const page = usePage()
+const currentUser = computed(() => page.props.auth?.user ?? {})
+const userRoleLabel = computed(() => {
+  const role = (currentUser.value?.role ?? '').toString().trim().toLowerCase()
+  if (role === 'admin') return 'Admin'
+  if (role === 'staff') return 'Staff'
+  if (!role) return 'User'
+  return role.charAt(0).toUpperCase() + role.slice(1)
+})
 
 const handleToggle = () => {
   if (window.innerWidth >= 1024) {

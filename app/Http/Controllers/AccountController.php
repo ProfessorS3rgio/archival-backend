@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AccountController extends Controller
@@ -69,7 +71,7 @@ class AccountController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:staff',
+            'role' => 'required|in:admin,staff',
         ]);
 
         $user = \App\Models\User::create([
@@ -101,16 +103,41 @@ class AccountController extends Controller
                 ->with('error', 'You do not have permission to update user accounts.');
         }
 
+        $user = \App\Models\User::findOrFail($id);
+
         $request->validate([
-            'role' => 'required|in:staff',
+            'name' => ['required', 'string', 'max:255'],
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('users', 'username')->ignore($user->id),
+            ],
+            'role' => ['required', Rule::in(['admin', 'staff'])],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
-        $user = \App\Models\User::findOrFail($id);
         $oldValues = $user->getAttributes();
 
-        $user->update([
+        $updateData = [
+            'name' => $request->name,
+            'email' => $request->email,
+            'username' => $request->username,
             'role' => $request->role,
-        ]);
+        ];
+
+        if ($request->filled('password')) {
+            $updateData['password'] = Hash::make($request->password);
+        }
+
+        $user->update($updateData);
 
         // Log the user update
         \App\Services\LoggingService::logUpdate(

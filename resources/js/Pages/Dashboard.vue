@@ -545,7 +545,7 @@
                 </div>
                 <span class="text-sm font-medium text-violet-900 dark:text-violet-100">New Committee Report</span>
               </Link>
-              <Link href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
+              <Link v-if="!isStaff" href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
                 <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mr-3">
                   <InfoCircleIcon class="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -653,6 +653,7 @@
                 Committee Reports
               </button>
               <button
+                v-if="!isStaff"
                 @click="activeTab = 'systemlogs'"
                 :class="[
                   'px-4 py-2 text-sm font-medium rounded-md transition-colors',
@@ -687,7 +688,7 @@
                 ? '/provincial-offices'
                 : activeTab === 'committee-reports'
                 ? '/committee-reports'
-                : '/system-logs'" 
+                : (isStaff ? '/dashboard' : '/system-logs')" 
               class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
               View all  
@@ -978,7 +979,7 @@
           </div>
 
           <!-- System Logs Tab Content -->
-          <div v-show="activeTab === 'systemlogs'" class="space-y-4">
+          <div v-if="!isStaff" v-show="activeTab === 'systemlogs'" class="space-y-4">
             <div v-for="log in recentSystemLogs.slice(0, 5)" :key="log.id" class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div class="flex-shrink-0">
                 <div :class="[
@@ -1078,8 +1079,8 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { Link } from '@inertiajs/vue3'
+import { computed, ref, watch } from 'vue'
+import { Link, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import DocumentModal from '@/Components/DocumentModal.vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
@@ -1163,6 +1164,16 @@ const {
   getTypeIcon,
   getTypeIconClass
 } = useDashboard(props)
+
+const page = usePage()
+const currentUser = computed(() => page.props.auth?.user ?? {})
+const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
+
+watch([isStaff, activeTab], ([staff, tab]) => {
+  if (staff && tab === 'systemlogs') {
+    activeTab.value = 'ordinances'
+  }
+}, { immediate: true })
 
 // Modal state
 const showDocumentModal = ref(false)

@@ -153,7 +153,8 @@
                     "
                   >
                     <ul class="mt-2 space-y-1 ml-9">
-                      <li v-for="subItem in item.subItems" :key="subItem.name">
+                      <template v-for="subItem in item.subItems" :key="subItem.name">
+                        <li v-if="!shouldHideNavPath(subItem.path)">
                         <button
                           v-if="subItem.subItems"
                           @click="toggleSubmenu(groupIndex, `${index}-${subItem.name}`)"
@@ -262,7 +263,8 @@
                             </ul>
                           </div>
                         </transition>
-                      </li>
+                        </li>
+                      </template>
                     </ul>
                   </div>
                 </transition>
@@ -303,6 +305,15 @@ import BoxCubeIcon from "@/icons/BoxCubeIcon.vue"
 
 const page = usePage()
 const spTerms = computed(() => page.props.spTerms || [])
+
+const currentUser = computed(() => page.props.auth?.user ?? {})
+const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
+
+const shouldHideNavPath = (path) => {
+  if (!path) return false
+  if (isStaff.value && path === '/system-logs') return true
+  return false
+}
 
 const isExpanded = ref(false)
 const isMobileOpen = ref(false)

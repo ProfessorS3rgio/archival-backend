@@ -39,7 +39,7 @@
           </p>
         </div>
         <Link
-          v-if="currentUser.role === 'admin'"
+          v-if="isAdmin"
           href="/settings/add-accounts"
           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200"
         >
@@ -176,11 +176,11 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                   <span :class="[
                     'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    user.role === 'admin' 
+                    (user.role || '').toString().trim().toLowerCase() === 'admin' 
                       ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
                       : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
                   ]">
-                    {{ user.role === 'admin' ? 'Admin' : 'Staff' }}
+                    {{ (user.role || '').toString().trim().toLowerCase() === 'admin' ? 'Admin' : 'Staff' }}
                   </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -190,7 +190,7 @@
                   <div class="flex items-center justify-end gap-2">
                     <button
                       @click="editUser(user)"
-                      v-if="currentUser.role === 'admin'"
+                      v-if="isAdmin"
                       class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors duration-200"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -200,8 +200,8 @@
                     </button>
                     <button
                       @click="confirmDelete(user)"
-                      :disabled="user.role === 'admin'"
-                      v-if="currentUser.role === 'admin'"
+                      :disabled="(user.role || '').toString().trim().toLowerCase() === 'admin'"
+                      v-if="isAdmin"
                       class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -220,9 +220,9 @@
       <!-- Edit User Modal -->
       <div v-if="showEditModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="showEditModal = false"></div>
+          <div class="fixed inset-0 z-0 bg-gray-900/30 transition-opacity" aria-hidden="true" @click="showEditModal = false"></div>
           <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-          <div class="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+          <div @click.stop class="relative z-10 inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <div class="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div class="sm:flex sm:items-start">
                 <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
@@ -244,6 +244,14 @@
                       />
                     </div>
                     <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                      <input
+                        v-model="editForm.username"
+                        type="text"
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                       <input
                         v-model="editForm.email"
@@ -260,6 +268,24 @@
                         <option value="admin">Admin</option>
                         <option value="staff">Staff</option>
                       </select>
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
+                      <input
+                        v-model="editForm.password"
+                        type="password"
+                        autocomplete="new-password"
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
+                      <input
+                        v-model="editForm.password_confirmation"
+                        type="password"
+                        autocomplete="new-password"
+                        class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
                     </div>
                   </div>
                 </div>
@@ -298,7 +324,8 @@ import { UserGroupIcon, UserCircleIcon, PlusIcon } from '@/icons'
 import Swal from 'sweetalert2'
 
 const page = usePage()
-const currentUser = computed(() => page.props.auth.user)
+const currentUser = computed(() => page.props.auth?.user ?? {})
+const isAdmin = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'admin')
 
 const props = defineProps({
   users: {
@@ -315,11 +342,13 @@ const editForm = ref({
   name: '',
   email: '',
   username: '',
-  role: ''
+  role: '',
+  password: '',
+  password_confirmation: ''
 })
 
-const adminCount = computed(() => props.users.filter(u => u.role === 'admin').length)
-const staffCount = computed(() => props.users.filter(u => u.role === 'staff').length)
+const adminCount = computed(() => props.users.filter(u => (u.role || '').toString().trim().toLowerCase() === 'admin').length)
+const staffCount = computed(() => props.users.filter(u => (u.role || '').toString().trim().toLowerCase() === 'staff').length)
 
 const filteredUsers = computed(() => {
   let filtered = props.users
@@ -365,13 +394,20 @@ const editUser = (user) => {
     name: user.name,
     email: user.email,
     username: user.username,
-    role: user.role
+    role: (user.role || '').toString().trim().toLowerCase(),
+    password: '',
+    password_confirmation: ''
   }
   showEditModal.value = true
 }
 
 const saveUser = () => {
-  router.put(`/settings/manage-accounts/${editForm.value.id}`, editForm.value, {
+  const payload = {
+    ...editForm.value,
+    role: (editForm.value.role || '').toString().trim().toLowerCase(),
+  }
+
+  router.put(`/settings/manage-accounts/${editForm.value.id}`, payload, {
     onSuccess: () => {
       showEditModal.value = false
     }
