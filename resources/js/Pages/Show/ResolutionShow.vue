@@ -92,7 +92,7 @@
             </div>
             <div v-else-if="file.file_type.includes('word') || file.file_type.includes('docx') || file.file_type.includes('doc')" class="mt-4">
               <iframe
-                :src="getOfficeEmbedUrl(`${baseUrl}/serve-file/${file.file_url}`)"
+                :src="getOfficeEmbedUrl(file.public_preview_url || `${baseUrl}/serve-file/${file.file_url}`)"
                 width="100%"
                 height="600"
                 frameborder="0"
