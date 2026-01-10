@@ -572,36 +572,36 @@ const submit = () => {
   // Prepare author data
   const preparedAuthor = form.authors.filter(a => a.trim()).join('; ')
 
+  // Build FormData for both create and update to ensure proper array handling
+  const formData = new FormData();
+  
+  // Add all standard fields
+  Object.entries(form.data()).forEach(([key, value]) => {
+    // Skip files, remove_files, extracted_text, file_extracted_texts, and authors - we'll handle those separately
+    if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'file_extracted_texts' && key !== 'authors') {
+      formData.append(key, value);
+    }
+  });
+
+  // Add prepared author
+  formData.append('author', preparedAuthor);
+
+  // Add concatenated extracted_text for main record
+  formData.append('extracted_text', concatenatedExtractedText);
+  
+  // Add files if present
+  if (form.files && form.files.length > 0) {
+    for (let i = 0; i < form.files.length; i++) {
+      formData.append('files[]', form.files[i]);
+      // Add per-file extracted text
+      formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
+    }
+  }
+
   if (props.resolution) {
     // Update existing resolution
-    console.log('Submitting form with data:', form.data())
+    console.log('Submitting UPDATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
     console.log('Files marked for removal:', form.remove_files)
-    
-    // Build a complete custom form data object to ensure arrays are properly handled
-    const formData = new FormData();
-    
-    // Add all standard fields
-    Object.entries(form.data()).forEach(([key, value]) => {
-      // Skip files, remove_files, extracted_text, and authors - we'll handle those separately
-      if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'authors') {
-        formData.append(key, value);
-      }
-    });
-
-    // Add prepared author
-    formData.append('author', preparedAuthor);
-
-    // Add concatenated extracted_text for main record
-    formData.append('extracted_text', concatenatedExtractedText);
-    
-    // Add files if present
-    if (form.files && form.files.length > 0) {
-      for (let i = 0; i < form.files.length; i++) {
-        formData.append('files[]', form.files[i]);
-        // Add per-file extracted text
-        formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
-      }
-    }
     
     // Add remove_files as an indexed array
     if (form.remove_files && form.remove_files.length > 0) {
@@ -624,15 +624,13 @@ const submit = () => {
         console.error('Form submission error:', error);
       });
   } else {
-    // Create new resolution - set extracted_text as concatenated string
-    form.extracted_text = concatenatedExtractedText
-    form.author = preparedAuthor
-    // Add file_extracted_texts to the form
-    form.file_extracted_texts = fileExtractedTexts
-
-    form.post('/resolutions', {
-      forceFormData: true,
-      onSuccess: () => {
+    // Create new resolution
+    console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
+    
+    // Submit using Axios directly
+    axios.post('/resolutions', formData)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data);
         // Reset form on success
         form.reset()
         form.authors = ['']
@@ -640,11 +638,12 @@ const submit = () => {
         // Clean up all preview objects
         cleanupAllPreviews()
         previewObjects.value = []
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+        // Redirect to resolutions list
+        window.location.href = '/resolutions';
+      })
+      .catch(error => {
+        console.error('Form submission error:', error.response?.data || error);
+      });
   }
 }
 
