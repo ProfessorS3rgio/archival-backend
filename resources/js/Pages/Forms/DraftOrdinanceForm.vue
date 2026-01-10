@@ -366,7 +366,7 @@
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
-import { Link } from '@inertiajs/vue3'
+import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import axios from 'axios'
@@ -486,7 +486,7 @@ const submit = () => {
     axios.post(`/draft-ordinances/${props.draft.ordinance_draft_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
-        window.location.href = '/draft-ordinances';
+        router.visit('/draft-ordinances');
       })
       .catch(error => {
         console.error('Form submission error:', error);
@@ -503,7 +503,7 @@ const submit = () => {
         selectedFiles.value = []
         cleanupAllPreviews()
         previewObjects.value = []
-        window.location.href = '/draft-ordinances';
+        router.visit('/draft-ordinances');
       })
       .catch(error => {
         console.error('Form submission error:', error.response?.data || error);

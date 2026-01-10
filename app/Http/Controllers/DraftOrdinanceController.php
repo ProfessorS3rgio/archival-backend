@@ -8,6 +8,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class DraftOrdinanceController extends Controller
@@ -108,7 +109,7 @@ class DraftOrdinanceController extends Controller
         // Log the creation
         LoggingService::logCreate($draft, "Created draft ordinance: {$draft->title}");
 
-        return redirect()->back()->with('success', 'Draft ordinance created successfully.');
+        return redirect('/draft-ordinances')->with('success', 'Draft ordinance created successfully.');
     }
 
     /**
@@ -167,6 +168,16 @@ class DraftOrdinanceController extends Controller
     public function edit(string $id)
     {
         $draft = DraftOrdinance::with('files')->findOrFail($id);
+
+        // Provide a signed public URL for Office Online previewing
+        $draft->files->transform(function ($file) {
+            $file->public_preview_url = URL::temporarySignedRoute(
+                'public-serve-file',
+                now()->addMinutes(60),
+                ['filename' => $file->file_url]
+            );
+            return $file;
+        });
 
         return Inertia::render('Forms/DraftOrdinanceForm', [
             'draft' => $draft,
@@ -245,7 +256,7 @@ class DraftOrdinanceController extends Controller
         // Log the update
         LoggingService::logUpdate($draft, $oldValues, "Updated draft ordinance: {$draft->title}");
 
-        return redirect()->back()->with('success', 'Draft ordinance updated successfully.');
+        return redirect('/draft-ordinances')->with('success', 'Draft ordinance updated successfully.');
     }
 
     /**
