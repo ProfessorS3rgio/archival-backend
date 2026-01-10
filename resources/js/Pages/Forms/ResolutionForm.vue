@@ -448,7 +448,7 @@
 <script setup>
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { useForm, usePage } from '@inertiajs/vue3'
+import { useForm, usePage, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
@@ -527,6 +527,8 @@ const formText = computed(() => {
   }
 })
 
+const type = computed(() => isMunicipalForm.value ? 'Municipal' : 'Provincial')
+
 const getFileTypeFromName = (fileName) => {
   if (!fileName) return 'unknown'
   const extension = fileName.split('.').pop().toLowerCase()
@@ -560,6 +562,11 @@ const removeAuthor = (index) => {
 
 const submit = () => {
   form.added_by = page.props.auth?.user?.id || 1 // Get current user ID from Inertia page props
+  // Ensure form type matches the route (municipal vs provincial)
+  form.is_municipal = isMunicipalForm.value
+  if (!form.is_municipal) {
+    form.municipality = ''
+  }
 
   // Prepare extracted text data
   const fileExtractedTexts = selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
@@ -575,7 +582,15 @@ const submit = () => {
   Object.entries(form.data()).forEach(([key, value]) => {
     // Skip files, remove_files, extracted_text, file_extracted_texts, and authors - we'll handle those separately
     if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'file_extracted_texts' && key !== 'authors') {
-      formData.append(key, value);
+      if (key === 'is_municipal') {
+        // Laravel's `boolean` validator accepts 1/0 (not "true"/"false" strings)
+        formData.append(key, value ? '1' : '0')
+        return
+      }
+
+      // Avoid sending literal "null"/"undefined" values
+      const normalizedValue = value === null || value === undefined ? '' : value
+      formData.append(key, normalizedValue);
     }
   });
 
@@ -614,10 +629,22 @@ const submit = () => {
     axios.post(`/resolutions/${props.resolution.resolution_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
-        window.location.href = '/resolutions';
+        router.visit('/resolutions');
       })
       .catch(error => {
-        console.error('Form submission error:', error);
+        const status = error?.response?.status
+        const data = error?.response?.data
+        if (status === 422 && data?.errors) {
+          form.clearErrors()
+          Object.entries(data.errors).forEach(([field, messages]) => {
+            const message = Array.isArray(messages) ? (messages[0] || '') : String(messages || '')
+            if (message) form.setError(field, message)
+          })
+          console.error('Validation failed (422):', data.errors)
+          return
+        }
+
+        console.error('Form submission error:', data || error)
       });
   } else {
     // Create new resolution
@@ -635,10 +662,22 @@ const submit = () => {
         cleanupAllPreviews()
         previewObjects.value = []
         // Redirect to resolutions list
-        window.location.href = '/resolutions';
+        router.visit('/resolutions');
       })
       .catch(error => {
-        console.error('Form submission error:', error.response?.data || error);
+        const status = error?.response?.status
+        const data = error?.response?.data
+        if (status === 422 && data?.errors) {
+          form.clearErrors()
+          Object.entries(data.errors).forEach(([field, messages]) => {
+            const message = Array.isArray(messages) ? (messages[0] || '') : String(messages || '')
+            if (message) form.setError(field, message)
+          })
+          console.error('Validation failed (422):', data.errors)
+          return
+        }
+
+        console.error('Form submission error:', data || error)
       });
   }
 }

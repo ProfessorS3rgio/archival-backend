@@ -448,6 +448,7 @@ import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
+import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 import axios from 'axios'
@@ -555,6 +556,11 @@ const removeExistingFile = (fileId) => {
 
 const submit = () => {
   form.added_by = page.props.auth?.user?.id || 1 // Get current user ID from Inertia page props
+  // Ensure form type matches the route (municipal vs provincial)
+  form.is_municipal = isMunicipalForm.value
+  if (!form.is_municipal) {
+    form.municipality = ''
+  }
 
   // Handle subject selection - replace "Others" with custom subject
   if (form.subject === 'Others (Please specify)') {
@@ -578,7 +584,15 @@ const submit = () => {
   Object.entries(form.data()).forEach(([key, value]) => {
     // Skip files, remove_files, extracted_text, file_extracted_texts - we'll handle those separately
     if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'file_extracted_texts') {
-      formData.append(key, value);
+      if (key === 'is_municipal') {
+        // Laravel's `boolean` validator accepts 1/0 (not "true"/"false" strings)
+        formData.append(key, value ? '1' : '0')
+        return
+      }
+
+      // Avoid sending literal "null"/"undefined" values
+      const normalizedValue = value === null || value === undefined ? '' : value
+      formData.append(key, normalizedValue);
     }
   });
 
@@ -614,10 +628,22 @@ const submit = () => {
     axios.post(`/ordinances/${props.ordinance.ordinance_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
-        window.location.href = '/ordinances';
+        router.visit('/ordinances')
       })
       .catch(error => {
-        console.error('Form submission error:', error);
+        const status = error?.response?.status
+        const data = error?.response?.data
+        if (status === 422 && data?.errors) {
+          form.clearErrors()
+          Object.entries(data.errors).forEach(([field, messages]) => {
+            const message = Array.isArray(messages) ? (messages[0] || '') : String(messages || '')
+            if (message) form.setError(field, message)
+          })
+          console.error('Validation failed (422):', data.errors)
+          return
+        }
+
+        console.error('Form submission error:', data || error)
       });
   } else {
     // Create new ordinance
@@ -637,7 +663,19 @@ const submit = () => {
         window.location.href = '/ordinances';
       })
       .catch(error => {
-        console.error('Form submission error:', error.response?.data || error);
+        const status = error?.response?.status
+        const data = error?.response?.data
+        if (status === 422 && data?.errors) {
+          form.clearErrors()
+          Object.entries(data.errors).forEach(([field, messages]) => {
+            const message = Array.isArray(messages) ? (messages[0] || '') : String(messages || '')
+            if (message) form.setError(field, message)
+          })
+          console.error('Validation failed (422):', data.errors)
+          return
+        }
+
+        console.error('Form submission error:', data || error)
       });
   }
 }

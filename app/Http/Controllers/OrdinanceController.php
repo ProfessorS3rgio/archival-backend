@@ -8,6 +8,7 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
 class OrdinanceController extends Controller
@@ -152,7 +153,7 @@ class OrdinanceController extends Controller
             'title' => 'nullable|string',
             'subject' => 'nullable|string',
             'date_approved' => 'nullable|date',
-            'municipality' => 'required_if:is_municipal,true|nullable|string',
+            'municipality' => 'nullable|string',
             'is_municipal' => 'boolean',
             'added_by' => 'required|integer',
             'extracted_text' => 'nullable',
@@ -233,7 +234,7 @@ class OrdinanceController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Ordinance created successfully.');
+        return redirect('/ordinances')->with('success', 'Ordinance created successfully.');
     }
 
     /**
@@ -282,6 +283,16 @@ class OrdinanceController extends Controller
     public function edit(string $id)
     {
         $ordinance = Ordinance::with('files')->findOrFail($id);
+
+        // Provide a signed public URL for Office Online previewing
+        $ordinance->files->transform(function ($file) {
+            $file->public_preview_url = URL::temporarySignedRoute(
+                'public-serve-file',
+                now()->addMinutes(60),
+                ['filename' => $file->file_url]
+            );
+            return $file;
+        });
 
         return Inertia::render('Forms/OrdinanceForm', [
             'ordinance' => $ordinance,
@@ -425,7 +436,7 @@ class OrdinanceController extends Controller
             \Log::info('No files to upload - hasFile check failed');
         }
 
-        return redirect()->back()->with('success', 'Ordinance updated successfully!');
+        return redirect('/ordinances')->with('success', 'Ordinance updated successfully!');
     }
 
     /**

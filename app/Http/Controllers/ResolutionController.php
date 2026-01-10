@@ -152,7 +152,7 @@ class ResolutionController extends Controller
             'title' => 'nullable|string',
             'subject' => 'nullable|string',
             'date_approved' => 'nullable|date',
-            'municipality' => 'required_if:is_municipal,true|nullable|string',
+            'municipality' => 'nullable|string',
             'is_municipal' => 'boolean',
             'added_by' => 'required|exists:users,id',
             'extracted_text' => 'nullable',
@@ -227,7 +227,7 @@ class ResolutionController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Resolution created successfully.');
+        return redirect('/resolutions')->with('success', 'Resolution created successfully.');
     }
 
     /**
@@ -450,7 +450,7 @@ class ResolutionController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Resolution updated successfully!');
+        return redirect('/resolutions')->with('success', 'Resolution updated successfully!');
     }
 
     /**
