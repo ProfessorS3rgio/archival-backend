@@ -507,7 +507,8 @@ const {
   getFileType,
   formatFileSize,
   toggleAutoFill,
-  cleanupAllPreviews
+  cleanupAllPreviews,
+  getOfficeEmbedUrl
 } = useFileUpload(props.autoFillEnabled)
 
 const processing = computed(() => form.processing)
@@ -555,11 +556,6 @@ const removeAuthor = (index) => {
   if (form.authors.length > 1) {
     form.authors.splice(index, 1)
   }
-}
-
-const getOfficeEmbedUrl = (fileUrl) => {
-  if (!fileUrl) return ''
-  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
 }
 
 const submit = () => {

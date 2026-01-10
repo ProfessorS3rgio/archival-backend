@@ -563,6 +563,11 @@ export function useFileUpload(autoFillEnabled = true) {
     }
   }
 
+  const getOfficeEmbedUrl = (fileUrl) => {
+    if (!fileUrl) return ''
+    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
+  }
+
   return {
     selectedFiles,
     previewObjects,
@@ -573,6 +578,7 @@ export function useFileUpload(autoFillEnabled = true) {
     getFileType,
     formatFileSize,
     toggleAutoFill,
-    cleanupAllPreviews
+    cleanupAllPreviews,
+    getOfficeEmbedUrl
   }
 }
