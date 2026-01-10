@@ -56,30 +56,28 @@ export function useCommunicationFileUpload() {
           extractedText: extractedText
         }
       } else if (file.type.includes('word') || file.type.includes('docx') || file.type.includes('doc')) {
-        // Convert to PDF on backend and use for preview
+        // Upload file to get temporary signed URL for Office preview
         const formData = new FormData()
         formData.append('file', file)
-        const response = await axios.post('/api/convert-file', formData, {
+        const response = await axios.post('/api/preview-upload', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           },
           withCredentials: true
         })
+        
         if (response.data.error) {
           throw new Error(response.data.error)
         }
-        // Create blob from base64 PDF
-        const pdfBlob = new Blob([Uint8Array.from(atob(response.data.pdf), c => c.charCodeAt(0))], { type: 'application/pdf' })
-        const objectUrl = URL.createObjectURL(pdfBlob)
-        // Create PDF file to replace the original
-        const pdfName = file.name.replace(/\.(doc|docx?)$/i, '.pdf')
-        const pdfFile = new File([pdfBlob], pdfName, { type: 'application/pdf' })
-        selectedFiles.value[index] = pdfFile
+        
+        // Extract text from the original file
+        const extractedText = await extractTextFromDOCX(file)
+        
         previewObjects.value[index] = {
-          type: 'pdf',
-          url: objectUrl,
+          type: 'office',
+          url: response.data.url,
           content: null,
-          extractedText: response.data.text
+          extractedText: extractedText
         }
       }
 
