@@ -134,6 +134,13 @@ class MunicipalitiesCommunicationListController extends Controller
      */
     public function show(MunicipalitiesCommunicationList $municipalCommunication)
     {
+        // Provide a signed public URL for Office Online previewing
+        $municipalCommunication->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $municipalCommunication->file_url]
+        );
+
         // Log the view
         LoggingService::logView($municipalCommunication, "Viewed municipal communication: {$municipalCommunication->title}");
 

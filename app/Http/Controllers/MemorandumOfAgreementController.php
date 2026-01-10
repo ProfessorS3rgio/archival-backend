@@ -104,6 +104,13 @@ class MemorandumOfAgreementController extends Controller
      */
     public function show(MemorandumOfAgreement $memorandumOfAgreement)
     {
+        // Provide a signed public URL for Office Online previewing
+        $memorandumOfAgreement->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $memorandumOfAgreement->file_url]
+        );
+
         // Log the view
         LoggingService::logView($memorandumOfAgreement, "Viewed MOA: {$memorandumOfAgreement->title}");
 

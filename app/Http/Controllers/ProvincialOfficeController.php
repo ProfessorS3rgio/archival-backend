@@ -128,6 +128,13 @@ class ProvincialOfficeController extends Controller
 
         $communication = $provincialOffice->load(['addedBy', 'lastModifier']);
 
+        // Provide a signed public URL for Office Online previewing
+        $communication->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $communication->file_url]
+        );
+
         // Log the view
         LoggingService::logView($communication, "Viewed provincial office communication: {$communication->title}");
 

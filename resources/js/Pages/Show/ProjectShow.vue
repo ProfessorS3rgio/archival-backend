@@ -110,7 +110,7 @@
           </div>
           <div v-else-if="isDocx" class="mt-4">
             <iframe
-              :src="getOfficeEmbedUrl(`${baseUrl}/serve-file/${project.file_url}`)"
+              :src="getOfficeEmbedUrl(project.public_preview_url)"
               width="100%"
               height="600"
               frameborder="0"

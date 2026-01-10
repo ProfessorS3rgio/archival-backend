@@ -107,6 +107,13 @@ class AccomplishmentController extends Controller
      */
     public function show(Accomplishment $accomplishment)
     {
+        // Provide a signed public URL for Office Online previewing
+        $accomplishment->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $accomplishment->file_url]
+        );
+
         // Log the view
         LoggingService::logView($accomplishment, "Viewed accomplishment: {$accomplishment->title}");
 

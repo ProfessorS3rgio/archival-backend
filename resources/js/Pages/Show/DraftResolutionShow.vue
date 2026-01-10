@@ -129,7 +129,7 @@
             </div>
             <div v-else-if="getFileTypeFromName(file.file_name) === 'docx' || getFileTypeFromName(file.file_name) === 'doc'" class="mt-4">
               <iframe
-                :src="getOfficeEmbedUrl(`${baseUrl}/serve-file/${file.file_url}`)"
+                :src="getOfficeEmbedUrl(file.public_preview_url)"
                 width="100%"
                 height="600"
                 frameborder="0"

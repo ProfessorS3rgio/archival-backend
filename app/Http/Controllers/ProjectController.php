@@ -131,6 +131,13 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        // Provide a signed public URL for Office Online previewing
+        $project->public_preview_url = URL::temporarySignedRoute(
+            'public-serve-file',
+            now()->addMinutes(60),
+            ['filename' => $project->file_url]
+        );
+
         // Log the view
         LoggingService::logView($project, "Viewed project: {$project->project_name}");
 

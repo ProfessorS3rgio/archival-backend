@@ -108,6 +108,16 @@ class DraftResolutionController extends Controller
     {
         $draft = DraftResolution::with('files')->findOrFail($id);
 
+        // Provide a signed public URL for Office Online previewing
+        $draft->files->transform(function ($file) {
+            $file->public_preview_url = URL::temporarySignedRoute(
+                'public-serve-file',
+                now()->addMinutes(60),
+                ['filename' => $file->file_url]
+            );
+            return $file;
+        });
+
         // Log the view
         LoggingService::logView($draft, "Viewed draft resolution: {$draft->title}");
 
