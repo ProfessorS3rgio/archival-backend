@@ -555,37 +555,40 @@ const submit = () => {
   })
   const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
 
+  // Build FormData for both create and update to ensure proper array handling
+  const formData = new FormData();
+  
+  // Add all standard fields
+  Object.entries(form.data()).forEach(([key, value]) => {
+    // Skip files, remove_files, extracted_text, file_extracted_texts - we'll handle those separately
+    if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'file_extracted_texts') {
+      formData.append(key, value);
+    }
+  });
+
+  // Add concatenated extracted_text for main record
+  formData.append('extracted_text', concatenatedExtractedText);
+  
+  // Add files if present
+  if (form.files && form.files.length > 0) {
+    for (let i = 0; i < form.files.length; i++) {
+      formData.append('files[]', form.files[i]);
+      // Add per-file extracted text
+      formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
+    }
+  }
+
   if (props.ordinance) {
     // Update existing ordinance
-    
-    // Build a complete custom form data object to ensure arrays are properly handled
-    const formData = new FormData();
-    
-    // Add all standard fields
-    Object.entries(form.data()).forEach(([key, value]) => {
-      // Skip files, remove_files, and extracted_text - we'll handle those separately
-      if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text') {
-        formData.append(key, value);
-      }
-    });
-
-    // Add concatenated extracted_text for main record
-    formData.append('extracted_text', concatenatedExtractedText);
-    
-    // Add files if present
-    if (form.files && form.files.length > 0) {
-      for (let i = 0; i < form.files.length; i++) {
-        formData.append('files[]', form.files[i]);
-        // Add per-file extracted text
-        formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
-      }
-    }
+    console.log('Submitting UPDATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
+    console.log('Files marked for removal:', form.remove_files)
     
     // Add remove_files as an indexed array
     if (form.remove_files && form.remove_files.length > 0) {
       for (let i = 0; i < form.remove_files.length; i++) {
         formData.append(`remove_files[${i}]`, form.remove_files[i]);
       }
+      console.log('Added remove_files to form data:', form.remove_files);
     }
     
     // Add method spoofing for PUT
@@ -594,31 +597,32 @@ const submit = () => {
     // Submit using Axios directly
     axios.post(`/ordinances/${props.ordinance.ordinance_id}`, formData)
       .then(response => {
+        console.log('Form submitted successfully:', response.data);
         window.location.href = '/ordinances';
       })
       .catch(error => {
         console.error('Form submission error:', error);
       });
   } else {
-    // Create new ordinance - set extracted_text as concatenated string
-    form.extracted_text = concatenatedExtractedText
-    // Add file_extracted_texts to the form
-    form.file_extracted_texts = fileExtractedTexts
-
-    form.post('/ordinances', {
-      forceFormData: true,
-      onSuccess: () => {
+    // Create new ordinance
+    console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
+    
+    // Submit using Axios directly
+    axios.post('/ordinances', formData)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data);
         // Reset form on success
         form.reset()
         selectedFiles.value = []
         // Clean up all preview objects
         cleanupAllPreviews()
         previewObjects.value = []
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+        // Redirect to ordinances list
+        window.location.href = '/ordinances';
+      })
+      .catch(error => {
+        console.error('Form submission error:', error.response?.data || error);
+      });
   }
 }
 

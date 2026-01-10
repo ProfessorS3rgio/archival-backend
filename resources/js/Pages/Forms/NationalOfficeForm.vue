@@ -531,21 +531,42 @@ const submit = async () => {
         console.error('Form submission error:', error)
       })
   } else {
-    form.post(submitUrl, {
-      forceFormData: true,
-      onSuccess: () => {
+    // Create new national office communication
+    console.log('Submitting CREATE with extracted_text:', form.extracted_text.substring(0, 100) + '...')
+    
+    // Build FormData for create as well
+    const formData = new FormData()
+
+    Object.entries(form.data()).forEach(([key, value]) => {
+      if (key !== 'files' && key !== 'extracted_text') {
+        formData.append(key, value)
+      }
+    })
+
+    if (form.files && form.files.length > 0) {
+      for (let i = 0; i < form.files.length; i++) {
+        formData.append('files[]', form.files[i])
+      }
+    }
+
+    if (form.extracted_text) {
+      formData.append('extracted_text', form.extracted_text)
+    }
+
+    axios.post(submitUrl, formData)
+      .then(response => {
+        console.log('Form submitted successfully')
         // Reset form on success
         form.reset()
         selectedFiles.value = []
         removeExistingFileFlag.value = false
-        // Clean up all preview objects
         cleanupAllPreviews()
         previewObjects.value = []
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+        router.visit('/national-office-communications')
+      })
+      .catch(error => {
+        console.error('Form submission error:', error)
+      })
   }
 }
 </script>

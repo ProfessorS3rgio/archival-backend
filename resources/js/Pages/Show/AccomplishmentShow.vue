@@ -89,10 +89,13 @@
             <embed :src="`${baseUrl}/serve-file/${accomplishment.file_url}`" type="application/pdf" width="100%" height="600px" class="border border-gray-300 dark:border-gray-600 rounded" />
           </div>
           <div v-else-if="isDocx" class="mt-4">
-            <div v-if="docxContent" v-html="docxContent" class="border border-gray-300 dark:border-gray-600 rounded p-4 max-h-96 overflow-y-auto bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></div>
-            <div v-else class="border border-gray-300 dark:border-gray-600 rounded p-4 bg-gray-50 dark:bg-gray-800 text-center">
-              <p>Loading document...</p>
-            </div>
+            <iframe
+              :src="getOfficeEmbedUrl(`${baseUrl}/serve-file/${accomplishment.file_url}`)"
+              width="100%"
+              height="600"
+              frameborder="0"
+              class="border border-gray-300 dark:border-gray-600 rounded"
+            ></iframe>
           </div>
           <div v-else class="mt-4">
             <p class="text-sm text-gray-600 dark:text-gray-400">This file type cannot be previewed. Click "Download" to view the file.</p>
@@ -119,8 +122,7 @@
 import { Link } from '@inertiajs/vue3'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { computed, ref, onMounted } from 'vue'
-import mammoth from 'mammoth'
+import { computed } from 'vue'
 
 const props = defineProps({
   accomplishment: {
@@ -136,7 +138,6 @@ const props = defineProps({
 const currentUser = computed(() => props.auth.user || {})
 
 const baseUrl = computed(() => typeof window !== 'undefined' ? window.location.origin : '')
-const docxContent = ref(null)
 
 const isPdf = computed(() => {
   return props.accomplishment.file_type?.includes('pdf')
@@ -147,23 +148,9 @@ const isDocx = computed(() => {
   return fileType.includes('word') || fileType.includes('docx') || fileType.includes('doc')
 })
 
-// Load DOCX content when component mounts
-onMounted(() => {
-  if (props.accomplishment.file_url && isDocx.value) {
-    loadDocxContent()
-  }
-})
-
-const loadDocxContent = async () => {
-  try {
-    const response = await fetch(`${baseUrl.value}/serve-file/${props.accomplishment.file_url}`)
-    const arrayBuffer = await response.arrayBuffer()
-    const result = await mammoth.convertToHtml({ arrayBuffer })
-    docxContent.value = result.value
-  } catch (error) {
-    console.error('Error loading DOCX:', error)
-    docxContent.value = '<p>Error loading document</p>'
-  }
+const getOfficeEmbedUrl = (fileUrl) => {
+  if (!fileUrl) return ''
+  return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
 }
 
 const formatDate = (date) => {

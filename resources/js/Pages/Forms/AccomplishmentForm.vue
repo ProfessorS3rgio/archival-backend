@@ -240,6 +240,7 @@ import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
@@ -299,46 +300,58 @@ const submit = async () => {
     if (preview && preview.extractedText) {
       extractedText = preview.extractedText
     }
-    // Set the file in form
-    form.file = selectedFiles.value[0]
   }
+
+  // Build FormData
+  const formData = new FormData()
   
-  // Only set extracted_text if we have content
-  form.extracted_text = extractedText || ''
+  // Add all standard fields
+  formData.append('title', form.title)
+  formData.append('accomplishment_year', form.accomplishment_year)
+  formData.append('extracted_text', extractedText || '')
+  
+  // Add file if present
+  if (selectedFiles.value && selectedFiles.value.length > 0) {
+    formData.append('file', selectedFiles.value[0])
+  }
 
   try {
     if (props.isEditing) {
-      // Use transform to add _method for PUT request with file upload
-      form.transform((data) => ({
-        ...data,
-        _method: 'PUT',
-      })).post(`/accomplishments/${props.accomplishment.accomplish_id}`, {
-        forceFormData: true,
-        onSuccess: () => {
+      // Update existing accomplishment
+      console.log('Submitting UPDATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      formData.append('_method', 'PUT')
+      
+      axios.post(`/accomplishments/${props.accomplishment.accomplish_id}`, formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/accomplishments'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     } else {
-      await form.post('/accomplishments', {
-        forceFormData: true,
-        onSuccess: () => {
+      // Create new accomplishment
+      console.log('Submitting CREATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      
+      axios.post('/accomplishments', formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           // Reset form on success
           form.reset()
           selectedFiles.value = []
           cleanupAllPreviews()
           previewObjects.value = []
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/accomplishments'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     }
   } catch (error) {
     console.error('Form submission error:', error)
-  } finally {
     loading.value = false
   }
 }

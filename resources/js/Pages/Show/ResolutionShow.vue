@@ -71,7 +71,7 @@
                 </div>
                 <div>
                   <p class="text-sm font-medium text-gray-900 dark:text-white">{{ file.file_name }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatFileSize(file.file_size) }} â€¢ {{ file.file_type }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ formatFileSize(file.file_size) }} • {{ file.file_type }}</p>
                 </div>
               </div>
               <a

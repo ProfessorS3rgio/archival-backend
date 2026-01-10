@@ -412,36 +412,52 @@ const submit = () => {
   const fileExtractedTexts = selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
   const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
 
-  // Update form with extracted text
-  form.extracted_text = concatenatedExtractedText
-  form.file_extracted_texts = fileExtractedTexts
+  // Build FormData
+  const formData = new FormData();
+  
+  // Add all standard fields
+  Object.entries(form.data()).forEach(([key, value]) => {
+    if (key !== 'files' && key !== 'extracted_text' && key !== 'file_extracted_texts') {
+      formData.append(key, value);
+    }
+  });
+
+  // Add concatenated extracted_text
+  formData.append('extracted_text', concatenatedExtractedText);
+  
+  // Add files if present
+  if (form.files && form.files.length > 0) {
+    for (let i = 0; i < form.files.length; i++) {
+      formData.append('files[]', form.files[i]);
+      formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
+    }
+  }
 
   if (props.report) {
-    // Update existing report - add _method to form data
-    form.transform((data) => ({
-      ...data,
-      _method: 'PUT'
-    })).post(`/committee-reports/${props.report.report_id}`, {
-      forceFormData: true,
-      preserveScroll: true,
-      onSuccess: () => {
-        // Success handled by redirect in controller
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+    // Update existing report
+    console.log('Submitting UPDATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
+    formData.append('_method', 'PUT');
+    
+    axios.post(`/committee-reports/${props.report.report_id}`, formData)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data);
+        window.location.href = '/committee-reports';
+      })
+      .catch(error => {
+        console.error('Form submission error:', error.response?.data || error);
+      });
   } else {
     // Create new report
-    form.post('/committee-reports', {
-      forceFormData: true,
-      onSuccess: () => {
-        // Success handled by redirect in controller
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+    console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
+    
+    axios.post('/committee-reports', formData)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data);
+        window.location.href = '/committee-reports';
+      })
+      .catch(error => {
+        console.error('Form submission error:', error.response?.data || error);
+      });
   }
 }
 

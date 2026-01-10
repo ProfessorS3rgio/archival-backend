@@ -424,43 +424,43 @@ const removeExistingFile = (fileId) => {
 }
 
 const submit = () => {
-  form.added_by = page.props.auth?.user?.id || 1 // Get current user ID from Inertia page props
+  form.added_by = page.props.auth?.user?.id || 1
 
-  console.log('Submitting form with data:', form.data())
-  console.log('Selected files:', selectedFiles.value)
-  console.log('Form files:', form.files)
+  // Prepare extracted text data
+  const fileExtractedTexts = selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
+  const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+
+  // Build FormData for both create and update
+  const formData = new FormData();
+  
+  // Add all standard fields
+  Object.entries(form.data()).forEach(([key, value]) => {
+    if (key !== 'files' && key !== 'remove_files' && key !== 'extracted_text' && key !== 'file_extracted_texts') {
+      formData.append(key, value);
+    }
+  });
+
+  // Add concatenated extracted_text
+  formData.append('extracted_text', concatenatedExtractedText);
+  
+  // Add files if present
+  if (form.files && form.files.length > 0) {
+    for (let i = 0; i < form.files.length; i++) {
+      formData.append('files[]', form.files[i]);
+      formData.append(`file_extracted_texts[${i}]`, fileExtractedTexts[i] || '');
+    }
+  }
 
   if (props.draft) {
     // Update existing draft ordinance
-    console.log('Submitting form with data:', form.data())
+    console.log('Submitting UPDATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
     console.log('Files marked for removal:', form.remove_files)
-
-    // Build a complete custom form data object to ensure arrays are properly handled
-    const formData = new FormData();
-
-    // Add all standard fields
-    Object.entries(form.data()).forEach(([key, value]) => {
-      // Skip files and remove_files, we'll handle those separately
-      if (key !== 'files' && key !== 'remove_files') {
-        formData.append(key, value);
-      }
-    });
-
-    // Add files if present
-    if (form.files && form.files.length > 0) {
-      for (let i = 0; i < form.files.length; i++) {
-        formData.append('files[]', form.files[i]);
-        const extractedText = previewObjects.value[i]?.extractedText ?? '';
-        formData.append(`extracted_text[${i}]`, extractedText);
-      }
-    }
 
     // Add remove_files as an indexed array
     if (form.remove_files && form.remove_files.length > 0) {
       for (let i = 0; i < form.remove_files.length; i++) {
         formData.append(`remove_files[${i}]`, form.remove_files[i]);
       }
-      console.log('Added remove_files to form data:', form.remove_files);
     }
 
     // Add method spoofing for PUT
@@ -477,24 +477,21 @@ const submit = () => {
       });
   } else {
     // Create new draft ordinance
-    form.extracted_text = form.files && form.files.length > 0
-      ? form.files.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
-      : []
+    console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
 
-    form.post('/draft-ordinances', {
-      forceFormData: true,
-      onSuccess: () => {
+    axios.post('/draft-ordinances', formData)
+      .then(response => {
+        console.log('Form submitted successfully:', response.data);
         // Reset form on success
         form.reset()
         selectedFiles.value = []
-        // Clean up all preview objects
         cleanupAllPreviews()
         previewObjects.value = []
-      },
-      onError: (errors) => {
-        console.error('Form submission errors:', errors)
-      }
-    })
+        window.location.href = '/draft-ordinances';
+      })
+      .catch(error => {
+        console.error('Form submission error:', error.response?.data || error);
+      });
   }
 }
 

@@ -278,6 +278,7 @@ import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
@@ -342,46 +343,59 @@ const submit = async () => {
     if (preview && preview.extractedText) {
       extractedText = preview.extractedText
     }
-    // Set the file in form
-    form.file = selectedFiles.value[0]
   }
 
-  // Only set extracted_text if we have content
-  form.extracted_text = extractedText || ''
+  // Build FormData
+  const formData = new FormData()
+  
+  // Add all standard fields
+  formData.append('resolution_no', form.resolution_no)
+  formData.append('date_received', form.date_received)
+  formData.append('title', form.title)
+  formData.append('year', form.year)
+  formData.append('extracted_text', extractedText || '')
+  
+  // Add file if present
+  if (selectedFiles.value && selectedFiles.value.length > 0) {
+    formData.append('file', selectedFiles.value[0])
+  }
 
   try {
     if (props.isEditing) {
-      // Use transform to add _method for PUT request with file upload
-      form.transform((data) => ({
-        ...data,
-        _method: 'PUT',
-      })).post(`/memorandum-of-agreements/${props.memorandumOfAgreement.moa_id}`, {
-        forceFormData: true,
-        onSuccess: () => {
+      // Update existing MOA
+      console.log('Submitting UPDATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      formData.append('_method', 'PUT')
+      
+      axios.post(`/memorandum-of-agreements/${props.memorandumOfAgreement.moa_id}`, formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/memorandum-of-agreements'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     } else {
-      await form.post('/memorandum-of-agreements', {
-        forceFormData: true,
-        onSuccess: () => {
-          // Reset form on success
+      // Create new MOA
+      console.log('Submitting CREATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      
+      axios.post('/memorandum-of-agreements', formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           form.reset()
           selectedFiles.value = []
           cleanupAllPreviews()
           previewObjects.value = []
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/memorandum-of-agreements'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     }
   } catch (error) {
     console.error('Form submission error:', error)
-  } finally {
     loading.value = false
   }
 }

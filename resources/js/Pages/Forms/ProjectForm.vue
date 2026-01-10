@@ -400,6 +400,7 @@ import { useForm } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
+import axios from 'axios'
 
 // Props
 const props = defineProps({
@@ -478,46 +479,63 @@ const submit = async () => {
     if (preview && preview.extractedText) {
       extractedText = preview.extractedText
     }
-    // Set the file in form
-    form.file = selectedFiles.value[0]
   }
+
+  // Build FormData
+  const formData = new FormData()
   
-  // Only set extracted_text if we have content
-  form.extracted_text = extractedText || ''
+  // Add all standard fields
+  formData.append('code_no', form.code_no)
+  formData.append('district', form.district)
+  formData.append('location', form.location)
+  formData.append('project_name', form.project_name)
+  formData.append('year', form.year)
+  formData.append('source_fund', form.source_fund)
+  formData.append('source_type', form.source_type)
+  formData.append('amount', form.amount)
+  formData.append('extracted_text', extractedText || '')
+  
+  // Add file if present
+  if (selectedFiles.value && selectedFiles.value.length > 0) {
+    formData.append('file', selectedFiles.value[0])
+  }
 
   try {
     if (props.isEditing) {
-      // Use transform to add _method for PUT request with file upload
-      form.transform((data) => ({
-        ...data,
-        _method: 'PUT',
-      })).post(`/projects/${props.project.project_id}`, {
-        forceFormData: true,
-        onSuccess: () => {
+      // Update existing project
+      console.log('Submitting UPDATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      formData.append('_method', 'PUT')
+      
+      axios.post(`/projects/${props.project.project_id}`, formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/projects'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     } else {
-      await form.post('/projects', {
-        forceFormData: true,
-        onSuccess: () => {
-          // Reset form on success
+      // Create new project
+      console.log('Submitting CREATE with extracted_text:', extractedText.substring(0, 100) + '...')
+      
+      axios.post('/projects', formData)
+        .then(response => {
+          console.log('Form submitted successfully:', response.data)
           form.reset()
           selectedFiles.value = []
           cleanupAllPreviews()
           previewObjects.value = []
-        },
-        onError: (err) => {
-          console.error('Form submission errors:', err)
-        }
-      })
+          window.location.href = '/projects'
+        })
+        .catch(error => {
+          console.error('Form submission error:', error.response?.data || error)
+          loading.value = false
+        })
     }
   } catch (error) {
     console.error('Form submission error:', error)
-  } finally {
     loading.value = false
   }
 }
