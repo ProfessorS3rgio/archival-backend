@@ -28,7 +28,7 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ tabText.title }}</h1>
           <p class="text-gray-600 dark:text-gray-400">Manage and view {{ currentTab === 'overall' ? 'all' : currentTab }} ordinances in the system</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3" v-if="!isLegislator">
           <Link
             :href="tabText.createRoute"
             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -313,12 +313,12 @@
           <p class="text-gray-500 dark:text-gray-400 mb-4">
             {{ (searchQuery || selectedAuthor || selectedSubject || selectedYear) ? 'Try adjusting your search terms or filters.' : 'Get started by creating your first ordinance.' }}
           </p>
-          <div v-if="!searchQuery" class="flex justify-center">
+          <div v-if="!searchQuery && !isLegislator" class="flex justify-center">
             <Link
               href="/ordinances/create"
               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
-              <PlusIcon class="w-4 h-4 mr-2" />
+              <PlusIcon class="w-4 h-4 mr-2 "   />
               Create Ordinance
             </Link>
           </div>
@@ -351,6 +351,7 @@ import Swal from 'sweetalert2'
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth.user)
+const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
 
 const props = defineProps({
   ordinances: Array,

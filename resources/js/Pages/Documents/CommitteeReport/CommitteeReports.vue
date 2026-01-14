@@ -28,7 +28,7 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Committee Reports</h1>
           <p class="text-gray-600 dark:text-gray-400">Manage and view all committee reports in the system</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3" v-if="!isLegislator">
           <Link
             href="/committee-reports/create"
             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -251,7 +251,7 @@
               Clear Filters
             </button>
           </div>
-          <div v-else>
+          <div v-if="!searchQuery && !selectedSubject && !selectedYear && !isLegislator">
             <Link
               href="/committee-reports/create"
               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -282,6 +282,7 @@ import Swal from 'sweetalert2'
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth.user)
+const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
 
 const props = defineProps({
   reports: Array,

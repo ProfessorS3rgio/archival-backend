@@ -308,6 +308,7 @@ const spTerms = computed(() => page.props.spTerms || [])
 
 const currentUser = computed(() => page.props.auth?.user ?? {})
 const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
+const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
 
 const shouldHideNavPath = (path) => {
   if (!path) return false
@@ -464,10 +465,21 @@ const menuGroups = [
           },
         ],
       },
-            {
+      {
         icon: SettingsIcon,
         name: "Settings",
-        subItems: [
+        subItems: isLegislator.value ? [
+          {
+            name: "Change Password",
+            path: "/settings/change-password",
+            icon: SettingsIcon,
+          },
+          {
+            name: "Log Out",
+            path: "/logout",
+            icon: LogoutIcon,
+          },
+        ] : [
           {
             name: "Tools",
             path: "/settings",
@@ -511,14 +523,11 @@ const menuGroups = [
           },
         ],
       },
-      {
+      ...(isLegislator.value ? [] : [{
         icon: UserGroupIcon,
         name: "SANGGUNIAN PANLALAWIGAN",
         subItems: generateSpMenuItems(),
-      }
-
-
-
+      }])
     ],
   },
 ]

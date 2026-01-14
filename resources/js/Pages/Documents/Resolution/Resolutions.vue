@@ -28,7 +28,7 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ tabText.title }}</h1>
           <p class="text-gray-600 dark:text-gray-400">Manage and view {{ currentTab === 'overall' ? 'all' : currentTab }} resolutions in the system</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex gap-3" v-if="!isLegislator">
           <Link
             :href="tabText.createRoute"
             class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -314,7 +314,7 @@
           <p class="text-gray-500 dark:text-gray-400 mb-4">
             {{ resolutions.length === 0 ? 'Get started by creating your first resolution.' : 'Try adjusting your search or filter criteria.' }}
           </p>
-          <div v-if="resolutions.length === 0">
+          <div v-if="resolutions.length === 0 && !isLegislator">
             <Link
               href="/resolutions/create"
               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
@@ -352,6 +352,7 @@ import Swal from 'sweetalert2'
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth.user)
+const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
 
 const props = defineProps({
   resolutions: Array,

@@ -1172,7 +1172,7 @@ const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
 const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
 const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
-const isReadOnlyUser = computed(() => isStaff.value || isLegislator.value)
+const isReadOnlyUser = computed(() => isLegislator.value)
 
 watch([isReadOnlyUser, activeTab], ([readOnly, tab]) => {
   if (readOnly && tab === 'systemlogs') {
