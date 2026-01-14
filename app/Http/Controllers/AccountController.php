@@ -70,8 +70,8 @@ class AccountController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,staff',
+            'password' => 'required|string|min:6|confirmed',
+            'role' => 'required|in:admin,staff,legislator',
         ]);
 
         $user = \App\Models\User::create([
@@ -120,8 +120,8 @@ class AccountController extends Controller
                 'max:255',
                 Rule::unique('users', 'username')->ignore($user->id),
             ],
-            'role' => ['required', Rule::in(['admin', 'staff'])],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'role' => ['required', Rule::in(['admin', 'staff', 'legislator'])],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
         ]);
 
         $oldValues = $user->getAttributes();

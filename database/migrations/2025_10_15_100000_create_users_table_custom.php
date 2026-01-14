@@ -19,7 +19,7 @@ return new class extends Migration
                 $table->string('name');
                 $table->string('email')->unique();
                 $table->string('username')->unique();
-                $table->enum('role', ['admin', 'staff', 'user'])->default('user');
+                $table->enum('role', ['admin', 'staff', 'user', 'legislator'])->default('user');
                 $table->string('password');
                 $table->rememberToken();
                 $table->timestamps();

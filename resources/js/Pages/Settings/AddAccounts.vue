@@ -143,7 +143,7 @@
                       :type="showPassword ? 'text' : 'password'"
                       required
                       class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                      placeholder="••••••••"
                     />
                     <button
                       type="button"
@@ -159,7 +159,7 @@
                       </svg>
                     </button>
                   </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 8 characters</p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 6 characters</p>
                   <p v-if="errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password }}</p>
                 </div>
 
@@ -174,7 +174,7 @@
                       :type="showPasswordConfirmation ? 'text' : 'password'"
                       required
                       class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                      placeholder="••••••••"
                     />
                     <button
                       type="button"
@@ -247,6 +247,27 @@
                     </div>
                     <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                       Can view and manage documents but cannot access user management or system settings
+                    </p>
+                  </div>
+                </label>
+
+                <label class="relative flex items-start p-4 border-2 rounded-lg cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  :class="form.role === 'legislator' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-300 dark:border-gray-600'">
+                  <input
+                    type="radio"
+                    v-model="form.role"
+                    value="legislator"
+                    class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500 mt-1"
+                  />
+                  <div class="ml-3">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium text-gray-900 dark:text-white">Legislator</span>
+                      <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400">
+                        Read-Only
+                      </span>
+                    </div>
+                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      Read-only access to view and download documents and records
                     </p>
                   </div>
                 </label>

@@ -318,9 +318,12 @@
       </div>
 
       <!-- Document Activity and Quick Actions -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+      <div :class="[
+        'flex-1 min-h-0',
+        isReadOnlyUser ? 'grid grid-cols-1 gap-6' : 'grid grid-cols-1 lg:grid-cols-3 gap-6'
+      ]">
         <!-- Document Activity - Full List with Search -->
-        <div class="lg:col-span-2">
+        <div :class="isReadOnlyUser ? 'col-span-1' : 'lg:col-span-2'">
           <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] flex flex-col min-h-full">
             <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
               <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
@@ -460,7 +463,7 @@
         </div>
 
         <!-- Quick Actions -->
-        <div class="space-y-6">
+        <div v-if="!isReadOnlyUser" class="space-y-6">
           <!-- Quick Actions Card -->
           <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">Quick Actions</h3>
@@ -545,7 +548,7 @@
                 </div>
                 <span class="text-sm font-medium text-violet-900 dark:text-violet-100">New Committee Report</span>
               </Link>
-              <Link v-if="!isStaff" href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
+              <Link v-if="!isReadOnlyUser" href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
                 <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mr-3">
                   <InfoCircleIcon class="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -653,7 +656,7 @@
                 Committee Reports
               </button>
               <button
-                v-if="!isStaff"
+                v-if="!isReadOnlyUser"
                 @click="activeTab = 'systemlogs'"
                 :class="[
                   'px-4 py-2 text-sm font-medium rounded-md transition-colors',
@@ -688,7 +691,7 @@
                 ? '/provincial-offices'
                 : activeTab === 'committee-reports'
                 ? '/committee-reports'
-                : (isStaff ? '/dashboard' : '/system-logs')" 
+                : (isReadOnlyUser ? '/dashboard' : '/system-logs')" 
               class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
               View all  
@@ -724,7 +727,7 @@
             <div v-if="recentOrdinances.length === 0" class="text-center py-8">
               <DocsIcon class="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p class="text-gray-500 dark:text-gray-400">No ordinances found</p>
-              <Link href="/ordinances/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/ordinances/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first ordinance  
               </Link>
             </div>
@@ -758,7 +761,7 @@
             <div v-if="recentResolutions.length === 0" class="text-center py-8">
               <DocsIcon class="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p class="text-gray-500 dark:text-gray-400">No resolutions found</p>
-              <Link href="/resolutions/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/resolutions/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first resolution  
               </Link>
             </div>
@@ -795,7 +798,7 @@
             <div v-if="!recentOrdinanceDrafts || recentOrdinanceDrafts.length === 0" class="text-center py-8">
               <DraftIcon class="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p class="text-gray-500 dark:text-gray-400">No ordinance drafts found</p>
-              <Link href="/draft-ordinances/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/draft-ordinances/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first ordinance draft  
               </Link>
             </div>
@@ -832,7 +835,7 @@
             <div v-if="!recentResolutionDrafts || recentResolutionDrafts.length === 0" class="text-center py-8">
               <DraftIcon class="w-12 h-12 text-gray-300 mx-auto mb-3" />
               <p class="text-gray-500 dark:text-gray-400">No resolution drafts found</p>
-              <Link href="/draft-resolutions/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/draft-resolutions/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first resolution draft  
               </Link>
             </div>
@@ -867,7 +870,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <p class="text-gray-500 dark:text-gray-400">No accomplishments found</p>
-              <Link href="/accomplishments/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/accomplishments/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first accomplishment  
               </Link>
             </div>
@@ -902,7 +905,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
               <p class="text-gray-500 dark:text-gray-400">No projects found</p>
-              <Link href="/projects/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/projects/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first project  
               </Link>
             </div>
@@ -937,7 +940,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p class="text-gray-500 dark:text-gray-400">No MOAs found</p>
-              <Link href="/memorandum-of-agreements/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/memorandum-of-agreements/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first MOA  
               </Link>
             </div>
@@ -972,14 +975,14 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
               <p class="text-gray-500 dark:text-gray-400">No committee reports found</p>
-              <Link href="/committee-reports/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
+              <Link v-if="!isReadOnlyUser" href="/committee-reports/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
                 Create your first report  
               </Link>
             </div>
           </div>
 
           <!-- System Logs Tab Content -->
-          <div v-if="!isStaff" v-show="activeTab === 'systemlogs'" class="space-y-4">
+          <div v-if="!isReadOnlyUser" v-show="activeTab === 'systemlogs'" class="space-y-4">
             <div v-for="log in recentSystemLogs.slice(0, 5)" :key="log.id" class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div class="flex-shrink-0">
                 <div :class="[
@@ -1168,9 +1171,11 @@ const {
 const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
 const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
+const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
+const isReadOnlyUser = computed(() => isStaff.value || isLegislator.value)
 
-watch([isStaff, activeTab], ([staff, tab]) => {
-  if (staff && tab === 'systemlogs') {
+watch([isReadOnlyUser, activeTab], ([readOnly, tab]) => {
+  if (readOnly && tab === 'systemlogs') {
     activeTab.value = 'ordinances'
   }
 }, { immediate: true })
