@@ -59,11 +59,11 @@
             </svg>
           </div>
           <h1 class="text-5xl font-black text-white mb-3 tracking-tight">
-            Archival Management
+            Recording & Archival Management System
           </h1>
-          <p class="text-slate-300 text-xl font-medium leading-relaxed">
+          <!-- <p class="text-slate-300 text-xl font-medium leading-relaxed">
             Secure Document Management System
-          </p>
+          </p> -->
         </div>
 
         <!-- Enhanced Features -->
@@ -108,7 +108,7 @@
 
       <div class="relative z-10">
         <p class="text-slate-400 text-base font-medium">
-          © 2025 Archival Management System. All rights reserved.
+          © 2025 Zamboanga Sibugay. All rights reserved.
         </p>
       </div>
     </div>
