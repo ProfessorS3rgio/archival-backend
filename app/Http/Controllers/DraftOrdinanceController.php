@@ -286,8 +286,7 @@ class DraftOrdinanceController extends Controller
     protected function mapFilesForResponse($files): array
     {
         return $files->map(function ($file) {
-            $relativePath = ltrim($file->file_url, '/');
-            $downloadUrl = url("/storage/{$relativePath}");
+            $downloadUrl = route('download', ['type' => 'draft-ordinance', 'id' => $file->file_id]);
 
             return [
                 'id' => $file->file_id,

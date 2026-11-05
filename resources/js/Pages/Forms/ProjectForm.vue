@@ -281,7 +281,7 @@
                   </div>
                 </div>
                 <a
-                  :href="'/download/project/' + project.project_id + '/' + encodeURIComponent(project.file_url)"
+                  :href="'/download/project/' + project.project_id"
                   target="_blank"
                   class="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700"
                 >
@@ -390,7 +390,7 @@
         <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             type="submit"
-            :disabled="loading"
+            :disabled="loading || processingFiles.some(Boolean)"
             class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
           >
             <svg v-if="loading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -402,6 +402,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -409,13 +410,14 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
-import axios from 'axios'
 
 // Props
 const props = defineProps({
@@ -443,6 +445,8 @@ const form = useForm({
   files: [], // Add files array for composable compatibility
   extracted_text: '',
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 // Use the file upload composable (no auto-fill for projects)
 const {
@@ -476,6 +480,7 @@ const formText = computed(() => ({
 
 // Submit form
 const submit = async () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   loading.value = true
 
   // Handle custom source fund
@@ -522,7 +527,7 @@ const submit = async () => {
       console.log('Submitting UPDATE with extracted_text:', extractedText.substring(0, 100) + '...')
       formData.append('_method', 'PUT')
       
-      axios.post(`/projects/${props.project.project_id}`, formData)
+      submitUpload(`/projects/${props.project.project_id}`, formData)
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
@@ -536,7 +541,7 @@ const submit = async () => {
       // Create new project
       console.log('Submitting CREATE with extracted_text:', extractedText.substring(0, 100) + '...')
       
-      axios.post('/projects', formData)
+      submitUpload('/projects', formData)
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           form.reset()

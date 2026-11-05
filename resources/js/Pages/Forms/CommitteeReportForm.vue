@@ -311,7 +311,7 @@
         <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             type="submit"
-            :disabled="processing"
+            :disabled="processing || processingFiles.some(Boolean)"
             class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
           >
             <svg v-if="processing" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -326,6 +326,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -333,6 +334,8 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
@@ -369,6 +372,8 @@ const form = useForm({
   files: [],
   extracted_text: '',
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 const processing = computed(() => form.processing)
 const errors = computed(() => form.errors)
@@ -413,6 +418,7 @@ const removeExistingFile = () => {
 }
 
 const submit = () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   // Handle custom subject
   if (form.subject === 'Others (Please specify)' && customSubject.value) {
     form.subject = customSubject.value
@@ -448,7 +454,7 @@ const submit = () => {
     console.log('Submitting UPDATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
     formData.append('_method', 'PUT');
     
-    axios.post(`/committee-reports/${props.report.report_id}`, formData)
+    submitUpload(`/committee-reports/${props.report.report_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         window.location.href = '/committee-reports';
@@ -460,7 +466,7 @@ const submit = () => {
     // Create new report
     console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
     
-    axios.post('/committee-reports', formData)
+    submitUpload('/committee-reports', formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         window.location.href = '/committee-reports';

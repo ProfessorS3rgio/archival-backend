@@ -6,7 +6,8 @@
         "dev": "concurrently \"npm run dev:vite\" \"npm run dev:laravel\"",
         "dev:vite": "vite",
         "dev:laravel": "php artisan serve",
-        "build": "vite build"
+        "build": "vite build",
+        "test:upload": "node --test tests/js/upload-submission.test.mjs"
     },
     "devDependencies": {
         "@tailwindcss/vite": "^4.0.0",

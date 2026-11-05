@@ -148,10 +148,7 @@ Route::middleware('auth')->group(function () {
     })->where('filename', '.*')->name('serve-file');
 
     // Download files with logging
-    Route::get('/download/{type}/{id}/{filename}', function ($type, $id, $filename) {
-        // URL decode the filename parameter
-        $filename = urldecode($filename);
-        
+    Route::get('/download/{type}/{id}/{filename?}', function ($type, $id, $filename = null) {
         // Map type to model
         $modelMap = [
             'ordinance' => \App\Models\OrdinanceFile::class,
@@ -162,18 +159,17 @@ Route::middleware('auth')->group(function () {
             'project' => \App\Models\Project::class,
             'memorandum-of-agreement' => \App\Models\MemorandumOfAgreement::class,
             'committee-report' => \App\Models\CommitteeReport::class,
+            'municipal-communication' => \App\Models\MunicipalitiesCommunicationList::class,
+            'national-office-communication' => \App\Models\NationalOfficeCommunicationList::class,
+            'provincial-office' => \App\Models\ProvincialOffice::class,
         ];
 
-        if (!isset($modelMap[$type])) {
-            return Inertia::render('Errors/404');
-        }
+        abort_unless(isset($modelMap[$type]), 404);
 
         $modelClass = $modelMap[$type];
         $file = $modelClass::find($id);
 
-        if (!$file) {
-            return Inertia::render('Errors/404');
-        }
+        abort_unless($file && $file->file_url, 404);
 
         // Log the download
         \App\Services\LoggingService::logDownload(

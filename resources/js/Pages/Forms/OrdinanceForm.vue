@@ -420,7 +420,7 @@
           </Link>
           <button
             type="submit"
-            :disabled="processing"
+            :disabled="processing || processingFiles.some(Boolean)"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <svg v-if="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -437,6 +437,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -444,6 +445,8 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
@@ -451,7 +454,6 @@ import { Link } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
-import axios from 'axios'
 
 const page = usePage()
 
@@ -501,6 +503,8 @@ const form = useForm({
   file_extracted_texts: [],
   remove_files: [] // Track files to be removed
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 // Use the file upload composable
 const {
@@ -555,6 +559,7 @@ const removeExistingFile = (fileId) => {
 }
 
 const submit = () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   form.added_by = page.props.auth?.user?.id || 1 // Get current user ID from Inertia page props
   // Ensure form type matches the route (municipal vs provincial)
   form.is_municipal = isMunicipalForm.value
@@ -625,7 +630,7 @@ const submit = () => {
     formData.append('_method', 'PUT');
     
     // Submit using Axios directly
-    axios.post(`/ordinances/${props.ordinance.ordinance_id}`, formData)
+    submitUpload(`/ordinances/${props.ordinance.ordinance_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         router.visit('/ordinances')
@@ -650,7 +655,7 @@ const submit = () => {
     console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
     
     // Submit using Axios directly
-    axios.post('/ordinances', formData)
+    submitUpload('/ordinances', formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         // Reset form on success

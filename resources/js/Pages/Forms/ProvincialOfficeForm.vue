@@ -317,7 +317,7 @@
           </Link>
           <button
             type="submit"
-            :disabled="processing"
+            :disabled="processing || processingFiles.some(Boolean)"
             class="inline-flex items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <svg v-if="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -334,6 +334,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -341,13 +342,14 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted, onMounted, watch } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
-import axios from 'axios'
 
 const page = usePage()
 
@@ -374,6 +376,8 @@ const form = useForm({
   files: [],
   extracted_text: ''
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 // Custom provincial office for "Others" option
 const customProvincialOffice = ref('')
@@ -453,6 +457,7 @@ const removeExistingFile = () => {
 
 // Submit form
 const submit = async () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   // Clear previous errors
   form.errors = {}
   
@@ -539,7 +544,7 @@ const submit = async () => {
     formData.append('_method', 'PUT')
 
     // Submit using Axios directly
-    axios.post(submitUrl, formData)
+    submitUpload(submitUrl, formData)
       .then(response => {
         console.log('Form submitted successfully')
         router.visit('/provincial-offices')
@@ -570,7 +575,7 @@ const submit = async () => {
       formData.append('extracted_text', form.extracted_text)
     }
 
-    axios.post(submitUrl, formData)
+    submitUpload(submitUrl, formData)
       .then(response => {
         console.log('Form submitted successfully')
         // Reset form on success

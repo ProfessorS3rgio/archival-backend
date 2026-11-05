@@ -95,7 +95,7 @@
               </div>
             </div>
             <a
-              :href="`/serve-file/${communication.file_url}`"
+              :href="`/download/provincial-office/${communication.provincial_offices_list_id}`"
               target="_blank"
               download
               class="inline-flex items-center px-3 py-1 border border-gray-300 dark:border-gray-600 text-sm leading-4 font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

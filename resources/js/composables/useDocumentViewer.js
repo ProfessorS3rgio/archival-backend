@@ -42,13 +42,13 @@ export function useDocumentViewer(props, documentType = 'resolution') {
    * Normalize files from different sources into consistent format
    */
   const normalizedFiles = computed(() => {
-    const sourceFiles = props.files.length ? props.files : document.value.files || []
+    const sourceFiles = props.files?.length ? props.files : document.value.files || []
     const fileIdKey = `${documentType}_file_id`
     
     return sourceFiles.map((file) => {
       const fileId = file.file_id || file.id || file[fileIdKey]
       const previewUrl = file.preview_url || `${baseUrl.value}/serve-file/${file.file_url}`
-      const downloadUrl = file.download_url || `${baseUrl.value}/storage/${file.file_url}`
+      const downloadUrl = file.download_url || `${baseUrl.value}/download/${documentType}/${fileId}`
       const fileName = file.file_name || file.name
       const fileType = file.file_type || ''
       const sizeBytes = file.file_size ?? file.size

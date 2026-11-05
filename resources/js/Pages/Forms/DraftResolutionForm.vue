@@ -341,7 +341,7 @@
           </Link>
           <button
             type="submit"
-            :disabled="processing"
+            :disabled="processing || processingFiles.some(Boolean)"
             class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
           >
             <span v-if="processing">Saving...</span>
@@ -350,6 +350,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -357,13 +358,14 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
-import axios from 'axios'
 
 const page = usePage()
 
@@ -392,6 +394,8 @@ const form = useForm({
   extracted_text: [],
   remove_files: [] // Track files to be removed
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 // Use the file upload composable
 const {
@@ -433,6 +437,7 @@ const removeExistingFile = (fileId) => {
 }
 
 const submit = () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   form.added_by = page.props.auth?.user?.id || 1
 
   // Prepare extracted text data
@@ -476,7 +481,7 @@ const submit = () => {
     formData.append('_method', 'PUT');
 
     // Submit using Axios directly
-    axios.post(`/draft-resolutions/${props.draft.resolution_draft_id}`, formData)
+    submitUpload(`/draft-resolutions/${props.draft.resolution_draft_id}`, formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         router.visit('/draft-resolutions');
@@ -488,7 +493,7 @@ const submit = () => {
     // Create new draft resolution
     console.log('Submitting CREATE with extracted_text:', concatenatedExtractedText.substring(0, 100) + '...')
 
-    axios.post('/draft-resolutions', formData)
+    submitUpload('/draft-resolutions', formData)
       .then(response => {
         console.log('Form submitted successfully:', response.data);
         // Reset form on success

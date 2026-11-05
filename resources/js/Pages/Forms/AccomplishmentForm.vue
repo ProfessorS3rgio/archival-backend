@@ -122,7 +122,7 @@
                     </div>
                   </div>
                   <a
-                    :href="`${baseUrl}/download/accomplishment/${accomplishment.accomplish_id}/${accomplishment.file_name}`"
+                    :href="`${baseUrl}/download/accomplishment/${accomplishment.accomplish_id}`"
                     class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                     target="_blank"
                   >
@@ -231,7 +231,7 @@
         <div class="flex justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
           <button
             type="submit"
-            :disabled="loading"
+            :disabled="loading || processingFiles.some(Boolean)"
             class="inline-flex items-center px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed"
           >
             <svg v-if="loading" class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -243,6 +243,7 @@
         </div>
       </form>
     </div>
+    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->
@@ -250,13 +251,14 @@
 </template>
 
 <script setup>
+import UploadStatus from '@/Components/UploadStatus.vue'
+import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, router } from '@inertiajs/vue3'
 import { Link } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
-import axios from 'axios'
 
 // Props
 const props = defineProps({
@@ -277,6 +279,8 @@ const form = useForm({
   file: null,
   extracted_text: '',
 })
+
+const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
 // Use the file upload composable (no auto-fill for accomplishments)
 const {
@@ -308,6 +312,7 @@ const formText = computed(() => ({
 
 // Submit form
 const submit = async () => {
+  if (form.processing || processingFiles.value.some(Boolean)) return
   loading.value = true
 
   // Collect extracted text from preview objects if file was uploaded
@@ -338,7 +343,7 @@ const submit = async () => {
       console.log('Submitting UPDATE with extracted_text:', extractedText.substring(0, 100) + '...')
       formData.append('_method', 'PUT')
       
-      axios.post(`/accomplishments/${props.accomplishment.accomplish_id}`, formData)
+      submitUpload(`/accomplishments/${props.accomplishment.accomplish_id}`, formData)
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           cleanupAllPreviews()
@@ -352,7 +357,7 @@ const submit = async () => {
       // Create new accomplishment
       console.log('Submitting CREATE with extracted_text:', extractedText.substring(0, 100) + '...')
       
-      axios.post('/accomplishments', formData)
+      submitUpload('/accomplishments', formData)
         .then(response => {
           console.log('Form submitted successfully:', response.data)
           // Reset form on success
