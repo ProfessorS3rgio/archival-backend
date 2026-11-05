@@ -291,7 +291,6 @@ class MunicipalitiesCommunicationListController extends Controller
         // Log the download
         LoggingService::logView($municipalCommunication, "Downloaded municipal communication file: {$municipalCommunication->title}");
 
-        $filePath = Storage::disk('private')->path($municipalCommunication->file_url);
-        return response()->download($filePath, $municipalCommunication->file_name);
+        return Storage::disk('private')->download($municipalCommunication->file_url, $municipalCommunication->file_name);
     }
 }

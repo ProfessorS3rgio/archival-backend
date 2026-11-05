@@ -228,7 +228,6 @@ class AccomplishmentController extends Controller
         // Log the download
         LoggingService::logView($accomplishment, "Downloaded accomplishment file: {$accomplishment->title}");
 
-        $filePath = Storage::disk('private')->path($accomplishment->file_url);
-        return response()->download($filePath, $accomplishment->file_name);
+        return Storage::disk('private')->download($accomplishment->file_url, $accomplishment->file_name);
     }
 }

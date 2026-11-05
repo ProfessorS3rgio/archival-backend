@@ -25,29 +25,7 @@ Route::match(['GET', 'HEAD'], '/public/serve-file/{filename}', function ($filena
         abort(404);
     }
 
-    $path = storage_path('app/private/' . $filename);
-
-    if (!file_exists($path)) {
-        abort(404);
-    }
-
-    $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-    $mime = mime_content_type($path);
-
-    if ($extension === 'pdf') {
-        $mime = 'application/pdf';
-    } elseif ($extension === 'docx') {
-        $mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    } elseif ($extension === 'doc') {
-        $mime = 'application/msword';
-    }
-
-    $headers = [
-        'Content-Type' => $mime,
-        'Content-Disposition' => 'inline',
-    ];
-
-    return response()->file($path, $headers);
+    return app(\App\Http\Controllers\FileController::class)->servePrivateFile($filename);
 })
     ->where('filename', '.*')
     ->middleware('signed')
@@ -166,32 +144,7 @@ Route::middleware('auth')->group(function () {
 
     // Serve files securely
     Route::get('/serve-file/{filename}', function ($filename) {
-        $path = storage_path('app/private/' . $filename);
-
-        if (!file_exists($path)) {
-            return Inertia::render('Errors/404');
-        }
-
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $mime = mime_content_type($path);
-
-        // Override mime for common types if detection fails
-        if ($extension === 'pdf') {
-            $mime = 'application/pdf';
-        } elseif ($extension === 'docx') {
-            $mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        } elseif ($extension === 'doc') {
-            $mime = 'application/msword';
-        }
-
-        $headers = ['Content-Type' => $mime];
-
-        // For PDFs, use inline disposition to display in browser
-        if ($mime === 'application/pdf') {
-            $headers['Content-Disposition'] = 'inline';
-        }
-
-        return response()->file($path, $headers);
+        return app(\App\Http\Controllers\FileController::class)->servePrivateFile($filename);
     })->where('filename', '.*')->name('serve-file');
 
     // Download files with logging
@@ -228,30 +181,7 @@ Route::middleware('auth')->group(function () {
             "Downloaded file: {$file->file_name}"
         );
 
-        $path = storage_path('app/private/' . $filename);
-
-        if (!file_exists($path)) {
-            return Inertia::render('Errors/404');
-        }
-
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        $mime = mime_content_type($path);
-
-        // Override mime for common types if detection fails
-        if ($extension === 'pdf') {
-            $mime = 'application/pdf';
-        } elseif ($extension === 'docx') {
-            $mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-        } elseif ($extension === 'doc') {
-            $mime = 'application/msword';
-        }
-
-        $headers = [
-            'Content-Type' => $mime,
-            'Content-Disposition' => 'attachment; filename="' . $file->file_name . '"'
-        ];
-
-        return response()->file($path, $headers);
+        return app(\App\Http\Controllers\FileController::class)->servePrivateFile($file->file_url, $file->file_name);
     })->where('filename', '.*')->name('download');
 });
 

@@ -12,6 +12,28 @@ use Smalot\PdfParser\Parser;
 
 class FileController extends Controller
 {
+    public function servePrivateFile(string $filename, ?string $downloadName = null)
+    {
+        abort_if(Str::contains($filename, ['..', '\\']), 404);
+
+        $disk = Storage::disk('private');
+        abort_unless($disk->exists($filename), 404);
+
+        $mime = match (strtolower(pathinfo($filename, PATHINFO_EXTENSION))) {
+            'pdf' => 'application/pdf',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc' => 'application/msword',
+            default => $disk->mimeType($filename) ?: 'application/octet-stream',
+        };
+
+        return $disk->response(
+            $filename,
+            $downloadName ?? basename($filename),
+            ['Content-Type' => $mime, 'Cache-Control' => 'private, no-store'],
+            $downloadName === null ? 'inline' : 'attachment',
+        );
+    }
+
     public function previewUpload(Request $request)
     {
         $request->validate([
@@ -27,7 +49,7 @@ class FileController extends Controller
         $name = (string) Str::uuid() . '.' . $extension;
 
         // Store inside private disk under temp-previews/...
-        $storedPath = $file->storeAs('temp-previews', $name, 'local');
+        $storedPath = $file->storeAs('temp-previews', $name, 'private');
 
         $expiresAt = now()->addMinutes(10);
         $signedUrl = URL::temporarySignedRoute('public-serve-file', $expiresAt, [

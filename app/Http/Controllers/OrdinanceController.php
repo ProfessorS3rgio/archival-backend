@@ -204,13 +204,13 @@ class OrdinanceController extends Controller
                 }
                 $fullPath = 'ordinances/' . $folder . '/' . $fileName;
                 
-                while (Storage::disk('local')->exists($fullPath)) {
+                while (Storage::disk('private')->exists($fullPath)) {
                     $fileName = $baseName . '_' . $counter . '.' . $extension;
                     $fullPath = 'ordinances/' . $folder . '/' . $fileName;
                     $counter++;
                 }
                 
-                $path = $file->storeAs('ordinances/' . $folder, $fileName, 'local');
+                $path = $file->storeAs('ordinances/' . $folder, $fileName, 'private');
 
                 // Get per-file extracted text from file_extracted_texts array
                 $fileExtractedTexts = $request->input('file_extracted_texts', []);
@@ -374,10 +374,10 @@ class OrdinanceController extends Controller
                 \Log::info('Attempting to remove ordinance file', ['file_id' => $fileId]);
                 $file = \App\Models\OrdinanceFile::find($fileId);
                 if ($file && (string)$file->ordinance_id === (string)$id) {
-                    $exists = Storage::disk('public')->exists($file->file_url);
+                    $exists = Storage::disk('private')->exists($file->file_url);
                     \Log::info('File found for deletion', ['path' => $file->file_url, 'exists' => $exists]);
                     if ($exists) {
-                        Storage::disk('public')->delete($file->file_url);
+                        Storage::disk('private')->delete($file->file_url);
                     }
                     $file->delete();
                     \Log::info('Ordinance file record deleted');
@@ -413,13 +413,13 @@ class OrdinanceController extends Controller
                 }
                 $fullPath = 'ordinances/' . $folder . '/' . $fileName;
                 
-                while (Storage::disk('local')->exists($fullPath)) {
+                while (Storage::disk('private')->exists($fullPath)) {
                     $fileName = $baseName . '_' . $counter . '.' . $extension;
                     $fullPath = 'ordinances/' . $folder . '/' . $fileName;
                     $counter++;
                 }
                 
-                $path = $file->storeAs('ordinances/' . $folder, $fileName, 'local');
+                $path = $file->storeAs('ordinances/' . $folder, $fileName, 'private');
 
                     // Get per-file extracted text from file_extracted_texts array
                     $fileExtractedTexts = $request->input('file_extracted_texts', []);

@@ -197,13 +197,13 @@ class ResolutionController extends Controller
                 }
                 $fullPath = 'resolutions/' . $folder . '/' . $fileName;
                 
-                while (Storage::disk('local')->exists($fullPath)) {
+                while (Storage::disk('private')->exists($fullPath)) {
                     $fileName = $baseName . '_' . $counter . '.' . $extension;
                     $fullPath = 'resolutions/' . $folder . '/' . $fileName;
                     $counter++;
                 }
                 
-                $path = $file->storeAs('resolutions/' . $folder, $fileName, 'local');
+                $path = $file->storeAs('resolutions/' . $folder, $fileName, 'private');
 
                 // Get per-file extracted text from file_extracted_texts array
                 $fileExtractedTexts = $request->input('file_extracted_texts', []);
@@ -392,10 +392,10 @@ class ResolutionController extends Controller
                 \Log::info('Attempting to remove resolution file', ['file_id' => $fileId]);
                 $file = \App\Models\ResolutionFile::find($fileId);
                 if ($file && (string)$file->resolution_id === (string)$id) {
-                    $exists = Storage::disk('public')->exists($file->file_url);
+                    $exists = Storage::disk('private')->exists($file->file_url);
                     \Log::info('File found for deletion', ['path' => $file->file_url, 'exists' => $exists]);
                     if ($exists) {
-                        Storage::disk('public')->delete($file->file_url);
+                        Storage::disk('private')->delete($file->file_url);
                     }
                     $file->delete();
                     \Log::info('Resolution file record deleted');
@@ -420,13 +420,13 @@ class ResolutionController extends Controller
                 $folder = $resolution->is_municipal ? 'municipal' : 'provincial';
                 $fullPath = 'resolutions/' . $folder . '/' . $fileName;
                 
-                while (Storage::disk('local')->exists($fullPath)) {
+                while (Storage::disk('private')->exists($fullPath)) {
                     $fileName = $baseName . '_' . $counter . '.' . $extension;
                     $fullPath = 'resolutions/' . $folder . '/' . $fileName;
                     $counter++;
                 }
                 
-                $path = $file->storeAs('resolutions/' . $folder, $fileName, 'local');
+                $path = $file->storeAs('resolutions/' . $folder, $fileName, 'private');
 
                 // Get per-file extracted text from file_extracted_texts array
                 $fileExtractedTexts = $request->input('file_extracted_texts', []);
