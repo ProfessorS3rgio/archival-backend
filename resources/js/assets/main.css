@@ -22,6 +22,34 @@ layer(base);
   white-space: nowrap;
 }
 
+/* Opaque cells keep pinned actions readable without changing the row color. */
+.record-table {
+  --record-surface: var(--color-white);
+  --record-header: var(--color-gray-50);
+}
+
+.dark .record-table {
+  --record-surface: color-mix(in srgb, var(--color-white) 3%, var(--color-gray-900));
+  --record-header: color-mix(in srgb, var(--color-gray-800) 50%, var(--record-surface));
+}
+
+.record-table thead th {
+  background-color: var(--record-header);
+}
+
+.record-table tbody tr {
+  --record-row-background: var(--record-surface);
+}
+
+.record-table tbody tr:hover {
+  --record-row-background: var(--record-header);
+}
+
+.record-table tbody td {
+  background-color: var(--record-row-background);
+  transition: background-color 200ms;
+}
+
 .admin-content [aria-label="Breadcrumb"] ol {
   flex-wrap: wrap;
   row-gap: 0.5rem;

@@ -165,33 +165,42 @@
           </div>
         </div>
         <div class="overflow-x-auto">
-          <table class="w-full">
+          <table class="record-table w-full min-w-[960px] table-fixed">
+            <colgroup>
+              <col style="width: 112px" />
+              <col />
+              <col style="width: 144px" />
+              <col style="width: 128px" />
+              <col style="width: 128px" />
+              <col style="width: 148px" />
+              <col style="width: 144px" />
+            </colgroup>
             <thead class="bg-gray-50 dark:bg-gray-800/50">
               <tr>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Draft No.</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Draft No.</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
+                <th class="sticky right-0 z-10 px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
               <tr v-for="draft in filteredDrafts" :key="draft.resolution_draft_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   <span v-html="highlightText(draft.resolution_draft_id, searchQuery)"></span>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
+                <td class="px-4 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate" :title="draft.title">
                   <span v-html="highlightText(draft.title || 'Untitled Draft Resolution', searchQuery)"></span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 [overflow-wrap:anywhere]">
                   <span v-html="highlightText(draft.author, searchQuery)"></span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(draft.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-4 whitespace-nowrap">
                   <span
                     :class="[
                       'inline-flex px-2 py-1 text-xs font-medium rounded-full',
@@ -203,28 +212,10 @@
                     {{ formatStatus(draft.status) }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                  <div v-if="draft.files && draft.files.length > 0" class="flex flex-wrap gap-1">
-                    <a
-                      v-for="file in draft.files"
-                      :key="file.draft_resolution_file_id"
-                      :href="`/serve-file/${encodeURIComponent(file.file_url)}`"
-                      target="_blank"
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400 rounded-full hover:bg-purple-200 dark:hover:bg-purple-800/30 transition-colors"
-                      :title="file.file_name"
-                    >
-                      <svg v-if="file.file_type?.includes('pdf')" class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                      </svg>
-                      <svg v-else class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-                      </svg>
-                      {{ truncateFileName(file.file_name) }}
-                    </a>
-                  </div>
-                  <span v-else class="text-gray-400">No files</span>
+                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <RecordFiles :files="draft.files || []" :record-label="`Draft resolution ${draft.resolution_draft_id}`" />
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td class="sticky right-0 z-10 px-4 py-4 whitespace-nowrap text-sm font-medium shadow-[-6px_0_12px_-10px_rgba(15,23,42,0.4)]">
                   <div class="flex items-center space-x-2">
                     <Link
                       :href="`/draft-resolutions/${draft.resolution_draft_id}`"
@@ -295,6 +286,7 @@ import { Link, usePage } from '@inertiajs/vue3'
 import { router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import SearchBar from '@/Components/SearchBar.vue'
+import RecordFiles from '@/Components/RecordFiles.vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { DraftIcon, CalenderIcon } from '@/icons'
 import Swal from 'sweetalert2'
@@ -407,15 +399,6 @@ const formatStatus = (status) => {
   return status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
-const truncateFileName = (fileName) => {
-  if (!fileName) return ''
-  // Remove file extension
-  const nameWithoutExt = fileName.replace(/\.[^/.]+$/, '')
-  // If name is short, return as is
-  if (nameWithoutExt.length <= 15) return nameWithoutExt
-  // Truncate and add ellipsis
-  return nameWithoutExt.substring(0, 12) + '...'
-}
 
 const deleteDraft = (draftId) => {
   Swal.fire({
