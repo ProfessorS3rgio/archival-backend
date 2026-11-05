@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
 
-export function useUploadSubmission(form, { request = axios.post, successDelay = 800 } = {}) {
+export function useUploadSubmission(form, { request = axios.post, successDelay = 1400 } = {}) {
   const uploadState = ref('idle')
   const uploadProgress = ref(null)
   const uploadMessage = ref('')

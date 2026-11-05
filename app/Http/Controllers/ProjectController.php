@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrivateDocumentDeletion;
+
 use App\Models\Project;
 use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
@@ -237,10 +239,12 @@ class ProjectController extends Controller
             return redirect()->back()->with('error', 'You do not have permission to delete this document.');
         }
 
-        // Log the deletion
-        LoggingService::logDelete($project, "Deleted project: {$project->project_name}");
-
-        $project->delete();
+        try {
+            app(PrivateDocumentDeletion::class)->delete($project);
+        } catch (\Throwable $error) {
+            report($error);
+            return redirect()->back()->with('error', 'The document could not be fully deleted. Its record was kept so you can retry.');
+        }
 
         return redirect()->route('projects.index')
             ->with('success', 'Project deleted successfully.');

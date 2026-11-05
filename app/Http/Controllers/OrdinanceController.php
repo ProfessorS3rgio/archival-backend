@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrivateDocumentDeletion;
+
 use App\Models\Ordinance;
 use App\Models\OrdinanceFile;
 use App\Services\DocumentFilterService;
@@ -461,7 +463,12 @@ class OrdinanceController extends Controller
             return redirect()->back()->with('error', 'You do not have permission to delete this document.');
         }
 
-        $ordinance->delete();
+        try {
+            app(PrivateDocumentDeletion::class)->delete($ordinance);
+        } catch (\Throwable $error) {
+            report($error);
+            return redirect()->back()->with('error', 'The document could not be fully deleted. Its record was kept so you can retry.');
+        }
 
         return redirect()->back()->with('success', 'Ordinance deleted successfully!');
     }

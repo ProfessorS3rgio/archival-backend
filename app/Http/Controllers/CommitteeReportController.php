@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrivateDocumentDeletion;
+
 use App\Models\CommitteeReport;
 use App\Models\Committee;
 use Illuminate\Http\Request;
@@ -209,7 +211,12 @@ class CommitteeReportController extends Controller
             return redirect()->back()->with('error', 'You do not have permission to delete this document.');
         }
 
-        $report->delete();
+        try {
+            app(PrivateDocumentDeletion::class)->delete($report);
+        } catch (\Throwable $error) {
+            report($error);
+            return redirect()->back()->with('error', 'The document could not be fully deleted. Its record was kept so you can retry.');
+        }
 
         return redirect()->route('committee-reports.index')->with('success', 'Committee report deleted successfully.');
     }

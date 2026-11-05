@@ -37,3 +37,16 @@ as part of a routine code update.
 `public/build` is generated on the server and ignored by Git. Keep runtime
 storage, installed dependencies, certificates, and production credentials on
 the server. `/root/archival-backend` is an older checkout and is not the live app.
+
+The host Nginx configuration is tracked at `deploy/nginx/archival-backend.conf`.
+When that file changes, apply it after pulling:
+
+```sh
+cp /etc/nginx/sites-available/archival-backend /root/archival-nginx.previous.conf
+install -m 644 deploy/nginx/archival-backend.conf /etc/nginx/sites-available/archival-backend
+nginx -t && systemctl reload nginx
+```
+
+The default HTTP host redirects the droplet IP and other hostnames to
+`https://sibugaydevgroup.tech`, preserving the path and query string. This
+redirect does not hide the origin IP or restrict origin access to Cloudflare.

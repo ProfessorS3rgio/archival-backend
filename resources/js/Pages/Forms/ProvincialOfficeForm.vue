@@ -334,7 +334,7 @@
         </div>
       </form>
     </div>
-    <UploadStatus :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
+    <UploadStatus @dismiss="uploadState = 'idle'" :state="uploadState" :progress="uploadProgress" :message="uploadMessage" />
   </AdminLayout>
 
   <!-- Floating Developer Footer -->

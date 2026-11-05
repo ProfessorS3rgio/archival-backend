@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\PrivateDocumentDeletion;
+
 use App\Models\Resolution;
 use App\Models\ResolutionFile;
 use App\Services\DocumentFilterService;
@@ -460,7 +462,16 @@ class ResolutionController extends Controller
     {
         $resolution = Resolution::findOrFail($id);
 
-        $resolution->delete();
+        if (!$this->canDeleteDocument($resolution)) {
+            return redirect()->back()->with('error', 'You do not have permission to delete this document.');
+        }
+
+        try {
+            app(PrivateDocumentDeletion::class)->delete($resolution);
+        } catch (\Throwable $error) {
+            report($error);
+            return redirect()->back()->with('error', 'The document could not be fully deleted. Its record was kept so you can retry.');
+        }
 
         return redirect()->back()->with('success', 'Resolution deleted successfully!');
     }
