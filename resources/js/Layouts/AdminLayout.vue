@@ -1,10 +1,19 @@
 <template>
   <div class="min-h-screen xl:flex bg-gray-50 dark:bg-gray-900">
-    <AppSidebar />
+    <button
+      v-if="isMobileOpen"
+      class="fixed inset-0 z-40 bg-black/50 lg:hidden"
+      aria-label="Close navigation"
+      @click="closeMobileMenu"
+      tabindex="-1"
+    />
+    <AppSidebar :is-mobile-open="isMobileOpen" :is-expanded="isExpanded" @close="closeMobileMenu" />
     <div
-      class="flex-1 transition-all duration-300 ease-in-out bg-gray-50 dark:bg-gray-900"
+      class="min-w-0 flex-1 transition-all duration-300 ease-in-out bg-gray-50 dark:bg-gray-900"
+      :class="isExpanded ? 'lg:ml-[290px]' : 'lg:ml-[90px]'"
+      :inert="isMobileOpen"
     >
-      <AppHeader :title="title" />
+      <AppHeader :title="title" :is-mobile-open="isMobileOpen" :is-expanded="isExpanded" @toggle-sidebar="toggleSidebar" />
       
       <Transition
         enter-active-class="transition ease-out duration-300"
@@ -48,11 +57,11 @@
         </div>
       </Transition>
 
-      <div class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 bg-gray-50 dark:bg-gray-900">
+      <main class="admin-content min-w-0 p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 bg-gray-50 dark:bg-gray-900">
         <slot></slot>
-      </div>
+      </main>
       <!-- Footer -->
-      <footer class="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 pt-0">
+      <footer class="p-4 pb-20 mx-auto max-w-(--breakpoint-2xl) md:px-6 pt-0">
         <p class="text-sm text-center text-gray-500 dark:text-gray-400">
           Archival Management System
         </p>
@@ -62,7 +71,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import AppHeader from '@/Components/AppHeader.vue'
 import AppSidebar from '@/Components/AppSidebar.vue'
@@ -75,6 +84,45 @@ defineProps({
 })
 
 const page = usePage()
+const isMobileOpen = ref(false)
+const isExpanded = ref(false)
+let previousOverflow = ''
+const closeMobileMenu = async () => {
+  if (!isMobileOpen.value) return
+  isMobileOpen.value = false
+  await nextTick()
+  document.getElementById('sidebar-toggle')?.focus()
+}
+const toggleSidebar = () => {
+  if (window.matchMedia('(min-width: 1024px)').matches) {
+    isExpanded.value = !isExpanded.value
+  } else if (isMobileOpen.value) {
+    closeMobileMenu()
+  } else {
+    isMobileOpen.value = true
+  }
+}
+const handleResize = () => {
+  if (window.innerWidth >= 1024) closeMobileMenu()
+}
+const handleKeydown = (event) => {
+  if (event.key === 'Escape') closeMobileMenu()
+}
+watch(isMobileOpen, async (open) => {
+  if (open) {
+    previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    await nextTick()
+    document.querySelector('#app-sidebar button')?.focus()
+  } else {
+    document.body.style.overflow = previousOverflow
+  }
+})
+watch(() => page.url, closeMobileMenu)
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleKeydown)
+})
 const showSuccessAlert = ref(false)
 const showErrorAlert = ref(false)
 const successMessage = ref('')
@@ -113,6 +161,9 @@ watch(() => page.props.flash, (flash) => {
 
 // Cleanup timeouts on unmount
 onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleKeydown)
+  if (isMobileOpen.value) document.body.style.overflow = previousOverflow
   if (successTimeout) clearTimeout(successTimeout)
   if (errorTimeout) clearTimeout(errorTimeout)
 })

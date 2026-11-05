@@ -5,6 +5,38 @@ layer(base);
 
 @custom-variant dark (&:is(.dark *));
 
+/* Keep long records inside their panels; tables scroll within their wrappers. */
+.admin-content {
+  overflow-wrap: anywhere;
+}
+
+.admin-content .overflow-x-auto {
+  max-width: 100%;
+}
+
+.admin-content .overflow-x-auto table {
+  overflow-wrap: normal;
+}
+
+.admin-content .overflow-x-auto th {
+  white-space: nowrap;
+}
+
+.admin-content [aria-label="Breadcrumb"] ol {
+  flex-wrap: wrap;
+  row-gap: 0.5rem;
+}
+
+@media (max-width: 639px) {
+  .admin-content input,
+  .admin-content select,
+  .admin-content textarea {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 1rem;
+  }
+}
+
 @theme {
   --font-*: initial;
   --font-outfit: Outfit, sans-serif;

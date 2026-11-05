@@ -7,7 +7,7 @@
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Draft Resolution Details</h1>
           <p class="text-gray-600 dark:text-gray-400">View and manage draft resolution information</p>
         </div>
-        <div class="flex gap-3">
+        <div class="flex flex-wrap gap-3">
           <Link
             v-if="currentUser.role === 'admin' || draft.added_by === currentUser.id"
             :href="`/draft-resolutions/${draft.resolution_draft_id}/edit`"
@@ -85,7 +85,7 @@
 
         <div v-if="draft.files && draft.files.length > 0" class="space-y-4">
           <div v-for="file in draft.files" :key="file.file_id" class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div class="flex items-center space-x-3">
                 <div class="flex-shrink-0">
                   <svg v-if="getFileTypeFromName(file.file_name) === 'pdf'" class="w-8 h-8 text-red-500" fill="currentColor" viewBox="0 0 20 20">

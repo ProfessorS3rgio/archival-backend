@@ -2,7 +2,7 @@
   <AdminLayout title="Manage SP Terms">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
-      <div class="flex items-center justify-between">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Sanggunian Panlalawigan Terms</h1>
           <p class="text-gray-600 dark:text-gray-400">Manage SP terms for the sidebar menu</p>
@@ -19,7 +19,7 @@
       </div>
 
       <!-- Terms Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead class="bg-gray-50 dark:bg-gray-900">
             <tr>
@@ -87,7 +87,7 @@
             />
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Start Year <span class="text-red-500">*</span>

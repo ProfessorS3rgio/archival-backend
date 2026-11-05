@@ -1,18 +1,24 @@
 <template>
   <aside
+    id="app-sidebar"
+    aria-label="Main navigation"
+    @keydown="trapMobileFocus"
     :class="[
-      'fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-99999 border-r border-gray-200',
+      'fixed flex flex-col top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-dvh transition-all duration-300 ease-in-out z-50 border-r border-gray-200 w-[290px] max-w-[calc(100vw-2rem)] lg:max-w-none',
       {
         'lg:w-[290px]': isExpanded || isMobileOpen || isHovered,
         'lg:w-[90px]': !isExpanded && !isHovered,
         'translate-x-0 w-[290px]': isMobileOpen,
-        '-translate-x-full': !isMobileOpen,
+        '-translate-x-full invisible lg:visible': !isMobileOpen,
         'lg:translate-x-0': true,
       },
     ]"
     @mouseenter="!isExpanded && (isHovered = true)"
     @mouseleave="isHovered = false"
   >
+    <button v-if="isMobileOpen" type="button" class="absolute right-3 top-3 p-2 lg:hidden" aria-label="Close navigation" @click="$emit('close')">
+      <span aria-hidden="true" class="text-2xl">&times;</span>
+    </button>
     <div
       :class="[
         'py-8 flex',
@@ -316,8 +322,22 @@ const shouldHideNavPath = (path) => {
   return false
 }
 
-const isExpanded = ref(false)
-const isMobileOpen = ref(false)
+const props = defineProps({ isExpanded: Boolean, isMobileOpen: Boolean })
+defineEmits(['close'])
+const trapMobileFocus = (event) => {
+  if (!props.isMobileOpen || event.key !== 'Tab') return
+  const controls = [...event.currentTarget.querySelectorAll('a[href], button:not([disabled])')]
+    .filter((element) => element.getClientRects().length > 0)
+  const first = controls[0]
+  const last = controls[controls.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last?.focus()
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first?.focus()
+  }
+}
 const isHovered = ref(false)
 const openSubmenu = ref(new Set())
 

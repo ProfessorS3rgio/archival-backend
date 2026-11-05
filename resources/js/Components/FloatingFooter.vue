@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'fixed bottom-0 left-0 right-0 z-50 transition-all duration-300 ease-in-out',
+      'fixed bottom-0 left-0 right-0 z-20 transition-all duration-300 ease-in-out',
       backgroundClass,
       show ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
     ]"

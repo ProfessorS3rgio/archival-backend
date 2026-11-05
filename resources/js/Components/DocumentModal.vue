@@ -26,7 +26,7 @@
         >
           <div
             v-if="show"
-            class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden"
+            class="relative bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90dvh] overflow-hidden"
             @click.stop
           >
             <!-- Close button -->
@@ -41,9 +41,9 @@
             </button>
 
             <!-- Scrollable content -->
-            <div class="overflow-y-auto max-h-[90vh]">
+            <div class="overflow-y-auto max-h-[90dvh]">
               <!-- Header -->
-              <div class="p-8 pb-6 border-b border-gray-200 dark:border-gray-700">
+              <div class="p-4 sm:p-8 pb-6 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex items-start space-x-4">
                   <div class="flex-shrink-0">
                     <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-2xl flex items-center justify-center shadow-lg">
@@ -62,17 +62,17 @@
               </div>
 
               <!-- Content -->
-              <div class="p-8">
+              <div class="p-4 sm:p-8">
                 <slot name="content">
                   <div v-if="document" class="space-y-6">
                     <!-- Ordinance & Resolution -->
                     <div v-if="type === 'ordinance' || type === 'resolution'" class="space-y-4">
-                      <div class="grid grid-cols-2 gap-4">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Number
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ document.ordinance_no || document.resolution_no || 'N/A' }}
                           </p>
                         </div>
@@ -80,7 +80,7 @@
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Author
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ document.author || 'N/A' }}
                           </p>
                         </div>
@@ -88,7 +88,7 @@
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Session
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ document.session || 'N/A' }}
                           </p>
                         </div>
@@ -96,7 +96,7 @@
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Date Approved
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ formatDate(document.date_approved) }}
                           </p>
                         </div>
@@ -113,12 +113,12 @@
 
                     <!-- Draft Ordinance & Resolution -->
                     <div v-else-if="type === 'draft-ordinance' || type === 'draft-resolution'" class="space-y-4">
-                      <div class="grid grid-cols-2 gap-4">
+                      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Author
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ document.author || 'N/A' }}
                           </p>
                         </div>
@@ -126,7 +126,7 @@
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Session
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ document.session || 'N/A' }}
                           </p>
                         </div>
@@ -134,7 +134,7 @@
                           <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                             Date Drafted
                           </label>
-                          <p class="text-base font-semibold text-gray-900 dark:text-white">
+                          <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                             {{ formatDate(document.date_drafted) }}
                           </p>
                         </div>
@@ -171,7 +171,7 @@
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">
                           Created
                         </label>
-                        <p class="text-base font-semibold text-gray-900 dark:text-white">
+                        <p class="break-words text-base font-semibold text-gray-900 dark:text-white">
                           {{ formatDate(document.created_at) }}
                         </p>
                       </div>

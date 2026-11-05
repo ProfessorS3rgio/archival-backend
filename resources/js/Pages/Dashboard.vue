@@ -336,7 +336,7 @@
               </div>
 
               <!-- Search and Filter -->
-              <div class="mt-4 flex flex-col sm:flex-row gap-3">
+              <div class="mt-4 flex min-w-0 flex-col flex-wrap sm:flex-row gap-3">
                 <div class="flex-1">
                   <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -564,9 +564,9 @@
       <!-- Recent Documents with Tabs -->
       <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <div class="flex items-center justify-between">
+          <div class="flex flex-wrap items-center justify-between gap-3">
             <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Recent Documents</h3>
-            <div class="flex space-x-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <div class="flex max-w-full flex-wrap gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
               <button
                 @click="activeTab = 'ordinances'"
                 :class="[

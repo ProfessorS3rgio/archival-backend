@@ -105,14 +105,14 @@
       <!-- Projects Table -->
       <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col flex-wrap gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Projects</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Showing {{ filteredProjects.length }} of {{ projects.length }} project{{ projects.length !== 1 ? 's' : '' }}
               </p>
             </div>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-3 w-full xl:w-auto">
               <!-- Search Bar -->
               <div class="w-full sm:w-auto sm:min-w-[280px]">
                 <SearchBar
@@ -124,12 +124,12 @@
               </div>
 
               <!-- Filters -->
-              <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <div class="flex gap-2 w-full sm:w-auto">
+              <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-2 w-full xl:w-auto">
+                <div class="flex min-w-0 flex-wrap gap-2 w-full sm:w-auto">
                   <!-- District Filter -->
                   <select
                     v-model="selectedDistrict"
-                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 flex-1 sm:w-32"
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 min-w-0 basis-28 flex-1 sm:w-32"
                   >
                     <option value="">All Districts</option>
                     <option v-for="district in filters.districts" :key="district" :value="district">
@@ -140,7 +140,7 @@
                   <!-- Source Fund Filter -->
                   <select
                     v-model="selectedSourceFund"
-                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 flex-1 sm:w-36"
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 min-w-0 basis-28 flex-1 sm:w-36"
                   >
                     <option value="">All Sources</option>
                     <option v-for="fund in filters.sourceFunds" :key="fund" :value="fund">
@@ -151,7 +151,7 @@
                   <!-- Source Type Filter -->
                   <select
                     v-model="selectedSourceType"
-                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 flex-1 sm:w-32"
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 min-w-0 basis-28 flex-1 sm:w-32"
                   >
                     <option value="">All Types</option>
                     <option v-for="type in filters.sourceTypes" :key="type" :value="type">
@@ -162,7 +162,7 @@
                   <!-- Year Filter -->
                   <select
                     v-model="selectedYear"
-                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 flex-1 sm:w-28"
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 min-w-0 basis-28 flex-1 sm:w-28"
                   >
                     <option value="">All Years</option>
                     <option v-for="year in filters.years" :key="year" :value="year">

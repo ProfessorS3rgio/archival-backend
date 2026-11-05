@@ -1,6 +1,6 @@
 <template>
   <header
-    class="sticky top-0 flex w-full bg-white border-gray-200 z-99999 dark:border-gray-800 dark:bg-gray-900 lg:border-b"
+    class="sticky top-0 flex w-full bg-white border-gray-200 z-30 dark:border-gray-800 dark:bg-gray-900 lg:border-b"
   >
     <div class="flex flex-col items-center justify-between grow lg:flex-row lg:px-6">
       <div
@@ -8,7 +8,12 @@
       >
         <button
           @click="handleToggle"
-          class="flex items-center justify-center w-10 h-10 text-gray-500 border-gray-200 rounded-lg z-99999 dark:border-gray-800 dark:text-gray-400 lg:h-11 lg:w-11 lg:border"
+          id="sidebar-toggle"
+          type="button"
+          aria-label="Toggle navigation"
+          aria-controls="app-sidebar"
+          :aria-expanded="isMobileOpen || isExpanded"
+          class="flex shrink-0 items-center justify-center w-11 h-11 text-gray-500 border-gray-200 rounded-lg dark:border-gray-800 dark:text-gray-400 lg:border"
           :class="[
             isMobileOpen
               ? 'lg:bg-transparent dark:lg:bg-transparent bg-gray-100 dark:bg-gray-800'
@@ -47,10 +52,12 @@
             />
           </svg>
         </button>
-        <h1 class="text-lg font-semibold text-gray-800 dark:text-white">{{ title }}</h1>
+        <h1 class="min-w-0 flex-1 text-lg font-semibold text-gray-800 dark:text-white">{{ title }}</h1>
         <button
           @click="toggleApplicationMenu"
-          class="flex items-center justify-center w-10 h-10 text-gray-700 rounded-lg z-99999 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
+          aria-label="Toggle account menu"
+          :aria-expanded="isApplicationMenuOpen"
+          class="flex shrink-0 items-center justify-center w-11 h-11 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 lg:hidden"
         >
           <svg
             width="24"
@@ -67,6 +74,7 @@
             />
           </svg>
         </button>
+        <div class="shrink-0 lg:hidden"><ThemeToggler /></div>
       </div>
 
       <div
@@ -107,7 +115,7 @@
       </div>
       
       <!-- Theme toggler always visible -->
-      <div class="flex items-center px-5 lg:px-6">
+      <div class="hidden items-center px-5 lg:flex lg:px-6">
         <ThemeToggler />
       </div>
     </div>
@@ -120,13 +128,15 @@ import { Link, router, usePage } from '@inertiajs/vue3'
 import ThemeToggler from '@/ComponentsOld/common/ThemeToggler.vue'
 
 defineProps({
+  isMobileOpen: Boolean,
+  isExpanded: Boolean,
   title: {
     type: String,
     default: 'Dashboard'
   }
 })
 
-const isMobileOpen = ref(false)
+const emit = defineEmits(['toggle-sidebar'])
 const isApplicationMenuOpen = ref(false)
 const userMenuOpen = ref(false)
 
@@ -141,11 +151,7 @@ const userRoleLabel = computed(() => {
 })
 
 const handleToggle = () => {
-  if (window.innerWidth >= 1024) {
-    // Desktop toggle
-  } else {
-    isMobileOpen.value = !isMobileOpen.value
-  }
+  emit('toggle-sidebar')
 }
 
 const toggleApplicationMenu = () => {

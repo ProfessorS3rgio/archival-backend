@@ -105,14 +105,14 @@
       <!-- Memorandum of Agreements Table -->
       <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
-          <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="flex flex-col flex-wrap gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
               <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Memorandum of Agreements</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                 Showing {{ filteredMemorandumOfAgreements.length }} of {{ memorandumOfAgreements.length }} MOA{{ memorandumOfAgreements.length !== 1 ? 's' : '' }}
               </p>
             </div>
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-3 w-full xl:w-auto">
               <!-- Search Bar -->
               <div class="w-full sm:w-auto sm:min-w-[280px]">
                 <SearchBar
@@ -124,12 +124,12 @@
               </div>
 
               <!-- Filters -->
-              <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                <div class="flex gap-2 w-full sm:w-auto">
+              <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-2 w-full xl:w-auto">
+                <div class="flex min-w-0 flex-wrap gap-2 w-full sm:w-auto">
                   <!-- Year Filter -->
                   <select
                     v-model="selectedYear"
-                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 flex-1 sm:w-24"
+                    class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 min-w-0 basis-28 flex-1 sm:w-24"
                   >
                     <option value="">All Years</option>
                     <option v-for="year in filters.years" :key="year" :value="year.toString()">
