@@ -21,7 +21,7 @@
   </ol>
 </nav>
 
-    <div class="space-y-6">
+    <div class="document-page space-y-6">
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -40,7 +40,7 @@
       </div>
 
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="document-stats grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
@@ -153,31 +153,33 @@
             </div>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">File</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uploaded</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+        <div class="mobile-records overflow-x-auto">
+          <table role="table" class="mobile-record-table w-full">
+            <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
+              <tr role="row">
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">File</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uploaded</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr
+            <tbody role="rowgroup" class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr role="row"
                 v-for="accomplishment in filteredAccomplishments"
                 :key="accomplishment.accomplish_id"
                 class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
-                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                  <span v-html="highlightMatch(accomplishment.title, searchQuery)"></span>
+                <td role="cell" data-label="Title" data-field="title" class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
+                  <div class="record-card-title">
+                    <span v-html="highlightMatch(accomplishment.title, searchQuery)"></span>
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Year" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ accomplishment.accomplishment_year ? formatDate(accomplishment.accomplishment_year) : 'N/A' }}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="File" data-field="files" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                   <div v-if="accomplishment.file_name" class="flex items-center space-x-2">
                     <a
                       :href="'/serve-file/' + accomplishment.file_url"
@@ -195,10 +197,10 @@
                   </div>
                   <span v-else class="text-gray-400">No file</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Uploaded" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(accomplishment.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td role="cell" data-label="Status" data-field="status" class="px-6 py-4 whitespace-nowrap">
                   <span
                     :class="[
                       'inline-flex px-2 py-1 text-xs font-medium rounded-full',
@@ -209,7 +211,7 @@
                     {{ accomplishment.is_visible ? 'visible' : 'hidden' }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td role="cell" data-label="Actions" data-field="actions" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-2">
                     <Link
                       :href="`/accomplishments/${accomplishment.accomplish_id}`"

@@ -52,7 +52,7 @@
             />
           </svg>
         </button>
-        <h1 class="min-w-0 flex-1 text-lg font-semibold text-gray-800 dark:text-white">{{ title }}</h1>
+        <h1 class="min-w-0 flex-1 text-base leading-snug font-semibold text-gray-800 dark:text-white sm:text-lg">{{ title }}</h1>
         <button
           @click="toggleApplicationMenu"
           aria-label="Toggle account menu"

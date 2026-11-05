@@ -21,7 +21,7 @@
   </ol>
 </nav>
 
-    <div class="space-y-6">
+    <div class="document-page space-y-6">
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -40,7 +40,7 @@
       </div>
 
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="document-stats grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
@@ -164,8 +164,8 @@
             </div>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="record-table w-full min-w-[960px] table-fixed">
+        <div class="mobile-records overflow-x-auto">
+          <table role="table" class="mobile-record-table record-table w-full min-w-[960px] table-fixed">
             <colgroup>
               <col style="width: 112px" />
               <col />
@@ -175,32 +175,34 @@
               <col style="width: 148px" />
               <col style="width: 144px" />
             </colgroup>
-            <thead class="bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Draft No.</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
-                <th class="sticky right-0 z-10 px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+            <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
+              <tr role="row">
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Draft No.</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
+                <th role="columnheader" scope="col" class="sticky right-0 z-10 px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="draft in filteredDrafts" :key="draft.draft_ordinance_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+            <tbody role="rowgroup" class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr role="row" v-for="draft in filteredDrafts" :key="draft.draft_ordinance_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <td role="cell" data-label="Draft No." data-field="identifier" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   <span v-html="highlightText(draft.ordinance_draft_id, searchQuery)"></span>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate" :title="draft.title">
-                  <span v-html="highlightText(draft.title || 'Untitled Draft Ordinance', searchQuery)"></span>
+                <td role="cell" data-label="Title" data-field="title" class="px-4 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate" :title="draft.title">
+                  <div class="record-card-title">
+                    <span v-html="highlightText(draft.title || 'Untitled Draft Ordinance', searchQuery)"></span>
+                  </div>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 [overflow-wrap:anywhere]">
+                <td role="cell" data-label="Author" data-field="detail" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 [overflow-wrap:anywhere]">
                   <span v-html="highlightText(draft.author, searchQuery)"></span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Created" data-field="detail" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(draft.created_at) }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
+                <td role="cell" data-label="Status" data-field="status" class="px-4 py-4 whitespace-nowrap">
                   <span
                     :class="[
                       'inline-flex px-2 py-1 text-xs font-medium rounded-full',
@@ -212,10 +214,10 @@
                     {{ formatStatus(draft.status) }}
                   </span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Files" data-field="files" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   <RecordFiles :files="draft.files || []" :record-label="`Draft ordinance ${draft.ordinance_draft_id}`" />
                 </td>
-                <td class="sticky right-0 z-10 px-4 py-4 whitespace-nowrap text-sm font-medium shadow-[-6px_0_12px_-10px_rgba(15,23,42,0.4)]">
+                <td role="cell" data-label="Actions" data-field="actions" class="sticky right-0 z-10 px-4 py-4 whitespace-nowrap text-sm font-medium shadow-[-6px_0_12px_-10px_rgba(15,23,42,0.4)]">
                   <div class="flex items-center space-x-2">
                     <Link
                       :href="`/draft-ordinances/${draft.ordinance_draft_id}`"

@@ -21,7 +21,7 @@
   </ol>
 </nav>
 
-    <div class="space-y-6">
+    <div class="document-page space-y-6">
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -79,7 +79,7 @@
       </div>
 
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div class="document-stats grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
@@ -212,8 +212,8 @@
             </div>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="record-table w-full min-w-[960px] table-fixed">
+        <div class="mobile-records overflow-x-auto">
+          <table role="table" class="mobile-record-table record-table w-full min-w-[960px] table-fixed">
             <colgroup>
               <col style="width: 112px" />
               <col />
@@ -223,36 +223,38 @@
               <col style="width: 148px" />
               <col style="width: 144px" />
             </colgroup>
-            <thead class="bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ordinance No.</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date Approved</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
-                <th class="sticky right-0 z-10 px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+            <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
+              <tr role="row">
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Ordinance No.</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date Approved</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th role="columnheader" scope="col" class="px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
+                <th role="columnheader" scope="col" class="sticky right-0 z-10 px-4 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr 
+            <tbody role="rowgroup" class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr role="row"
                 v-for="ordinance in filteredOrdinances" 
                 :key="ordinance.ordinance_id" 
                 class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
-                <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <td role="cell" data-label="Ordinance No." data-field="identifier" class="px-4 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   <span v-html="highlightMatch(ordinance.ordinance_no, searchQuery)"></span>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate" :title="ordinance.title">
-                  <span v-html="highlightMatch(ordinance.title || 'Untitled Ordinance', searchQuery)"></span>
+                <td role="cell" data-label="Title" data-field="title" class="px-4 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate" :title="ordinance.title">
+                  <div class="record-card-title">
+                    <span v-html="highlightMatch(ordinance.title || 'Untitled Ordinance', searchQuery)"></span>
+                  </div>
                 </td>
-                <td class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 [overflow-wrap:anywhere]">
+                <td role="cell" data-label="Author" data-field="detail" class="px-4 py-4 text-sm text-gray-500 dark:text-gray-400 [overflow-wrap:anywhere]">
                   <span v-html="highlightMatch(ordinance.author, searchQuery)"></span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Date Approved" data-field="detail" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(ordinance.date_approved) }}
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap">
+                <td role="cell" data-label="Status" data-field="status" class="px-4 py-4 whitespace-nowrap">
                   <span
                     :class="[
                       'inline-flex px-2 py-1 text-xs font-medium rounded-full',
@@ -263,10 +265,10 @@
                     {{ ordinance.date_approved ? 'approved' : 'pending' }}
                   </span>
                 </td>
-                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Files" data-field="files" class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   <RecordFiles :files="ordinance.files || []" :record-label="ordinance.ordinance_no || 'this record'" />
                 </td>
-                <td class="sticky right-0 z-10 px-4 py-4 whitespace-nowrap text-sm font-medium shadow-[-6px_0_12px_-10px_rgba(15,23,42,0.4)]">
+                <td role="cell" data-label="Actions" data-field="actions" class="sticky right-0 z-10 px-4 py-4 whitespace-nowrap text-sm font-medium shadow-[-6px_0_12px_-10px_rgba(15,23,42,0.4)]">
                   <div class="flex items-center space-x-2">
                     <Link
                       :href="`/ordinances/${ordinance.ordinance_id}`"

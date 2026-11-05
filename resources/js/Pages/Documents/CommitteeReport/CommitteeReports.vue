@@ -21,7 +21,7 @@
       </ol>
     </nav>
 
-    <div class="space-y-6">
+    <div class="document-page space-y-6">
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -42,7 +42,7 @@
       </div>
 
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div class="document-stats grid grid-cols-1 gap-4 md:grid-cols-3">
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
@@ -154,37 +154,39 @@
             </div>
           </div>
         </div>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-800/50">
-              <tr>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Report No.</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
-                <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+        <div class="mobile-records overflow-x-auto">
+          <table role="table" class="mobile-record-table w-full">
+            <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
+              <tr role="row">
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Report No.</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Files</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="report in filteredReports" :key="report.report_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+            <tbody role="rowgroup" class="divide-y divide-gray-200 dark:divide-gray-700">
+              <tr role="row" v-for="report in filteredReports" :key="report.report_id" class="hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                <td role="cell" data-label="Report No." data-field="identifier" class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   <span v-html="highlightText(report.committee_report_no || 'N/A', searchQuery)"></span>
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
-                  <span v-html="highlightText(report.title || 'Untitled Report', searchQuery)"></span>
+                <td role="cell" data-label="Title" data-field="title" class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
+                  <div class="record-card-title">
+                    <span v-html="highlightText(report.title || 'Untitled Report', searchQuery)"></span>
+                  </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Subject" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   <span v-html="highlightText(report.subject || 'N/A', searchQuery)"></span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Year" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ report.year || 'N/A' }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Created" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(report.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Files" data-field="files" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   <div v-if="report.file_name" class="flex flex-wrap gap-1">
                     <a
                       :href="'/serve-file/' + report.file_url"
@@ -202,7 +204,7 @@
                   </div>
                   <span v-else class="text-gray-400">No file</span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <td role="cell" data-label="Actions" data-field="actions" class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div class="flex items-center space-x-2">
                     <Link
                       :href="`/committee-reports/${report.report_id}`"

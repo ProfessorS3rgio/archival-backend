@@ -1,5 +1,6 @@
 <template>
   <div
+    class="floating-footer"
     :class="[
       'fixed bottom-0 left-0 right-0 z-20 transition-all duration-300 ease-in-out',
       backgroundClass,
@@ -104,6 +105,14 @@ const props = defineProps({
 </script>
 
 <style scoped>
+@media (max-width: 767px) {
+  .floating-footer {
+    position: relative;
+    inset: auto;
+    z-index: auto;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
 /* Enhanced animations and effects */
 @keyframes slideUp {
   from {

@@ -21,7 +21,7 @@
   </ol>
 </nav>
 
-    <div class="space-y-6">
+    <div class="document-page space-y-6">
       <!-- Welcome Section -->
       <div class="mb-8">
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white mb-2">Welcome back!</h1>
@@ -29,7 +29,7 @@
       </div>
 
       <!-- Statistics Cards -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="document-stats grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <!-- Total Ordinances -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
