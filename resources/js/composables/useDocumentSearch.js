@@ -215,6 +215,22 @@ export const getTypeIconClass = (type) => {
   return classes[type] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400'
 }
 
+// Use the document's calendar year without shifting approval dates across timezones.
+export const getDocumentActivityYear = (doc) => {
+  if (Object.prototype.hasOwnProperty.call(doc, 'activity_year')) {
+    const year = Number(doc.activity_year)
+    return Number.isInteger(year) && year >= 1000 && year <= 9999 ? year : null
+  }
+
+  const date = doc.date_approved || doc.created_at
+  const parts = typeof date === 'string' && date.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ]|$)/)
+  if (!parts) return null
+  const [, year, month, day] = parts.map(Number)
+  if (year < 1000) return null
+  const parsed = new Date(Date.UTC(year, month - 1, day))
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day ? year : null
+}
+
 // Main composable for document filtering
 export const useDocumentFilter = (allDocuments, searchQuery, selectedType, selectedYear, selectedAuthor) => {
   const filteredDocuments = computed(() => {
@@ -242,10 +258,7 @@ export const useDocumentFilter = (allDocuments, searchQuery, selectedType, selec
     // Filter by selected year
     if (selectedYear.value) {
       allDocs = allDocs.filter(doc => {
-        const docDate = doc.date_approved || doc.created_at
-        if (!docDate) return false
-        const year = new Date(docDate).getFullYear().toString()
-        return year === selectedYear.value
+        return getDocumentActivityYear(doc) === Number(selectedYear.value)
       })
     }
 

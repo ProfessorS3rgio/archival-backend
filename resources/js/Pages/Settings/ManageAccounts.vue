@@ -122,45 +122,46 @@
 
       <!-- Users Table -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-gray-900">
-              <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+        <div class="mobile-records overflow-x-auto">
+          <table role="table" class="settings-record-table fit-record-table mobile-record-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-900">
+              <tr role="row">
+                <th role="columnheader" scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   User
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th role="columnheader" scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Username
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th role="columnheader" scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Role
                 </th>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th role="columnheader" scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Created At
                 </th>
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th role="columnheader" scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-if="filteredUsers.length === 0">
-                <td colspan="5" class="px-6 py-12 text-center">
+            <tbody role="rowgroup" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr role="row" v-if="filteredUsers.length === 0">
+                <td role="cell" data-field="empty" colspan="5" class="px-6 py-12 text-center">
                   <div class="flex flex-col items-center">
                     <UserGroupIcon class="w-12 h-12 text-gray-300 dark:text-gray-600 mb-3" />
                     <p class="text-gray-500 dark:text-gray-400">No users found</p>
                   </div>
                 </td>
               </tr>
-              <tr v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap">
+              <tr role="row" v-for="user in filteredUsers" :key="user.id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <td role="cell" data-label="User" data-field="title" class="px-6 py-4 whitespace-nowrap">
+                  <div class="record-card-title">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
                       <div class="h-10 w-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-semibold">
                         {{ getInitials(user.name) }}
                       </div>
                     </div>
-                    <div class="ml-4">
+                    <div class="ml-3 min-w-0">
                       <div class="text-sm font-medium text-gray-900 dark:text-white">
                         {{ user.name }}
                       </div>
@@ -169,11 +170,12 @@
                       </div>
                     </div>
                   </div>
+                </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td role="cell" data-label="Username" data-field="detail" class="px-6 py-4 whitespace-nowrap">
                   <div class="text-sm text-gray-900 dark:text-white">{{ user.username }}</div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td role="cell" data-label="Role" data-field="status" class="px-6 py-4 whitespace-nowrap">
                   <span :class="[
                     'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
                     (user.role || '').toString().trim().toLowerCase() === 'admin' 
@@ -183,13 +185,13 @@
                     {{ (user.role || '').toString().trim().toLowerCase() === 'admin' ? 'Admin' : 'Staff' }}
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                <td role="cell" data-label="Created At" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                   {{ formatDate(user.created_at) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                <td role="cell" data-label="Actions" data-field="actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                   <div class="flex items-center justify-end gap-2">
                     <button
-                      @click="editUser(user)"
+                      data-action="edit" @click="editUser(user)"
                       v-if="isAdmin"
                       class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors duration-200"
                     >

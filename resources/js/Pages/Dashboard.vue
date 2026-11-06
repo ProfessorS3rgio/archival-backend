@@ -374,10 +374,11 @@
                 <div class="sm:w-40">
                   <select
                     v-model="selectedYear"
+                    aria-label="Document activity year"
                     class="block w-full py-2 px-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   >
                     <option value="">All Years</option>
-                    <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+                    <option v-for="year in availableYears" :key="year" :value="String(year)">{{ year }}</option>
                   </select>
                 </div>
                 <div class="sm:w-56">

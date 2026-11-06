@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use App\Support\DocumentActivityYear;
 
 class DashboardController extends Controller
 {
@@ -36,10 +37,10 @@ class DashboardController extends Controller
         $provincialOffices = ProvincialOffice::all();
         $committeeReports = CommitteeReport::all();
         $systemLogs = SystemLog::with('user')->latest('created_at')->take(5)->get();
-        
+
         // Count total staff (admin and staff roles)
         $totalStaff = User::whereIn('role', ['admin', 'staff'])->count();
-        
+
         // Ensure user relationships are loaded
         $systemLogs->load('user');
 
@@ -68,6 +69,85 @@ class DashboardController extends Controller
                          DB::table('provincial_offices_list')->whereNotNull('file_size')->sum('file_size') +
                          DB::table('committee_reports')->whereNotNull('file_size')->sum('file_size');
 
+        $allDocuments = [
+            'ordinances' => $ordinances->map(function ($item) {
+                return [
+                    'id' => $item->ordinance_id,
+                    'title' => $item->title,
+                    'type' => 'ordinance',
+                    'author' => $item->author,
+                    'date_approved' => $item->date_approved,
+                    'created_at' => $item->created_at,
+                    'extracted_text' => $item->extracted_text
+                ];
+            }),
+            'resolutions' => $resolutions->map(function ($item) {
+                return [
+                    'id' => $item->resolution_id,
+                    'title' => $item->title,
+                    'type' => 'resolution',
+                    'author' => $item->author,
+                    'date_approved' => $item->date_approved,
+                    'created_at' => $item->created_at,
+                    'extracted_text' => $item->extracted_text
+                ];
+            }),
+            'draftOrdinances' => $draftOrdinances->map(function ($item) {
+                return [
+                    'id' => $item->ordinance_draft_id,
+                    'title' => $item->title,
+                    'type' => 'draft-ordinance',
+                    'author' => $item->author,
+                    'created_at' => $item->created_at,
+                    'extracted_text' => $item->extracted_text
+                ];
+            }),
+            'draftResolutions' => $draftResolutions->map(function ($item) {
+                return [
+                    'id' => $item->resolution_draft_id,
+                    'title' => $item->title,
+                    'type' => 'draft-resolution',
+                    'author' => $item->author,
+                    'created_at' => $item->created_at,
+                    'extracted_text' => $item->extracted_text
+                ];
+            }),
+            'accomplishments' => $accomplishments->map(function ($item) {
+                return ['id' => $item->id, 'title' => $item->title, 'type' => 'accomplishment', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'projects' => $projects->map(function ($item) {
+                return ['id' => $item->project_id, 'title' => $item->project_name, 'type' => 'project', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'moas' => $moas->map(function ($item) {
+                return ['id' => $item->moa_id, 'title' => $item->title, 'type' => 'moa', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'municipalCommunications' => $municipalCommunications->map(function ($item) {
+                return ['id' => $item->municipalitites_communication_id, 'title' => $item->title, 'type' => 'municipal-communication', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'nationalOfficeCommunications' => $nationalOfficeCommunications->map(function ($item) {
+                return ['id' => $item->national_offices_id, 'title' => $item->title, 'type' => 'national-office-communication', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'provincialOffices' => $provincialOffices->map(function ($item) {
+                return ['id' => $item->provincial_offices_list_id, 'title' => $item->title, 'type' => 'provincial-office', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+            'committeeReports' => $committeeReports->map(function ($item) {
+                return ['id' => $item->report_id, 'title' => $item->title, 'type' => 'committee-report', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+            }),
+        ];
+
+        foreach ($allDocuments as $type => $documents) {
+            $allDocuments[$type] = $documents->map(function ($document) {
+                $document['activity_year'] = DocumentActivityYear::fromDates(
+                    $document['date_approved'] ?? null,
+                    $document['created_at'] ?? null,
+                );
+                return $document;
+            });
+        }
+        $availableYears = collect($allDocuments)->flatMap(fn ($documents) => $documents)
+            ->pluck('activity_year')->filter(fn ($year) => $year !== null)
+            ->unique()->sortDesc()->values()->all();
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'ordinances' => $ordinances->count(),
@@ -85,71 +165,7 @@ class DashboardController extends Controller
                 'totalFileSize' => $totalFileSize,
                 'totalStaff' => $totalStaff,
             ],
-            'allDocuments' => [
-                'ordinances' => $ordinances->map(function ($item) {
-                    return [
-                        'id' => $item->ordinance_id, 
-                        'title' => $item->title, 
-                        'type' => 'ordinance', 
-                        'author' => $item->author,
-                        'date_approved' => $item->date_approved,
-                        'created_at' => $item->created_at,
-                        'extracted_text' => $item->extracted_text
-                    ];
-                }),
-                'resolutions' => $resolutions->map(function ($item) {
-                    return [
-                        'id' => $item->resolution_id, 
-                        'title' => $item->title, 
-                        'type' => 'resolution', 
-                        'author' => $item->author,
-                        'date_approved' => $item->date_approved,
-                        'created_at' => $item->created_at,
-                        'extracted_text' => $item->extracted_text
-                    ];
-                }),
-                'draftOrdinances' => $draftOrdinances->map(function ($item) {
-                    return [
-                        'id' => $item->ordinance_draft_id, 
-                        'title' => $item->title, 
-                        'type' => 'draft-ordinance', 
-                        'author' => $item->author,
-                        'created_at' => $item->created_at,
-                        'extracted_text' => $item->extracted_text
-                    ];
-                }),
-                'draftResolutions' => $draftResolutions->map(function ($item) {
-                    return [
-                        'id' => $item->resolution_draft_id, 
-                        'title' => $item->title, 
-                        'type' => 'draft-resolution', 
-                        'author' => $item->author,
-                        'created_at' => $item->created_at,
-                        'extracted_text' => $item->extracted_text
-                    ];
-                }),
-                'accomplishments' => $accomplishments->map(function ($item) {
-                    return ['id' => $item->id, 'title' => $item->title, 'type' => 'accomplishment', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'projects' => $projects->map(function ($item) {
-                    return ['id' => $item->project_id, 'title' => $item->project_name, 'type' => 'project', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'moas' => $moas->map(function ($item) {
-                    return ['id' => $item->moa_id, 'title' => $item->title, 'type' => 'moa', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'municipalCommunications' => $municipalCommunications->map(function ($item) {
-                    return ['id' => $item->municipalitites_communication_id, 'title' => $item->title, 'type' => 'municipal-communication', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'nationalOfficeCommunications' => $nationalOfficeCommunications->map(function ($item) {
-                    return ['id' => $item->national_offices_id, 'title' => $item->title, 'type' => 'national-office-communication', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'provincialOffices' => $provincialOffices->map(function ($item) {
-                    return ['id' => $item->provincial_offices_list_id, 'title' => $item->title, 'type' => 'provincial-office', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-                'committeeReports' => $committeeReports->map(function ($item) {
-                    return ['id' => $item->report_id, 'title' => $item->title, 'type' => 'committee-report', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
-                }),
-            ],
+            'allDocuments' => $allDocuments,
             'recentOrdinances' => $ordinances->take(5),
             'recentResolutions' => $resolutions->take(5),
             'recentOrdinanceDrafts' => $draftOrdinances->take(5),
@@ -162,7 +178,7 @@ class DashboardController extends Controller
             'recentProvincialOffices' => $provincialOffices->take(5),
             'recentCommitteeReports' => $committeeReports->take(5),
             'recentSystemLogs' => $systemLogs,
-            'availableYears' => $this->getAvailableYears($ordinances, $resolutions, $draftOrdinances, $draftResolutions),
+            'availableYears' => $availableYears,
             'availableAuthors' => $this->getAvailableAuthors($ordinances, $resolutions, $draftOrdinances, $draftResolutions),
         ]);
     }
@@ -193,38 +209,6 @@ class DashboardController extends Controller
         $request->session()->regenerateToken();
 
         return redirect('/login');
-    }
-
-    /**
-     * Get unique years from all documents using efficient database queries
-     */
-    private function getAvailableYears($ordinances, $resolutions, $draftOrdinances, $draftResolutions)
-    {
-        // Use raw SQL UNION queries for maximum performance
-        $years = DB::table('ordinance_lists')
-            ->selectRaw('DISTINCT YEAR(date_approved) as year')
-            ->whereNotNull('date_approved')
-            ->union(
-                DB::table('resolution_lists')
-                    ->selectRaw('DISTINCT YEAR(date_approved) as year')
-                    ->whereNotNull('date_approved')
-            )
-            ->union(
-                DB::table('ordinance_draft')
-                    ->selectRaw('DISTINCT YEAR(created_at) as year')
-                    ->whereNotNull('created_at')
-            )
-            ->union(
-                DB::table('resolution_draft')
-                    ->selectRaw('DISTINCT YEAR(created_at) as year')
-                    ->whereNotNull('created_at')
-            )
-            ->orderBy('year', 'desc')
-            ->pluck('year')
-            ->filter()
-            ->toArray();
-
-        return $years;
     }
 
     /**
@@ -264,11 +248,11 @@ class DashboardController extends Controller
         // Split semicolon-separated authors and collect unique individual names
         $individualAuthors = [];
         $uniqueAuthors = [];
-        
+
         foreach ($authors as $authorString) {
             // Split by semicolon and trim each author
             $splitAuthors = array_map('trim', explode(';', $authorString));
-            
+
             foreach ($splitAuthors as $individualAuthor) {
                 if (!empty($individualAuthor) && !in_array($individualAuthor, $uniqueAuthors)) {
                     $uniqueAuthors[] = $individualAuthor;

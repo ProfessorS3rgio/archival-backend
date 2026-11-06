@@ -38,7 +38,7 @@
       </Link>
     </div>
     <div
-      class="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar"
+      class="sidebar-navigation min-h-0 min-w-0 flex-1 flex flex-col overflow-x-hidden overflow-y-auto duration-300 ease-linear no-scrollbar"
     >
       <nav class="mb-6">
         <div class="flex flex-col gap-4">
@@ -616,3 +616,17 @@ const endTransition = (el) => {
   el.style.height = ""
 }
 </script>
+
+<style scoped>
+.sidebar-navigation nav,
+.sidebar-navigation li,
+.sidebar-navigation a,
+.sidebar-navigation button,
+.sidebar-navigation span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.sidebar-navigation svg {
+  flex-shrink: 0;
+}
+</style>

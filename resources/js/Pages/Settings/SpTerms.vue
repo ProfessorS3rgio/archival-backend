@@ -19,25 +19,27 @@
       </div>
 
       <!-- Terms Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-gray-900">
-            <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Term</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year Range</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Members</th>
-              <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 mobile-records overflow-x-auto">
+        <table role="table" class="settings-record-table fit-record-table mobile-record-table min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-900">
+            <tr role="row">
+              <th role="columnheader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Term</th>
+              <th role="columnheader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year Range</th>
+              <th role="columnheader" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Members</th>
+              <th role="columnheader" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-            <tr v-for="term in terms" :key="term.term_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap">
+          <tbody role="rowgroup" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+            <tr role="row" v-for="term in terms" :key="term.term_id" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+              <td role="cell" data-label="Term" data-field="title" class="px-6 py-4 whitespace-nowrap">
+                <div class="record-card-title">
                 <span class="text-sm font-medium text-gray-900 dark:text-white">{{ term.term_no.toUpperCase() }} SP</span>
+              </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td role="cell" data-label="Year Range" data-field="detail" class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm text-gray-600 dark:text-gray-300">{{ getYearRange(term) }}</span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td role="cell" data-label="Members" data-field="detail" class="px-6 py-4 whitespace-nowrap">
                 <Link 
                   :href="`/sp-${term.term_no.toLowerCase()}/officials`"
                   class="text-sm text-blue-600 dark:text-blue-400 hover:underline"
@@ -45,9 +47,10 @@
                   View Officials
                 </Link>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+              <td role="cell" data-label="Actions" data-field="actions" class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                <div class="flex flex-wrap gap-2">
                 <button
-                  @click="editTerm(term)"
+                  data-action="edit" @click="editTerm(term)"
                   class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                 >
                   Edit
@@ -59,6 +62,7 @@
                 >
                   Delete
                 </button>
+              </div>
               </td>
             </tr>
           </tbody>

@@ -56,6 +56,43 @@ layer(base);
   white-space: nowrap;
 }
 
+.fit-record-table {
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+}
+
+.admin-content .fit-record-table th,
+.fit-record-table td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  padding: 0.75rem;
+}
+
+.fit-record-table td > div {
+  min-width: 0;
+}
+
+.fit-record-table td[data-field="actions"] > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.fit-record-table td[data-field="actions"] a,
+.fit-record-table td[data-field="actions"] button {
+  max-width: 100%;
+  white-space: normal;
+}
+
+.fit-record-table td[data-field="actions"] svg {
+  flex-shrink: 0;
+}
+
+.fit-record-table td .record-card-title {
+  white-space: normal;
+}
+
 .admin-content [aria-label="Breadcrumb"] ol {
   flex-wrap: wrap;
   row-gap: 0.5rem;
@@ -323,7 +360,8 @@ layer(base);
   }
 
   .mobile-record-table td[data-field="actions"] button {
-    width: 44px;
+    min-width: 44px;
+    padding: 0.625rem;
     flex-shrink: 0;
     background: var(--color-red-50);
   }
@@ -339,6 +377,40 @@ layer(base);
 
   .dark .mobile-record-table td[data-field="actions"] button {
     background: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+  }
+
+  .settings-record-table tbody {
+    background: transparent;
+  }
+
+  .settings-record-table td[data-field="actions"] button {
+    width: auto;
+    flex: 1;
+  }
+
+  .settings-record-table td[data-field="empty"],
+  .settings-record-table td[data-label="Description"] {
+    grid-column: 1 / -1;
+  }
+
+  .settings-record-table td[data-field="actions"] [data-action="edit"] {
+    background: var(--color-blue-50);
+    color: var(--color-blue-600);
+  }
+
+  .settings-record-table td[data-field="actions"] [data-action="restore"] {
+    background: var(--color-green-50);
+    color: var(--color-green-700);
+  }
+
+  .dark .settings-record-table td[data-field="actions"] [data-action="edit"] {
+    background: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+    color: var(--color-blue-400);
+  }
+
+  .dark .settings-record-table td[data-field="actions"] [data-action="restore"] {
+    background: color-mix(in srgb, var(--color-green-500) 12%, transparent);
+    color: var(--color-green-400);
   }
 }
 

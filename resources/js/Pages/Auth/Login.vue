@@ -27,8 +27,19 @@
         <div class="absolute bottom-1/4 left-1/3 w-2.5 h-2.5 bg-indigo-400/30 rounded-full animate-float-particle animation-delay-7000"></div>
       </div>
     </div>
+    <!-- Seal centered over the seam between the desktop panels -->
+    <img
+      :src="sealUrl"
+      alt="Province of Zamboanga Sibugay seal"
+      class="login-seal pointer-events-none fixed left-1/2 top-1/2 z-20 hidden h-44 w-44 -translate-x-1/2 -translate-y-1/2 object-contain drop-shadow-xl lg:block xl:h-52 xl:w-52 2xl:h-60 2xl:w-60"
+      width="240"
+      height="240"
+      fetchpriority="high"
+      decoding="async"
+    />
+
     <!-- Left Panel - Enhanced Branding -->
-    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-16 flex-col justify-between relative overflow-hidden">
+    <div class="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950 p-16 pr-32 xl:pr-36 2xl:pr-40 flex-col justify-between relative overflow-hidden">
       <!-- Enhanced Background Pattern -->
       <div class="absolute inset-0 opacity-5">
         <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -45,19 +56,8 @@
       <div class="absolute inset-0 bg-gradient-to-br from-blue-600/10 via-transparent to-purple-600/10"></div>
 
       <div class="relative z-10">
-        <!-- Logo/Banner Area with Actual Logo -->
+        <!-- System branding -->
         <div class="mb-12">
-          <div class="w-24 h-24 bg-white/10 backdrop-blur-sm rounded-3xl flex items-center justify-center mb-6 border border-white/20 shadow-2xl">
-            <img
-              src="/assets/logos/logo.png"
-              alt="Archival Management Logo"
-              class="w-16 h-16 object-contain"
-              @error="logoError = true"
-            />
-            <svg v-if="logoError" class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-            </svg>
-          </div>
           <h1 class="text-5xl font-black text-white mb-3 tracking-tight">
             Recording & Archival Management System
           </h1>
@@ -114,21 +114,10 @@
     </div>
 
     <!-- Right Panel - Enhanced Login Form -->
-    <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex-1 flex items-center justify-center px-4 sm:px-6 lg:pl-32 xl:pl-36 2xl:pl-40 lg:pr-8 py-12">
       <div class="w-full max-w-md">
-        <!-- Mobile Logo with Actual Logo -->
+        <!-- Mobile system title -->
         <div class="lg:hidden mb-12 text-center">
-          <div class="inline-flex w-20 h-20 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl items-center justify-center mb-6 shadow-2xl border border-slate-200/20">
-            <img
-              src="/assets/logos/logo.png"
-              alt="Archival Management Logo"
-              class="w-14 h-14 object-contain"
-              @error="logoError = true"
-            />
-            <svg v-if="logoError" class="w-14 h-14 text-slate-800" fill="currentColor" viewBox="0 0 20 20">
-              <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
-            </svg>
-          </div>
           <h2 class="text-4xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
             Archival Management
           </h2>
@@ -137,6 +126,15 @@
         <div class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-hidden transform hover:scale-[1.01] transition-all duration-500 ease-out">
           <div class="px-8 pt-8 pb-2">
             <div class="text-center mb-8">
+              <img
+                :src="sealUrl"
+                alt="Province of Zamboanga Sibugay seal"
+                class="login-seal mx-auto mb-6 h-28 w-28 object-contain sm:h-32 sm:w-32 lg:hidden"
+                width="128"
+                height="128"
+                fetchpriority="high"
+                decoding="async"
+              />
               <h2 class="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">
                 Welcome Back
               </h2>
@@ -327,6 +325,7 @@
 import { ref, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
+import sealUrl from '@/assets/zamboanga-sibugay-seal.png'
 
 defineProps({
   errors: {
@@ -345,7 +344,6 @@ const showPassword = ref(false)
 const errorMessage = ref('')
 const showError = ref(false)
 const showSuccess = ref(false)
-const logoError = ref(false)
 
 const submit = () => {
   // Reset states
@@ -421,6 +419,19 @@ const dismissError = () => {
 </script>
 
 <style scoped>
+.login-seal {
+  animation: login-seal-spin 24s linear infinite;
+}
+
+@keyframes login-seal-spin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-seal { animation: none; }
+}
+
 @keyframes blob-enhanced {
   0% {
     transform: translate(0px, 0px) scale(1) rotate(0deg);

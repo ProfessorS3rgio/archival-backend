@@ -28,6 +28,9 @@ const form = useForm({
   date_to: props.currentFilters.date_to || ''
 })
 
+const activeFilterCount = computed(() => ['action', 'table', 'user_id', 'date_from', 'date_to']
+  .filter(key => form[key] !== '' && form[key] !== null).length)
+
 const resetFilters = () => {
   form.action = ''
   form.table = ''
@@ -133,13 +136,13 @@ const getRecordDisplay = (log) => {
   </ol>
 </nav>
 
-    <div class="py-12">
-      <div class="max-w-full mx-auto sm:px-6 lg:px-8">
+    <div class="py-4 md:py-8">
+      <div class="min-w-0 max-w-full mx-auto">
         <h2 class="text-2xl font-bold mb-6">System Activity Logs</h2>
         
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-100 dark:border-gray-700">
-          <div class="flex justify-between items-center mb-4">
+          <div class="flex flex-wrap gap-2 justify-between items-center mb-4">
             <h3 class="text-lg font-semibold flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
@@ -147,7 +150,7 @@ const getRecordDisplay = (log) => {
               Filters
             </h3>
             <div class="text-sm text-gray-500 dark:text-gray-400">
-              {{ Object.values(form).filter(v => v !== '').length }} active filter(s)
+              {{ activeFilterCount }} active filter(s)
             </div>
           </div>
           
@@ -219,7 +222,7 @@ const getRecordDisplay = (log) => {
             </div>
           </div>
           
-          <div class="mt-6 flex justify-between items-center">
+          <div class="mt-6 flex flex-wrap gap-3 justify-between items-center">
             <button @click="resetFilters" class="inline-flex items-center px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md transition-colors duration-150">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -236,57 +239,56 @@ const getRecordDisplay = (log) => {
         </div>
         
         <!-- Logs Table -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
-          <div class="overflow-x-auto">
-            <table class="w-full whitespace-nowrap">
-              <thead>
-                <tr class="bg-gray-100 dark:bg-gray-700 text-left border-b border-gray-200 dark:border-gray-600">
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+          <div class="mobile-records overflow-x-auto">
+            <table role="table" class="settings-record-table fit-record-table mobile-record-table w-full">
+              <colgroup><col style="width: 14%" /><col style="width: 12%" /><col style="width: 20%" /><col style="width: 25%" /><col style="width: 15%" /><col style="width: 14%" /></colgroup>
+              <thead role="rowgroup">
+                <tr role="row" class="bg-gray-100 dark:bg-gray-700 text-left border-b border-gray-200 dark:border-gray-600">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     User
                   </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Action
                   </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Record
                   </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
-                    Resolution/Ordinance No
-                  </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Description
                   </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Date
                   </th>
-                  <th class="px-8 py-5 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider w-1/7">
+                  <th role="columnheader" class="px-3 py-4 text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                <tr v-for="log in logs.data" :key="log.log_id" class="hover:bg-gray-50/70 dark:hover:bg-gray-700/70 transition-colors duration-150">
-                  <td class="px-8 py-5 text-sm text-gray-900 dark:text-gray-100 font-medium">
-                    {{ log.user ? log.user.username : 'Unknown' }}
+              <tbody role="rowgroup" class="divide-y divide-gray-200 dark:divide-gray-700">
+                <tr role="row" v-for="log in logs.data" :key="log.log_id" class="hover:bg-gray-50/70 dark:hover:bg-gray-700/70 transition-colors duration-150">
+                  <td role="cell" data-label="User" data-field="identifier" class="px-3 py-4 text-sm text-gray-900 dark:text-gray-100 font-medium">
+                    <span class="line-clamp-2" :title="log.user ? log.user.username : 'Unknown'">{{ log.user ? log.user.username : 'Unknown' }}</span>
                   </td>
-                  <td class="px-8 py-5 text-sm">
+                  <td role="cell" data-label="Action" data-field="status" class="px-3 py-4 text-sm">
                     <span :class="['px-3 py-1.5 rounded-full text-xs font-semibold shadow-sm', getActionColor(log.action)]">
                       {{ log.action }}
                     </span>
                   </td>
-                  <td class="px-8 py-5 text-sm text-gray-700 dark:text-gray-300">
-                    {{ getRecordDisplay(log).type }}
+                  <td role="cell" data-label="Record" data-field="title" class="px-3 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    <div class="record-card-title">
+                    <span class="block">{{ getRecordDisplay(log).type }}</span>
+                    <span class="mt-1 block font-mono text-xs text-gray-500 dark:text-gray-400">{{ getRecordDisplay(log).number }}</span>
+                  </div>
                   </td>
-                  <td class="px-8 py-5 text-sm text-gray-700 dark:text-gray-300">
-                    <span class="font-mono">{{ getRecordDisplay(log).number }}</span>
+                  <td role="cell" data-label="Description" data-field="detail" class="px-3 py-4 text-sm text-gray-700 dark:text-gray-300">
+                    <span class="line-clamp-3" :title="log.description">{{ log.description || 'No description' }}</span>
                   </td>
-                  <td class="px-8 py-5 text-sm text-gray-700 dark:text-gray-300">
-                    {{ log.description || 'No description' }}
-                  </td>
-                  <td class="px-8 py-5 text-sm text-gray-600 dark:text-gray-300">
+                  <td role="cell" data-label="Date" data-field="detail" class="px-3 py-4 text-sm text-gray-600 dark:text-gray-300">
                     {{ formatDate(log.created_at) }}
                   </td>
-                  <td class="px-8 py-5 text-sm text-right space-x-2">
+                  <td role="cell" data-label="Actions" data-field="actions" class="px-3 py-4 text-sm">
+                    <div class="flex flex-wrap gap-2">
                     <Link :href="route('system-logs.show', log.log_id)" class="inline-flex items-center px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 hover:text-blue-800 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 dark:text-blue-300 dark:hover:text-blue-200 rounded-md transition-colors duration-150">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -295,6 +297,7 @@ const getRecordDisplay = (log) => {
                       View
                     </Link>
                     <Link 
+                      data-action="restore"
                       v-if="log.action === 'delete' && log.old_values" 
                       :href="route('system-logs.rollback', log.log_id)" 
                       method="post" 
@@ -305,6 +308,7 @@ const getRecordDisplay = (log) => {
                       </svg>
                       Rollback
                     </Link>
+                    </div>
                   </td>
                 </tr>
               </tbody>
@@ -312,7 +316,7 @@ const getRecordDisplay = (log) => {
           </div>
 
           <!-- Pagination -->
-          <div class="px-8 py-8 border-t border-gray-200 dark:border-gray-700">
+          <div class="px-4 py-5 border-t border-gray-200 dark:border-gray-700">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div class="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 px-4 py-2 rounded-md">
                 Showing <span class="font-medium">{{ logs.from || 0 }}</span> to <span class="font-medium">{{ logs.to || 0 }}</span> of <span class="font-medium">{{ logs.total }}</span> results
