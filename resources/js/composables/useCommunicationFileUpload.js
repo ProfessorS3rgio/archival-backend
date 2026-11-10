@@ -39,7 +39,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
   const autoFillMessage = ref('')
   const baseline = form => Object.fromEntries(['title', 'subject', 'year', 'date_received'].map(field => [field, form[field]]))
   const applyAutoFill = () => {
-    if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value) return
+    if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value || processingFiles.value.some(Boolean)) return
     const text = previewObjects.value[0]?.extractedText || ''
     const details = parseMunicipalCommunication(text, selectedFiles.value[0].name)
     const fields = fillMunicipalCommunication(activeForm, details, selectionBaseline, { editing })

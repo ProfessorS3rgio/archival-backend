@@ -57,6 +57,21 @@ test('late extraction results do not overwrite manual input', async () => {
   assert.equal(form.date_received, '2022-01-12')
 })
 
+test('enabling auto-fill during extraction waits for document text before suggesting values', async () => {
+  let finish
+  const { form, state, choose } = setup({
+    autoFillEnabled: false,
+    extractPDFText: () => new Promise(resolve => { finish = resolve }),
+    savePreference: async () => ({ data: { success: true, auto_fill: true } }),
+  })
+  const pending = choose('filename-only.pdf')
+  await state.toggleAutoFill()
+  assert.equal(form.title, '')
+  finish(text)
+  await pending
+  assert.equal(form.title, 'Request for certified copies')
+})
+
 test('edit forms protect saved details even when auto-fill is explicitly enabled', async () => {
   const { form, state, choose } = setup({ editing: true, savePreference: async () => ({ data: { success: true, auto_fill: true } }) })
   Object.assign(form, { title: 'Saved title', subject: 'Siay', year: 2020, date_received: '2020-05-01' })
