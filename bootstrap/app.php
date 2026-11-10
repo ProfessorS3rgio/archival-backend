@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->alias([
+            'not.legislator' => \App\Http\Middleware\NotLegislatorMiddleware::class,
+        ]);
+
         $middleware->web(append: [
             \App\Http\Middleware\ValidateInputText::class,
             \App\Http\Middleware\HandleFormResponses::class,
