@@ -285,7 +285,7 @@
                       Edit
                     </Link>
                     <button
-                      v-if="currentUser.role === 'admin'"
+                      v-if="canDeleteDocument(currentUser, resolution)"
                       @click="deleteResolution(resolution.resolution_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       title="Delete Resolution"
@@ -335,6 +335,7 @@
 </template>
 
 <script setup>
+import { canDeleteDocument } from '@/utils/documentPermissions'
 import { ref, computed, watch } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { Link, usePage } from '@inertiajs/vue3'

@@ -157,7 +157,7 @@ export const getTypeLabel = (type) => {
     'project': 'Boundary Dispute',
     'moa': 'MOA',
     'municipal-communication': 'Municipal Communication',
-    'national-office': 'National Office',
+    'national-office-communication': 'National Office',
     'provincial-office': 'Provincial Office'
   }
   return labels[type] || type.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
@@ -197,7 +197,7 @@ export const getTypeIcon = (type) => {
     'project': 'project-icon',
     'moa': 'moa-icon',
     'municipal-communication': 'chat-icon',
-    'national-office': 'office-icon',
+    'national-office-communication': 'office-icon',
     'provincial-office': 'office-icon'
   }
   return icons[type] || 'DocsIcon'
@@ -214,7 +214,7 @@ export const getTypeIconClass = (type) => {
     'project': 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400',
     'moa': 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400',
     'municipal-communication': 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
-    'national-office': 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+    'national-office-communication': 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
     'provincial-office': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
   }
   return classes[type] || 'bg-gray-100 dark:bg-gray-900/30 text-gray-600 dark:text-gray-400'

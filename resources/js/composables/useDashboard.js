@@ -124,7 +124,7 @@ export function useDashboard(props) {
       'project': PlusIcon,
       'moa': DocsIcon,
       'municipal-communication': DocsIcon,
-      'national-office': DocsIcon,
+      'national-office-communication': DocsIcon,
       'provincial-office': DocsIcon,
       'committee-report': DocsIcon
     }
@@ -141,7 +141,7 @@ export function useDashboard(props) {
       'project': 'bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400',
       'moa': 'bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400',
       'municipal-communication': 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400',
-      'national-office': 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
+      'national-office-communication': 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400',
       'provincial-office': 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
       'committee-report': 'bg-violet-100 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400'
     }

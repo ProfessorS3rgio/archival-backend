@@ -233,7 +233,7 @@
                       Edit
                     </Link>
                     <button
-                      v-if="currentUser.role === 'admin'"
+                      v-if="canDeleteDocument(currentUser, memorandumOfAgreement)"
                       @click="deleteMemorandumOfAgreement(memorandumOfAgreement.moa_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       title="Delete MOA"
@@ -283,6 +283,7 @@
 </template>
 
 <script setup>
+import { canDeleteDocument } from '@/utils/documentPermissions'
 import { ref, computed, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'

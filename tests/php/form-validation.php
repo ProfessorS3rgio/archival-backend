@@ -94,6 +94,18 @@ $edit['password_confirmation'] = '';
 $oldHash = $created->password;
 $response = submit('/settings/manage-accounts/'.$created->id, $edit, 'PUT');
 check($response->isSuccessful() && $created->fresh()->password === $oldHash, 'Editing an account with a blank password preserves its password');
+foreach (['staff', 'legislator'] as $role) {
+    $created->update(['role' => $role]);
+    $response = submit('/settings/manage-accounts/'.$created->id, array_replace($edit, ['role' => 'admin']), 'PUT');
+    check($response->getStatusCode() === 422 && isset(json_decode($response->getContent(), true)['errors']['role']) && $created->fresh()->role === $role, "Editing a {$role} account cannot promote it to Admin");
+}
+$response = submit('/settings/manage-accounts/'.$created->id, array_replace($edit, ['role' => 'staff']), 'PUT');
+check($response->isSuccessful() && $created->fresh()->role === 'staff', 'Editing an account can switch between Legislator and Staff');
+$adminEdit = ['name' => $admin->name, 'username' => $admin->username, 'email' => $admin->email, 'role' => 'admin'];
+$response = submit('/settings/manage-accounts/'.$admin->id, $adminEdit, 'PUT');
+check($response->isSuccessful() && $admin->fresh()->role === 'admin', 'Existing administrators can edit details while retaining their role');
+$response = submit('/settings/manage-accounts/'.$admin->id, array_replace($adminEdit, ['role' => 'staff']), 'PUT');
+check($response->getStatusCode() === 422 && $admin->fresh()->role === 'admin', 'Existing administrator roles cannot be changed through account editing');
 $response = submit('/settings/manage-accounts/'.$created->id, array_replace($edit, ['username' => 'invalid space']), 'PUT', true);
 check($response->isRedirect() && session('errors')->has('username'), 'Inertia edit errors remain in the form error bag');
 

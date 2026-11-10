@@ -220,7 +220,7 @@
                       Edit
                     </Link>
                     <button
-                      v-if="currentUser.role === 'admin'"
+                      v-if="canDeleteDocument(currentUser, report)"
                       @click="deleteReport(report.report_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       title="Delete Committee Report"
@@ -274,6 +274,7 @@
 </template>
 
 <script setup>
+import { canDeleteDocument } from '@/utils/documentPermissions'
 import { ref, computed, watch } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { router, usePage } from '@inertiajs/vue3'

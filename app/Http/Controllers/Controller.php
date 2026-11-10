@@ -31,6 +31,20 @@ abstract class Controller
      */
     protected function canDeleteDocument($document)
     {
-        return $this->canEditDocument($document);
+        $user = auth()->user();
+        if (! $user) {
+            return false;
+        }
+        if ($user->role === 'admin') {
+            return true;
+        }
+
+        $ownerId = $document instanceof \App\Models\Accomplishment
+            ? $document->uploaded_by
+            : $document->added_by;
+
+        return $user->role === 'staff'
+            && $ownerId !== null
+            && (string) $ownerId === (string) $user->getKey();
     }
 }

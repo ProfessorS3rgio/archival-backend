@@ -233,7 +233,7 @@
                       Edit
                     </Link>
                     <button
-                      v-if="currentUser.role === 'admin'"
+                      v-if="canDeleteDocument(currentUser, draft)"
                       @click="deleteDraft(draft.ordinance_draft_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                       title="Delete Draft Ordinance"
@@ -283,6 +283,7 @@
 </template>
 
 <script setup>
+import { canDeleteDocument } from '@/utils/documentPermissions'
 import { ref, computed, watch } from 'vue'
 import { Link } from '@inertiajs/vue3'
 import { router, usePage } from '@inertiajs/vue3'

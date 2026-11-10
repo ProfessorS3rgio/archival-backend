@@ -49,7 +49,7 @@
       </div>
 
       <!-- Stats Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
           <div class="flex items-center">
             <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -87,6 +87,17 @@
             </div>
           </div>
         </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+          <div class="flex items-center">
+            <div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+              <UserCircleIcon class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Legislators</p>
+              <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ legislatorCount }}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Search and Filter -->
@@ -115,6 +126,7 @@
               <option value="">All Roles</option>
               <option value="admin">Admin</option>
               <option value="staff">Staff</option>
+              <option value="legislator">Legislator</option>
             </select>
           </div>
         </div>
@@ -178,11 +190,9 @@
                 <td role="cell" data-label="Role" data-field="status" class="px-6 py-4 whitespace-nowrap">
                   <span :class="[
                     'px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full',
-                    (user.role || '').toString().trim().toLowerCase() === 'admin' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400'
+                    getRoleClasses(user.role)
                   ]">
-                    {{ (user.role || '').toString().trim().toLowerCase() === 'admin' ? 'Admin' : 'Staff' }}
+                    {{ getRoleLabel(user.role) }}
                   </span>
                 </td>
                 <td role="cell" data-label="Created At" data-field="detail" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
@@ -270,11 +280,15 @@
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
+                      <div v-if="editingAdmin" class="text-sm text-gray-700 dark:text-gray-300">
+                        <p class="font-medium">Admin</p>
+                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Administrator roles cannot be changed here.</p>
+                      </div>
                       <select
+                        v-else
                         v-model="editForm.role"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
-                        <option value="admin">Admin</option>
                         <option value="staff">Staff</option>
                         <option value="legislator">Legislator</option>
                       </select>
@@ -356,6 +370,7 @@ const props = defineProps({
 const searchQuery = ref('')
 const roleFilter = ref('')
 const showEditModal = ref(false)
+const editingAdmin = ref(false)
 const editForm = useForm({
   id: null,
   name: '',
@@ -365,6 +380,16 @@ const editForm = useForm({
   password: '',
   password_confirmation: ''
 })
+
+const normalizeRole = role => String(role || '').trim().toLowerCase()
+const roleLabels = { admin: 'Admin', staff: 'Staff', legislator: 'Legislator', user: 'User' }
+const getRoleLabel = role => roleLabels[normalizeRole(role)] || 'Unknown'
+const getRoleClasses = role => ({
+  admin: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  staff: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
+  legislator: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
+}[normalizeRole(role)] || 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400')
+const legislatorCount = computed(() => props.users.filter(user => normalizeRole(user.role) === 'legislator').length)
 
 const adminCount = computed(() => props.users.filter(u => (u.role || '').toString().trim().toLowerCase() === 'admin').length)
 const staffCount = computed(() => props.users.filter(u => (u.role || '').toString().trim().toLowerCase() === 'staff').length)
@@ -382,7 +407,7 @@ const filteredUsers = computed(() => {
   }
 
   if (roleFilter.value) {
-    filtered = filtered.filter(user => user.role === roleFilter.value)
+    filtered = filtered.filter(user => normalizeRole(user.role) === roleFilter.value)
   }
 
   return filtered
@@ -409,6 +434,7 @@ const formatDate = (dateString) => {
 
 const editUser = (user) => {
   editForm.clearErrors()
+  editingAdmin.value = normalizeRole(user.role) === 'admin'
   Object.assign(editForm, {
     id: user.id,
     name: user.name,
