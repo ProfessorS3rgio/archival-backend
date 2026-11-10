@@ -148,7 +148,11 @@ class DashboardController extends Controller
             ->pluck('activity_year')->filter(fn ($year) => $year !== null)
             ->unique()->sortDesc()->values()->all();
 
-        return Inertia::render('Dashboard', [
+        $dashboardPage = Auth::user()?->role === 'legislator'
+            ? 'LegislatorDashboard'
+            : 'Dashboard';
+
+        return Inertia::render($dashboardPage, [
             'stats' => [
                 'ordinances' => $ordinances->count(),
                 'resolutions' => $resolutions->count(),
