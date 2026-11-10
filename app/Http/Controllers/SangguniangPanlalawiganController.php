@@ -78,7 +78,7 @@ class SangguniangPanlalawiganController extends Controller
             'term_id' => 'required|exists:sangguniang_panlalawigan_terms,term_id',
             'district' => 'nullable|in:1st District,2nd District,Ex-Officio',
             'full_name' => 'required|string|max:255',
-            'extension' => 'required|in:Hon,Atty,Doc',
+            'extension' => 'required|in:Hon,Atty,Judge,Doc',
             'position' => 'required|string|max:255',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
@@ -138,7 +138,7 @@ class SangguniangPanlalawiganController extends Controller
             'term_id' => 'required|exists:sangguniang_panlalawigan_terms,term_id',
             'district' => 'nullable|in:1st District,2nd District,Ex-Officio',
             'full_name' => 'required|string|max:255',
-            'extension' => 'required|in:Hon,Atty,Doc',
+            'extension' => 'required|in:Hon,Atty,Judge,Doc',
             'position' => 'required|string|max:255',
             'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
