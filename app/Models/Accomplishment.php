@@ -15,6 +15,8 @@ class Accomplishment extends Model
     protected $fillable = [
         'uploaded_by',
         'title',
+        'respondent',
+        'complainant',
         'accomplishment_year',
         'file_name',
         'file_url',

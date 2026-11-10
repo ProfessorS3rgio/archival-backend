@@ -11,7 +11,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
-          Back to Projects
+          Back to Boundary Disputes
         </Link>
       </div>
 
@@ -22,15 +22,15 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              Project Details
+              Boundary Dispute Details
             </h3>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Project Name -->
+            <!-- Boundary Dispute Name -->
             <div class="md:col-span-2">
               <label for="project_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Project Name <span class="text-red-500">*</span>
+                Boundary Dispute Name <span class="text-red-500">*</span>
               </label>
               <input
                 id="project_name"
@@ -38,12 +38,28 @@
                 type="text"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 :class="{ 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500': errors.project_name }"
-                placeholder="Enter project name"
+                placeholder="Enter boundary dispute title"
                 required
               />
               <p v-if="errors.project_name" class="mt-1 text-sm text-red-600 dark:text-red-400">
                 {{ errors.project_name }}
               </p>
+            </div>
+
+            <div>
+              <label for="respondent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Respondent Municipalities or Brgy</label>
+              <input id="respondent" v-model="form.respondent" type="text" maxlength="255"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="{ 'border-red-500': errors.respondent }" placeholder="Enter respondent municipalities or brgy" />
+              <p v-if="errors.respondent" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.respondent }}</p>
+            </div>
+
+            <div>
+              <label for="complainant" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Complainant Municipalities or Brgy</label>
+              <input id="complainant" v-model="form.complainant" type="text" maxlength="255"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="{ 'border-red-500': errors.complainant }" placeholder="Enter complainant municipalities or brgy" />
+              <p v-if="errors.complainant" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.complainant }}</p>
             </div>
 
             <!-- Code No -->
@@ -439,6 +455,8 @@ const form = useForm({
   district: props.project?.district || '',
   location: props.project?.location || '',
   project_name: props.project?.project_name || '',
+  respondent: props.project?.respondent || '',
+  complainant: props.project?.complainant || '',
   year: props.project?.year || '',
   source_fund: props.project?.source_fund || '',
   source_type: props.project?.source_type || '',
@@ -475,9 +493,9 @@ const project = computed(() => props.project)
 
 // Dynamic text based on form type
 const formText = computed(() => ({
-  title: props.isEditing ? 'Edit Project' : 'Create New Project',
-  subtitle: props.isEditing ? 'Update project information' : 'Add a new project to the system',
-  button: props.isEditing ? 'Update Project' : 'Create Project'
+  title: props.isEditing ? 'Edit Boundary Dispute' : 'Create New Boundary Dispute',
+  subtitle: props.isEditing ? 'Update boundary dispute information' : 'Add a new boundary dispute to the system',
+  button: props.isEditing ? 'Update Boundary Dispute' : 'Create Boundary Dispute'
 }))
 
 // Submit form
@@ -512,6 +530,8 @@ const submit = async () => {
   formData.append('district', form.district)
   formData.append('location', form.location)
   formData.append('project_name', form.project_name)
+  formData.append('respondent', form.respondent)
+  formData.append('complainant', form.complainant)
   formData.append('year', form.year)
   formData.append('source_fund', form.source_fund)
   formData.append('source_type', form.source_type)

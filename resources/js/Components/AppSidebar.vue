@@ -464,12 +464,12 @@ const menuGroups = [
         name: "Programs",
         subItems: [
           {
-            name: "Accomplishments",
+            name: "Administrative Cases",
             path: "/accomplishments",
             icon: PieChartIcon,
           },
           {
-            name: "Projects",
+            name: "Boundary Disputes",
             path: "/projects",
             icon: PlugInIcon,
           },

@@ -26,6 +26,8 @@ class ProjectController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('project_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('respondent', 'like', "%{$searchTerm}%")
+                  ->orWhere('complainant', 'like', "%{$searchTerm}%")
                   ->orWhere('district', 'like', "%{$searchTerm}%")
                   ->orWhere('location', 'like', "%{$searchTerm}%")
                   ->orWhere('source_fund', 'like', "%{$searchTerm}%")
@@ -91,6 +93,8 @@ class ProjectController extends Controller
             'district' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'project_name' => 'required|string|max:255',
+            'respondent' => 'nullable|string|max:255',
+            'complainant' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:2100',
             'source_fund' => 'nullable|string|max:255',
             'source_type' => 'nullable|string|max:255',
@@ -123,10 +127,10 @@ class ProjectController extends Controller
         $project = Project::create($validated);
 
         // Log the creation
-        LoggingService::logCreate($project, "Created project: {$project->project_name}");
+        LoggingService::logCreate($project, "Created boundary dispute: {$project->project_name}");
 
         return redirect()->route('projects.index')
-            ->with('success', 'Project created successfully.');
+            ->with('success', 'Boundary Dispute created successfully.');
     }
 
     /**
@@ -142,7 +146,7 @@ class ProjectController extends Controller
         );
 
         // Log the view
-        LoggingService::logView($project, "Viewed project: {$project->project_name}");
+        LoggingService::logView($project, "Viewed boundary dispute: {$project->project_name}");
 
         return Inertia::render('Show/ProjectShow', [
             'project' => $project->load(['addedBy']),
@@ -183,6 +187,8 @@ class ProjectController extends Controller
             'district' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'project_name' => 'required|string|max:255',
+            'respondent' => 'nullable|string|max:255',
+            'complainant' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:2100',
             'source_fund' => 'nullable|string|max:255',
             'source_type' => 'nullable|string|max:255',
@@ -224,10 +230,10 @@ class ProjectController extends Controller
         $project->update($validated);
 
         // Log the update
-        LoggingService::logUpdate($project, $oldValues, "Updated project: {$project->project_name}");
+        LoggingService::logUpdate($project, $oldValues, "Updated boundary dispute: {$project->project_name}");
 
         return redirect()->route('projects.index')
-            ->with('success', 'Project updated successfully.');
+            ->with('success', 'Boundary Dispute updated successfully.');
     }
 
     /**
@@ -247,6 +253,6 @@ class ProjectController extends Controller
         }
 
         return redirect()->route('projects.index')
-            ->with('success', 'Project deleted successfully.');
+            ->with('success', 'Boundary Dispute deleted successfully.');
     }
 }

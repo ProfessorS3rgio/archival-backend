@@ -43,6 +43,22 @@ maintenance mode, fix that failure before bringing the app up. Run database
 migrations only when the deployment requires them; do not import SQL backups
 as part of a routine code update.
 
+For the Administrative Cases / Boundary Disputes update, take a production
+database backup using the server's existing backup procedure. While in
+maintenance mode, after pulling and before `artisan up`, run:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_11_000000_add_parties_to_administrative_cases_and_boundary_disputes.php
+```
+
+This adds nullable `respondent` and `complainant` columns to both existing
+document tables. Existing records, file paths, IDs, routes, and metadata are
+retained. Older records show `N/A` until parties are entered. The original
+create migrations include the same columns for fresh installations; the upgrade
+migration skips columns that already exist. Do not run `migrate:fresh` on
+production. Rolling back this migration removes the party columns and their
+values; keep a database backup if those values need to be restored.
+
 Officials' profile pictures use the same `private` disk as documents (R2 in
 production), under `private/sp-profiles/`. The picture record stores its disk;
 older records default to `public` until copied. Images are served through the

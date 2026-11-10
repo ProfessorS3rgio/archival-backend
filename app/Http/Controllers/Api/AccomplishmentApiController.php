@@ -25,6 +25,8 @@ class AccomplishmentApiController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('respondent', 'like', "%{$searchTerm}%")
+                  ->orWhere('complainant', 'like', "%{$searchTerm}%")
                   ->orWhere('extracted_text', 'like', "%{$searchTerm}%");
             });
         }
@@ -55,13 +57,15 @@ class AccomplishmentApiController extends Controller
             return [
                 'id' => $accomplishment->accomplish_id,
                 'title' => $accomplishment->title,
+                'respondent' => $accomplishment->respondent,
+                'complainant' => $accomplishment->complainant,
                 'accomplishment_year' => $accomplishment->accomplishment_year,
                 'date_uploaded' => $accomplishment->date_uploaded,
                 'created_at' => $accomplishment->created_at,
                 'updated_at' => $accomplishment->updated_at,
                 'files' => $files,
             ];
-        }, 'Accomplishments retrieved successfully');
+        }, 'Administrative Cases retrieved successfully');
     }
 
     /**
@@ -85,6 +89,8 @@ class AccomplishmentApiController extends Controller
         $data = [
             'id' => $accomplishment->accomplish_id,
             'title' => $accomplishment->title,
+            'respondent' => $accomplishment->respondent,
+            'complainant' => $accomplishment->complainant,
             'accomplishment_year' => $accomplishment->accomplishment_year,
             'date_uploaded' => $accomplishment->date_uploaded,
             'created_at' => $accomplishment->created_at,
@@ -92,7 +98,7 @@ class AccomplishmentApiController extends Controller
             'files' => $files
         ];
 
-        return $this->ok($data, 'Accomplishment retrieved successfully');
+        return $this->ok($data, 'Administrative Case retrieved successfully');
     }
 
     /**

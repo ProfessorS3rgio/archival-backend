@@ -25,6 +25,8 @@ class ProjectApiController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('project_name', 'like', "%{$searchTerm}%")
+                  ->orWhere('respondent', 'like', "%{$searchTerm}%")
+                  ->orWhere('complainant', 'like', "%{$searchTerm}%")
                   ->orWhere('code_no', 'like', "%{$searchTerm}%")
                   ->orWhere('location', 'like', "%{$searchTerm}%")
                   ->orWhere('district', 'like', "%{$searchTerm}%")
@@ -69,6 +71,8 @@ class ProjectApiController extends Controller
                 'id' => $project->project_id,
                 'code_no' => $project->code_no,
                 'project_name' => $project->project_name,
+                'respondent' => $project->respondent,
+                'complainant' => $project->complainant,
                 'district' => $project->district,
                 'location' => $project->location,
                 'year' => $project->year,
@@ -79,7 +83,7 @@ class ProjectApiController extends Controller
                 'updated_at' => $project->updated_at,
                 'files' => $files,
             ];
-        }, 'Projects retrieved successfully');
+        }, 'Boundary Disputes retrieved successfully');
     }
 
     /**
@@ -104,6 +108,8 @@ class ProjectApiController extends Controller
             'id' => $project->project_id,
             'code_no' => $project->code_no,
             'project_name' => $project->project_name,
+            'respondent' => $project->respondent,
+            'complainant' => $project->complainant,
             'district' => $project->district,
             'location' => $project->location,
             'year' => $project->year,
@@ -115,7 +121,7 @@ class ProjectApiController extends Controller
             'files' => $files
         ];
 
-        return $this->ok($data, 'Project retrieved successfully');
+        return $this->ok($data, 'Boundary Dispute retrieved successfully');
     }
 
     /**

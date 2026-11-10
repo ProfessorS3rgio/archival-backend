@@ -18,6 +18,8 @@ class Project extends Model
         'district',
         'location',
         'project_name',
+        'respondent',
+        'complainant',
         'year',
         'source_fund',
         'source_type',

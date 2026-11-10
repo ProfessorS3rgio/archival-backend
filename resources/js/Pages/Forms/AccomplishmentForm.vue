@@ -11,7 +11,7 @@
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
-          Back to Accomplishments
+          Back to Administrative Cases
         </Link>
       </div>
 
@@ -22,7 +22,7 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
-              Accomplishment Details
+              Administrative Case Details
             </h3>
           </div>
 
@@ -38,7 +38,7 @@
                 type="text"
                 class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 :class="{ 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500': errors.title }"
-                placeholder="Enter accomplishment title"
+                placeholder="Enter administrative case title"
                 required
               />
               <p v-if="errors.title" class="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -46,10 +46,26 @@
               </p>
             </div>
 
-            <!-- Accomplishment Year -->
+            <div>
+              <label for="respondent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Respondent</label>
+              <input id="respondent" v-model="form.respondent" type="text" maxlength="255"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="{ 'border-red-500': errors.respondent }" placeholder="Enter respondent" />
+              <p v-if="errors.respondent" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.respondent }}</p>
+            </div>
+
+            <div>
+              <label for="complainant" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Complainant</label>
+              <input id="complainant" v-model="form.complainant" type="text" maxlength="255"
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                :class="{ 'border-red-500': errors.complainant }" placeholder="Enter complainant" />
+              <p v-if="errors.complainant" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.complainant }}</p>
+            </div>
+
+            <!-- Administrative Case Year -->
             <div>
               <label for="accomplishment_year" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Accomplishment Year
+                Administrative Case Year
               </label>
               <input
                 id="accomplishment_year"
@@ -277,6 +293,8 @@ const props = defineProps({
 // Form data
 const form = useForm({
   title: props.accomplishment?.title || '',
+  respondent: props.accomplishment?.respondent || '',
+  complainant: props.accomplishment?.complainant || '',
   accomplishment_year: props.accomplishment?.accomplishment_year || '',
   file: null,
   extracted_text: '',
@@ -307,9 +325,9 @@ const accomplishment = computed(() => props.accomplishment)
 
 // Dynamic text based on form type
 const formText = computed(() => ({
-  title: props.isEditing ? 'Edit Accomplishment' : 'Create New Accomplishment',
-  subtitle: props.isEditing ? 'Update accomplishment information' : 'Add a new accomplishment report to the system',
-  button: props.isEditing ? 'Update Accomplishment' : 'Create Accomplishment'
+  title: props.isEditing ? 'Edit Administrative Case' : 'Create New Administrative Case',
+  subtitle: props.isEditing ? 'Update administrative case information' : 'Add a new administrative case to the system',
+  button: props.isEditing ? 'Update Administrative Case' : 'Create Administrative Case'
 }))
 
 // Submit form
@@ -331,6 +349,8 @@ const submit = async () => {
   
   // Add all standard fields
   formData.append('title', form.title)
+  formData.append('respondent', form.respondent)
+  formData.append('complainant', form.complainant)
   formData.append('accomplishment_year', form.accomplishment_year)
   formData.append('extracted_text', extractedText || '')
   

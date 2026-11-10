@@ -1,34 +1,43 @@
 <template>
-  <AdminLayout title="View Project">
+  <AdminLayout title="View Boundary Dispute">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Project Details</h1>
-          <p class="text-gray-600 dark:text-gray-400">View project information and attached document</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Boundary Dispute Details</h1>
+          <p class="text-gray-600 dark:text-gray-400">View boundary dispute information and attached document</p>
         </div>
         <div class="flex flex-wrap gap-3">
           <Link v-if="currentUser.role === 'admin' || project.added_by === currentUser.id" :href="`/projects/${project.project_id}/edit`" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
             </svg>
-            Edit Project
+            Edit Boundary Dispute
           </Link>
           <Link href="/projects" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
-            Back to Projects
+            Back to Boundary Disputes
           </Link>
         </div>
       </div>
 
-      <!-- Project Details -->
+      <!-- Boundary Dispute Details -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Project Information</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Boundary Dispute Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Respondent Municipalities or Brgy</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ project.respondent || 'N/A' }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Complainant Municipalities or Brgy</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ project.complainant || 'N/A' }}</p>
+          </div>
+
           <div class="md:col-span-2">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Project Name</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Boundary Dispute Name</label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ project.project_name || 'N/A' }}</p>
           </div>
           <div>
@@ -129,7 +138,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
         </svg>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Document Attached</h3>
-        <p class="text-gray-500 dark:text-gray-400">This project has no attached document.</p>
+        <p class="text-gray-500 dark:text-gray-400">This boundary dispute has no attached document.</p>
       </div>
     </div>
   </AdminLayout>

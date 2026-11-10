@@ -157,8 +157,16 @@
                       </div>
                     </div>
 
-                    <!-- Accomplishment, Project, MOA -->
+                    <!-- Administrative Case, Boundary Dispute, MOA -->
                     <div v-else-if="['accomplishment', 'project', 'moa'].includes(type)" class="space-y-4">
+                      <div v-if="['accomplishment', 'project'].includes(type)" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div v-for="party in ['respondent', 'complainant']" :key="party" class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
+                          <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
+                            {{ party === 'respondent' ? 'Respondent' : 'Complainant' }}{{ type === 'project' ? ' Municipalities or Brgy' : '' }}
+                          </label>
+                          <p class="text-sm text-gray-900 dark:text-white">{{ document[party] || 'N/A' }}</p>
+                        </div>
+                      </div>
                       <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4">
                         <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">
                           Description

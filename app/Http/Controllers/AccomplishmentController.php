@@ -24,6 +24,8 @@ class AccomplishmentController extends Controller
             $searchTerm = $request->search;
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('title', 'like', "%{$searchTerm}%")
+                  ->orWhere('respondent', 'like', "%{$searchTerm}%")
+                  ->orWhere('complainant', 'like', "%{$searchTerm}%")
                   ->orWhere('file_name', 'like', "%{$searchTerm}%")
                   ->orWhere('extracted_text', 'like', "%{$searchTerm}%");
             });
@@ -71,6 +73,8 @@ class AccomplishmentController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'respondent' => 'nullable|string|max:255',
+            'complainant' => 'nullable|string|max:255',
             'accomplishment_year' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
@@ -97,10 +101,10 @@ class AccomplishmentController extends Controller
         $accomplishment = Accomplishment::create($validated);
 
         // Log the creation
-        LoggingService::logCreate($accomplishment, "Created accomplishment: {$accomplishment->title}");
+        LoggingService::logCreate($accomplishment, "Created administrative case: {$accomplishment->title}");
 
         return redirect()->route('accomplishments.index')
-            ->with('success', 'Accomplishment created successfully.');
+            ->with('success', 'Administrative Case created successfully.');
     }
 
     /**
@@ -116,7 +120,7 @@ class AccomplishmentController extends Controller
         );
 
         // Log the view
-        LoggingService::logView($accomplishment, "Viewed accomplishment: {$accomplishment->title}");
+        LoggingService::logView($accomplishment, "Viewed administrative case: {$accomplishment->title}");
 
         return Inertia::render('Show/AccomplishmentShow', [
             'accomplishment' => $accomplishment->load(['uploader']),
@@ -154,6 +158,8 @@ class AccomplishmentController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
+            'respondent' => 'nullable|string|max:255',
+            'complainant' => 'nullable|string|max:255',
             'accomplishment_year' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
@@ -187,10 +193,10 @@ class AccomplishmentController extends Controller
         $accomplishment->update($validated);
 
         // Log the update
-        LoggingService::logUpdate($accomplishment, $oldValues, "Updated accomplishment: {$accomplishment->title}");
+        LoggingService::logUpdate($accomplishment, $oldValues, "Updated administrative case: {$accomplishment->title}");
 
         return redirect()->route('accomplishments.index')
-            ->with('success', 'Accomplishment updated successfully.');
+            ->with('success', 'Administrative Case updated successfully.');
     }
 
     /**
@@ -208,12 +214,12 @@ class AccomplishmentController extends Controller
         }
 
         // Log the deletion
-        LoggingService::logDelete($accomplishment, "Deleted accomplishment: {$accomplishment->title}");
+        LoggingService::logDelete($accomplishment, "Deleted administrative case: {$accomplishment->title}");
 
         $accomplishment->delete();
 
         return redirect()->route('accomplishments.index')
-            ->with('success', 'Accomplishment deleted successfully.');
+            ->with('success', 'Administrative Case deleted successfully.');
     }
 
     /**
@@ -226,7 +232,7 @@ class AccomplishmentController extends Controller
         }
 
         // Log the download
-        LoggingService::logView($accomplishment, "Downloaded accomplishment file: {$accomplishment->title}");
+        LoggingService::logView($accomplishment, "Downloaded administrative case file: {$accomplishment->title}");
 
         return Storage::disk('private')->download($accomplishment->file_url, $accomplishment->file_name);
     }

@@ -1,5 +1,5 @@
 <template>
-  <AdminLayout title="Accomplishments">
+  <AdminLayout title="Administrative Cases">
     <nav class="flex" aria-label="Breadcrumb">
   <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
     <li class="inline-flex items-center">
@@ -15,7 +15,7 @@
         <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
         </svg>
-        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Accomplishments</span>
+        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Administrative Cases</span>
       </div>
     </li>
   </ol>
@@ -25,8 +25,8 @@
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Accomplishments</h1>
-          <p class="text-gray-600 dark:text-gray-400">Manage and view all accomplishment reports in the system</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Administrative Cases</h1>
+          <p class="text-gray-600 dark:text-gray-400">Manage and view all administrative cases in the system</p>
         </div>
         <div class="flex gap-3" v-if="!isLegislator">
           <Link
@@ -34,7 +34,7 @@
             class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-2" />
-            New Accomplishment
+            New Administrative Case
           </Link>
         </div>
       </div>
@@ -44,7 +44,7 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Accomplishments</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Administrative Cases</p>
               <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</p>
             </div>
             <div class="flex-shrink-0">
@@ -102,14 +102,14 @@
         </div>
       </div>
 
-      <!-- Accomplishments Table -->
+      <!-- Administrative Cases Table -->
       <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
           <div class="flex flex-col flex-wrap gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Accomplishments</h3>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Administrative Cases</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Showing {{ filteredAccomplishments.length }} of {{ accomplishments.length }} accomplishment{{ accomplishments.length !== 1 ? 's' : '' }}
+                Showing {{ filteredAccomplishments.length }} of {{ accomplishments.length }} administrative case{{ accomplishments.length !== 1 ? 's' : '' }}
               </p>
             </div>
             <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-3 w-full xl:w-auto">
@@ -117,7 +117,7 @@
               <div class="w-full sm:w-auto sm:min-w-[280px]">
                 <SearchBar
                   v-model="searchInput"
-                  placeholder="Search by title or file name..."
+                  placeholder="Search by title, respondent, complainant, or file name..."
                   :results-count="searchQuery ? filteredAccomplishments.length : null"
                   :is-loading="isSearching"
                 />
@@ -157,6 +157,9 @@
           <table role="table" class="mobile-record-table w-full">
             <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
               <tr role="row">
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Respondent</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Complainant</th>
+
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Title</th>
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">File</th>
@@ -171,6 +174,12 @@
                 :key="accomplishment.accomplish_id"
                 class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
+                <td role="cell" data-label="Respondent" data-field="detail" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <span v-html="highlightMatch(accomplishment.respondent || 'N/A', searchQuery)"></span>
+                </td>
+                <td role="cell" data-label="Complainant" data-field="detail" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <span v-html="highlightMatch(accomplishment.complainant || 'N/A', searchQuery)"></span>
+                </td>
                 <td role="cell" data-label="Title" data-field="title" class="px-6 py-4 text-sm text-gray-900 dark:text-white max-w-xs truncate">
                   <div class="record-card-title">
                     <span v-html="highlightMatch(accomplishment.title, searchQuery)"></span>
@@ -240,7 +249,7 @@
                       v-if="currentUser.role === 'admin'"
                       @click="deleteAccomplishment(accomplishment.accomplish_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      title="Delete Accomplishment"
+                      title="Delete Administrative Case"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -255,10 +264,10 @@
         <div v-if="filteredAccomplishments.length === 0" class="text-center py-12">
           <SuccessIcon class="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {{ (searchQuery || selectedYear) ? 'No accomplishments match your filters' : 'No accomplishments found' }}
+            {{ (searchQuery || selectedYear) ? 'No administrative cases match your filters' : 'No administrative cases found' }}
           </h3>
           <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ (searchQuery || selectedYear) ? 'Try adjusting your search terms or filters.' : 'Get started by creating your first accomplishment report.' }}
+            {{ (searchQuery || selectedYear) ? 'Try adjusting your search terms or filters.' : 'Get started by creating your first accomplishment.' }}
           </p>
           <div v-if="accomplishments.length === 0 && !isLegislator" class="flex justify-center">
             <Link
@@ -266,7 +275,7 @@
               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
               <PlusIcon class="w-4 h-4 mr-2" />
-              Create Accomplishment
+              Create Administrative Case
             </Link>
           </div>
           <div v-else class="flex justify-center">
@@ -422,7 +431,7 @@ const deleteAccomplishment = (accomplishmentId) => {
         onError: () => {
           Swal.fire({
             title: 'Error!',
-            text: 'Failed to delete accomplishment. Please try again.',
+            text: 'Failed to delete administrative case. Please try again.',
             icon: 'error',
             background: 'var(--swal-background, #ffffff)',
             color: 'var(--swal-text-color, #374151)',

@@ -1,5 +1,5 @@
 ﻿<template>
-  <AdminLayout title="Projects">
+  <AdminLayout title="Boundary Disputes">
     <nav class="flex" aria-label="Breadcrumb">
   <ol class="inline-flex items-center space-x-1 md:space-x-2 rtl:space-x-reverse">
     <li class="inline-flex items-center">
@@ -15,7 +15,7 @@
         <svg class="rtl:rotate-180 w-3 h-3 text-gray-400 mx-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 6 10">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 9 4-4-4-4"/>
         </svg>
-        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Projects</span>
+        <span class="ms-1 text-sm font-medium text-gray-500 md:ms-2 dark:text-gray-400">Boundary Disputes</span>
       </div>
     </li>
   </ol>
@@ -25,8 +25,8 @@
       <!-- Header Section -->
       <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Projects</h1>
-          <p class="text-gray-600 dark:text-gray-400">Manage and view all projects in the system</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Boundary Disputes</h1>
+          <p class="text-gray-600 dark:text-gray-400">Manage and view all boundary disputes in the system</p>
         </div>
         <div class="flex gap-3" v-if="!isLegislator">
           <Link
@@ -34,7 +34,7 @@
             class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-2" />
-            New Project
+            New Boundary Dispute
           </Link>
         </div>
       </div>
@@ -44,7 +44,7 @@
         <div class="rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Projects</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Boundary Disputes</p>
               <p class="text-3xl font-bold text-gray-900 dark:text-white">{{ stats.total }}</p>
             </div>
             <div class="flex-shrink-0">
@@ -102,14 +102,14 @@
         </div>
       </div>
 
-      <!-- Projects Table -->
+      <!-- Boundary Disputes Table -->
       <div class="rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
         <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800">
           <div class="flex flex-col flex-wrap gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div>
-              <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Projects</h3>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">All Boundary Disputes</h3>
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Showing {{ filteredProjects.length }} of {{ projects.length }} project{{ projects.length !== 1 ? 's' : '' }}
+                Showing {{ filteredProjects.length }} of {{ projects.length }} boundary dispute{{ projects.length !== 1 ? 's' : '' }}
               </p>
             </div>
             <div class="flex min-w-0 flex-col flex-wrap sm:flex-row gap-3 w-full xl:w-auto">
@@ -117,7 +117,7 @@
               <div class="w-full sm:w-auto sm:min-w-[280px]">
                 <SearchBar
                   v-model="searchInput"
-                  placeholder="Search by project name, district, or location..."
+                  placeholder="Search by title, respondent, complainant, district, or location..."
                   :results-count="searchQuery ? filteredProjects.length : null"
                   :is-loading="isSearching"
                 />
@@ -190,7 +190,10 @@
           <table role="table" class="mobile-record-table w-full">
             <thead role="rowgroup" class="bg-gray-50 dark:bg-gray-800/50">
               <tr role="row">
-                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Project Name</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Respondent Municipalities or Brgy</th>
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Complainant Municipalities or Brgy</th>
+
+                <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Boundary Dispute Name</th>
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code</th>
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Year</th>
                 <th role="columnheader" scope="col" class="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">District</th>
@@ -208,7 +211,13 @@
                 :key="project.project_id"
                 class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
               >
-                <td role="cell" data-label="Project Name" data-field="title" class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs">
+                <td role="cell" data-label="Respondent Municipalities or Brgy" data-field="detail" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <span v-html="highlightMatch(project.respondent || 'N/A', searchQuery)"></span>
+                </td>
+                <td role="cell" data-label="Complainant Municipalities or Brgy" data-field="detail" class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <span v-html="highlightMatch(project.complainant || 'N/A', searchQuery)"></span>
+                </td>
+                <td role="cell" data-label="Boundary Dispute Name" data-field="title" class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white max-w-xs">
                   <div class="record-card-title">
                     <div class="truncate" :title="project.project_name">
                       <span v-html="highlightMatch(project.project_name, searchQuery)"></span>
@@ -289,7 +298,7 @@
                       v-if="currentUser.role === 'admin'"
                       @click="deleteProject(project.project_id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                      title="Delete Project"
+                      title="Delete Boundary Dispute"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
@@ -304,10 +313,10 @@
         <div v-if="filteredProjects.length === 0" class="text-center py-12">
           <FolderIcon class="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-            {{ (searchQuery || selectedDistrict || selectedSourceFund || selectedSourceType || selectedYear) ? 'No projects match your filters' : 'No projects found' }}
+            {{ (searchQuery || selectedDistrict || selectedSourceFund || selectedSourceType || selectedYear) ? 'No boundary disputes match your filters' : 'No boundary disputes found' }}
           </h3>
           <p class="text-gray-500 dark:text-gray-400 mb-4">
-            {{ (searchQuery || selectedDistrict || selectedSourceFund || selectedSourceType || selectedYear) ? 'Try adjusting your search terms or filters.' : 'Get started by creating your first project.' }}
+            {{ (searchQuery || selectedDistrict || selectedSourceFund || selectedSourceType || selectedYear) ? 'Try adjusting your search terms or filters.' : 'Get started by creating your first boundary dispute.' }}
           </p>
           <div v-if="!searchQuery && !isLegislator" class="flex justify-center">
             <Link
@@ -315,7 +324,7 @@
               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-colors"
             >
               <PlusIcon class="w-4 h-4 mr-2" />
-              Create Project
+              Create Boundary Dispute
             </Link>
           </div>
           <div v-else class="flex justify-center">
@@ -461,7 +470,7 @@ const deleteProject = (projectId) => {
         onError: () => {
           Swal.fire({
             title: 'Error!',
-            text: 'Failed to delete project. Please try again.',
+            text: 'Failed to delete boundary dispute. Please try again.',
             icon: 'error',
             background: 'var(--swal-background, #ffffff)',
             color: 'var(--swal-text-color, #374151)',

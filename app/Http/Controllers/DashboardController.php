@@ -113,10 +113,10 @@ class DashboardController extends Controller
                 ];
             }),
             'accomplishments' => $accomplishments->map(function ($item) {
-                return ['id' => $item->id, 'title' => $item->title, 'type' => 'accomplishment', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+                return ['id' => $item->accomplish_id, 'title' => $item->title, 'type' => 'accomplishment', 'respondent' => $item->respondent, 'complainant' => $item->complainant, 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
             }),
             'projects' => $projects->map(function ($item) {
-                return ['id' => $item->project_id, 'title' => $item->project_name, 'type' => 'project', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
+                return ['id' => $item->project_id, 'title' => $item->project_name, 'type' => 'project', 'respondent' => $item->respondent, 'complainant' => $item->complainant, 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];
             }),
             'moas' => $moas->map(function ($item) {
                 return ['id' => $item->moa_id, 'title' => $item->title, 'type' => 'moa', 'created_at' => $item->created_at, 'extracted_text' => $item->extracted_text ?? null];

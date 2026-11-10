@@ -1,38 +1,47 @@
 <template>
-  <AdminLayout title="View Accomplishment">
+  <AdminLayout title="View Administrative Case">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Accomplishment Details</h1>
-          <p class="text-gray-600 dark:text-gray-400">View accomplishment information and attached document</p>
+          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Administrative Case Details</h1>
+          <p class="text-gray-600 dark:text-gray-400">View administrative case information and attached document</p>
         </div>
         <div class="flex flex-wrap gap-3">
           <Link v-if="currentUser.role === 'admin' || accomplishment.uploaded_by === currentUser.id" :href="`/accomplishments/${accomplishment.accomplish_id}/edit`" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
             </svg>
-            Edit Accomplishment
+            Edit Administrative Case
           </Link>
           <Link href="/accomplishments" class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
             </svg>
-            Back to Accomplishments
+            Back to Administrative Cases
           </Link>
         </div>
       </div>
 
-      <!-- Accomplishment Details -->
+      <!-- Administrative Case Details -->
       <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Accomplishment Information</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Administrative Case Information</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Respondent</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ accomplishment.respondent || 'N/A' }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Complainant</label>
+            <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ accomplishment.complainant || 'N/A' }}</p>
+          </div>
+
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Title</label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ accomplishment.title || 'N/A' }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Accomplishment Year</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Administrative Case Year</label>
             <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(accomplishment.accomplishment_year) }}</p>
           </div>
           <div>

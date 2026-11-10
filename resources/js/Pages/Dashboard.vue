@@ -114,11 +114,11 @@
           </div>
         </div>
 
-        <!-- Accomplishments -->
+        <!-- Administrative Cases -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Accomplishments</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Administrative Cases</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.accomplishments }}</p>
               <p class="text-xs text-indigo-600 dark:text-indigo-400 mt-1 flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -137,11 +137,11 @@
           </div>
         </div>
 
-        <!-- Projects -->
+        <!-- Boundary Disputes -->
         <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Projects</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Boundary Disputes</p>
               <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.projects }}</p>
               <p class="text-xs text-teal-600 dark:text-teal-400 mt-1 flex items-center">
                 <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -362,8 +362,8 @@
                     <option value="resolution">Resolutions</option>
                     <option value="draft-ordinance">Draft Ordinances</option>
                     <option value="draft-resolution">Draft Resolutions</option>
-                    <option value="accomplishment">Accomplishments</option>
-                    <option value="project">Projects</option>
+                    <option value="accomplishment">Administrative Cases</option>
+                    <option value="project">Boundary Disputes</option>
                     <option value="moa">MOAs</option>
                     <option value="municipal-communication">Municipal Communications</option>
                     <option value="national-office">National Offices</option>
@@ -499,7 +499,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
-                <span class="text-sm font-medium text-indigo-900 dark:text-indigo-100">New Accomplishment</span>
+                <span class="text-sm font-medium text-indigo-900 dark:text-indigo-100">New Administrative Case</span>
               </Link>
               <Link href="/projects/create" class="flex items-center p-3 bg-teal-50 dark:bg-teal-900/20 rounded-lg hover:bg-teal-100 dark:hover:bg-teal-900/30 transition-colors group">
                 <div class="w-8 h-8 bg-teal-100 dark:bg-teal-800 rounded-lg flex items-center justify-center mr-3">
@@ -507,7 +507,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
-                <span class="text-sm font-medium text-teal-900 dark:text-teal-100">New Project</span>
+                <span class="text-sm font-medium text-teal-900 dark:text-teal-100">New Boundary Dispute</span>
               </Link>
               <Link href="/memorandum-of-agreements/create" class="flex items-center p-3 bg-pink-50 dark:bg-pink-900/20 rounded-lg hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-colors group">
                 <div class="w-8 h-8 bg-pink-100 dark:bg-pink-800 rounded-lg flex items-center justify-center mr-3">
@@ -621,7 +621,7 @@
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 ]"
               >
-                Accomplishments
+                Administrative Cases
               </button>
               <button
                 @click="activeTab = 'projects'"
@@ -632,7 +632,7 @@
                     : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
                 ]"
               >
-                Projects
+                Boundary Disputes
               </button>
               <button
                 @click="activeTab = 'moas'"
@@ -842,7 +842,7 @@
             </div>
           </div>
 
-          <!-- Accomplishments Tab Content -->
+          <!-- Administrative Cases Tab Content -->
           <div v-show="activeTab === 'accomplishments'" class="space-y-4">
             <div v-for="accomplishment in recentAccomplishments.slice(0, 5)" :key="accomplishment.id" class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div class="flex-shrink-0">
@@ -853,7 +853,7 @@
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ accomplishment.title || 'Untitled Accomplishment' }}</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ accomplishment.title || 'Untitled Administrative Case' }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ accomplishment.description || 'No description' }}</p>
                 <p class="text-xs text-gray-400 mt-1">{{ formatDate(accomplishment.created_at) }}</p>
               </div>
@@ -870,14 +870,14 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p class="text-gray-500 dark:text-gray-400">No accomplishments found</p>
+              <p class="text-gray-500 dark:text-gray-400">No administrative cases found</p>
               <Link v-if="!isReadOnlyUser" href="/accomplishments/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
-                Create your first accomplishment  
+                Create your first administrative case
               </Link>
             </div>
           </div>
 
-          <!-- Projects Tab Content -->
+          <!-- Boundary Disputes Tab Content -->
           <div v-show="activeTab === 'projects'" class="space-y-4">
             <div v-for="project in recentProjects.slice(0, 5)" :key="project.id" class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div class="flex-shrink-0">
@@ -888,7 +888,7 @@
                 </div>
               </div>
               <div class="flex-1 min-w-0">
-                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ project.title || 'Untitled Project' }}</p>
+                <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ project.title || 'Untitled Boundary Dispute' }}</p>
                 <p class="text-xs text-gray-500 dark:text-gray-400">{{ project.description || 'No description' }}</p>
                 <p class="text-xs text-gray-400 mt-1">{{ formatDate(project.created_at) }}</p>
               </div>
@@ -905,9 +905,9 @@
               <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-              <p class="text-gray-500 dark:text-gray-400">No projects found</p>
+              <p class="text-gray-500 dark:text-gray-400">No boundary disputes found</p>
               <Link v-if="!isReadOnlyUser" href="/projects/create" class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 mt-2 inline-block">
-                Create your first project  
+                Create your first boundary dispute
               </Link>
             </div>
           </div>
@@ -1207,10 +1207,10 @@ const openDocumentModal = (document, type) => {
       modalTitle.value = document.title || 'Untitled Resolution Draft'
       break
     case 'accomplishment':
-      modalTitle.value = document.title || 'Untitled Accomplishment'
+      modalTitle.value = document.title || 'Untitled Administrative Case'
       break
     case 'project':
-      modalTitle.value = document.title || 'Untitled Project'
+      modalTitle.value = document.title || 'Untitled Boundary Dispute'
       break
     case 'moa':
       modalTitle.value = document.title || 'Untitled MOA'
@@ -1236,8 +1236,8 @@ const getModalSubtitle = () => {
     'resolution': 'Resolution Information',
     'draft-ordinance': 'Draft Ordinance Information',
     'draft-resolution': 'Draft Resolution Information',
-    'accomplishment': 'Accomplishment Details',
-    'project': 'Project Details',
+    'accomplishment': 'Administrative Case Details',
+    'project': 'Boundary Dispute Details',
     'moa': 'Memorandum of Agreement Details'
   }
   return typeLabels[modalType.value] || 'Document Information'

@@ -16,6 +16,7 @@ export const performAdvancedSearch = (documents, query) => {
     const type = doc.type.toLowerCase()
     const typeLabel = getTypeLabel(doc.type).toLowerCase()
     const dateStr = formatDate(doc.created_at).toLowerCase()
+    const parties = [doc.respondent, doc.complainant].filter(Boolean).join(' ').toLowerCase()
     const extractedText = doc.extracted_text ? doc.extracted_text.toLowerCase() : ''
 
     // Search each term across multiple fields
@@ -46,6 +47,10 @@ export const performAdvancedSearch = (documents, query) => {
       // Type matching
       if (type.includes(term) || typeLabel.includes(term)) {
         termScore += 30
+      }
+
+      if (parties.includes(term)) {
+        termScore += 40
       }
 
       // Date matching
@@ -148,8 +153,8 @@ export const getTypeLabel = (type) => {
     'resolution': 'Resolution',
     'draft-ordinance': 'Draft Ordinance',
     'draft-resolution': 'Draft Resolution',
-    'accomplishment': 'Accomplishment',
-    'project': 'Project',
+    'accomplishment': 'Administrative Case',
+    'project': 'Boundary Dispute',
     'moa': 'MOA',
     'municipal-communication': 'Municipal Communication',
     'national-office': 'National Office',

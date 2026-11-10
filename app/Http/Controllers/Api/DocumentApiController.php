@@ -54,7 +54,7 @@ class DocumentApiController extends Controller
             $searchTerm = $request->search;
             $searchableFields = [];
 
-            foreach (['title', 'author', 'subject'] as $field) {
+            foreach (['title', 'author', 'subject', 'project_name', 'respondent', 'complainant'] as $field) {
                 if ($hasColumn($field)) {
                     $searchableFields[] = $field;
                 }
@@ -165,6 +165,14 @@ class DocumentApiController extends Controller
                     break;
             }
 
+            if (in_array($type, ['accomplishments', 'projects'], true)) {
+                $baseData['respondent'] = $document->respondent;
+                $baseData['complainant'] = $document->complainant;
+                if ($type === 'projects') {
+                    $baseData['title'] = $document->project_name;
+                }
+            }
+
             // Add files if they exist
             if (method_exists($document, 'files')) {
                 $document->load('files');
@@ -197,8 +205,8 @@ class DocumentApiController extends Controller
             'ordinances' => 'Ordinances',
             'draft-resolutions' => 'Draft Resolutions',
             'draft-ordinances' => 'Draft Ordinances',
-            'accomplishments' => 'Accomplishments',
-            'projects' => 'Projects',
+            'accomplishments' => 'Administrative Cases',
+            'projects' => 'Boundary Disputes',
             'moas' => 'Memorandum of Agreements',
             'municipal-communications' => 'Municipal Communications',
             'national-offices' => 'National Office Communications',

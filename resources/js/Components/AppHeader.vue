@@ -165,6 +165,7 @@ const userRoleLabel = computed(() => {
   const role = (currentUser.value?.role ?? '').toString().trim().toLowerCase()
   if (role === 'admin') return 'Admin'
   if (role === 'staff') return 'Staff'
+  if (role === 'legislator') return 'Legislator'
   if (!role) return 'User'
   return role.charAt(0).toUpperCase() + role.slice(1)
 })

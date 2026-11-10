@@ -61,7 +61,9 @@ export function useDashboard(props) {
       'ordinance_draft': 'Ordinance Draft',
       'resolution_draft': 'Resolution Draft',
       'users': 'User',
-      'settings': 'Setting'
+      'settings': 'Setting',
+      'accomplish_lists': 'Administrative Case',
+      'project_lists': 'Boundary Dispute'
     }
     
     return labels[modelType] || modelType.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
