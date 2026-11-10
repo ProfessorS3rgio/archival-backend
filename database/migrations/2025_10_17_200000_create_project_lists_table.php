@@ -21,8 +21,6 @@ return new class extends Migration
                 $table->string('district')->nullable();
                 $table->string('location')->nullable();
                 $table->string('project_name')->nullable();
-                $table->string('respondent')->nullable();
-                $table->string('complainant')->nullable();
                 $table->string('source_fund')->nullable();
                 $table->string('source_type')->nullable();
                 $table->decimal('amount', 12, 2)->nullable();

@@ -18,8 +18,6 @@ return new class extends Migration
                 $table->bigIncrements('accomplish_id');
                 $table->unsignedBigInteger('uploaded_by');
                 $table->string('title')->nullable();
-                $table->string('respondent')->nullable();
-                $table->string('complainant')->nullable();
                 $table->date('accomplishment_year')->nullable();
                 $table->string('file_name')->nullable();
                 $table->string('file_url')->nullable();

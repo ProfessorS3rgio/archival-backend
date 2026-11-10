@@ -53,9 +53,10 @@ runuser -u www-data -- php artisan migrate --force --path=database/migrations/20
 
 This adds nullable `respondent` and `complainant` columns to both existing
 document tables. Existing records, file paths, IDs, routes, and metadata are
-retained. Older records show `N/A` until parties are entered. The original
-create migrations include the same columns for fresh installations; the upgrade
-migration skips columns that already exist. Do not run `migrate:fresh` on
+retained. Older records show `N/A` until parties are entered. Fresh installations
+receive the same columns through this separate migration;
+the original create migrations remain unchanged. The migration skips columns
+that already exist. Do not run `migrate:fresh` on
 production. Rolling back this migration removes the party columns and their
 values; keep a database backup if those values need to be restored.
 

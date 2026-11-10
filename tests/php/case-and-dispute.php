@@ -44,6 +44,9 @@ foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_17_100000_crea
     (require __DIR__.'/../../database/migrations/'.$file.'.php')->up();
 }
 $migration = require __DIR__.'/../../database/migrations/2026_11_11_000000_add_parties_to_administrative_cases_and_boundary_disputes.php';
+foreach (['accomplish_lists', 'project_lists'] as $table) {
+    check(! Schema::hasColumn($table, 'respondent') && ! Schema::hasColumn($table, 'complainant'), "Original {$table} migration leaves party columns to the separate migration");
+}
 $migration->up();
 foreach (['accomplish_lists', 'project_lists'] as $table) {
     check(Schema::hasColumns($table, ['respondent', 'complainant']), "Fresh {$table} supports both parties and the upgrade migration");
@@ -106,7 +109,7 @@ $migration->down();
 $migration->up();
 check(Accomplishment::count() === 2 && Project::count() === 2, 'Migration rollback and reapply preserve document records');
 
-// Verify these fresh-install migrations through Artisan, including the upgrade no-op.
+// Verify these fresh-install migrations through Artisan, including the separate party-column migration.
 // The unrelated SP extension migration uses MySQL-specific ENUM syntax.
 Schema::dropAllTables();
 Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true, '--path' => [
