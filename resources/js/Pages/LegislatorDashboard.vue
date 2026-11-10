@@ -85,21 +85,21 @@
               <label for="type-filter" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Document type</label>
               <select id="type-filter" v-model="selectedType" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
               <option value="">All document types</option>
-              <option v-for="type in documentTypes" :key="type.value" :value="type.value">{{ type.label }}</option>
+              <option v-for="type in availableTypesForFilter" :key="type.value" :value="type.value">{{ type.label }}</option>
               </select>
             </div>
             <div>
               <label for="year-filter" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Activity year</label>
               <select id="year-filter" v-model="selectedYear" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
                 <option value="">All years</option>
-                <option v-for="year in availableYears" :key="year" :value="String(year)">{{ year }}</option>
+                <option v-for="year in availableYearsForFilter" :key="year" :value="String(year)">{{ year }}</option>
               </select>
             </div>
             <div>
               <label for="author-filter" class="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Author</label>
               <select id="author-filter" v-model="selectedAuthor" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-white">
                 <option value="">All authors</option>
-                <option v-for="author in availableAuthors" :key="author" :value="author">{{ author }}</option>
+                <option v-for="author in availableAuthorsForFilter" :key="author" :value="author">{{ author }}</option>
               </select>
             </div>
             <div>
@@ -155,9 +155,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-import { getTypeLabel, getViewUrl } from '@/composables/useDocumentSearch'
+import { getDocumentActivityYear, getTypeLabel, getViewUrl, performAdvancedSearch } from '@/composables/useDocumentSearch'
 import { useDashboard } from '@/composables/useDashboard'
 
 const props = defineProps({
@@ -181,6 +181,7 @@ const {
   selectedType,
   selectedYear,
   selectedAuthor,
+  documentsSource,
   filteredDocuments
 } = useDashboard(props)
 
@@ -202,6 +203,75 @@ const displayLimit = 10
 const resultCount = computed(() => filteredDocuments.value.length)
 const displayedDocuments = computed(() => filteredDocuments.value.slice(0, displayLimit))
 const hasFilters = computed(() => Boolean(searchQuery.value || selectedType.value || selectedYear.value || selectedAuthor.value))
+
+const allDocuments = computed(() => Object.values(documentsSource.value).flat())
+
+const documentsForFilterOptions = (excludedFilter) => {
+  let documents = [...allDocuments.value]
+
+  if (searchQuery.value.trim()) {
+    documents = performAdvancedSearch(documents, searchQuery.value.trim())
+  }
+  if (excludedFilter !== 'type' && selectedType.value) {
+    documents = documents.filter(document => document.type === selectedType.value)
+  }
+  if (excludedFilter !== 'year' && selectedYear.value) {
+    documents = documents.filter(document => getDocumentActivityYear(document) === Number(selectedYear.value))
+  }
+  if (excludedFilter !== 'author' && selectedAuthor.value) {
+    documents = documents.filter(document => hasAuthor(document, selectedAuthor.value))
+  }
+
+  return documents
+}
+
+const hasAuthor = (document, author) => {
+  if (!document.author) return false
+  return document.author
+    .split(';')
+    .map(value => value.trim().toLowerCase())
+    .includes(author.toLowerCase())
+}
+
+const availableYearsForFilter = computed(() => {
+  const years = documentsForFilterOptions('year')
+    .map(document => getDocumentActivityYear(document))
+    .filter(year => year !== null)
+
+  return [...new Set(years)].sort((a, b) => b - a)
+})
+
+const availableTypesForFilter = computed(() => {
+  const types = new Set(documentsForFilterOptions('type').map(document => document.type))
+
+  return documentTypes.filter(type => types.has(type.value))
+})
+
+const availableAuthorsForFilter = computed(() => {
+  const authors = documentsForFilterOptions('author')
+    .flatMap(document => document.author ? document.author.split(';').map(value => value.trim()) : [])
+    .filter(Boolean)
+
+  return [...new Set(authors)].sort((a, b) => a.localeCompare(b))
+})
+
+watch(availableTypesForFilter, (types) => {
+  if (selectedType.value && !types.some(type => type.value === selectedType.value)) {
+    selectedType.value = ''
+  }
+})
+
+watch(availableYearsForFilter, (years) => {
+  if (selectedYear.value && !years.includes(Number(selectedYear.value))) {
+    selectedYear.value = ''
+  }
+})
+
+watch(availableAuthorsForFilter, (authors) => {
+  if (selectedAuthor.value && !authors.some(author => author.toLowerCase() === selectedAuthor.value.toLowerCase())) {
+    selectedAuthor.value = ''
+  }
+})
 
 const clearSearch = () => {
   searchQuery.value = ''
