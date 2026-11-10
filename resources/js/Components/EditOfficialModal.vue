@@ -131,6 +131,7 @@
                     <select
                       id="extension"
                       v-model="form.extension"
+                      :class="{ 'border-red-300 dark:border-red-600 focus:border-red-500 focus:ring-red-500': form.errors.extension }"
                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     >
                       <option value="">Select extension</option>
@@ -139,6 +140,9 @@
                       <option value="Judge">Judge</option>
                       <option value="Doc">Doc</option>
                     </select>
+                    <p v-if="form.errors.extension" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                      {{ form.errors.extension }}
+                    </p>
                   </div>
 
                   <!-- District -->
