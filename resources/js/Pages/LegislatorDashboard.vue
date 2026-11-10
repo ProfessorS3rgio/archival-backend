@@ -114,18 +114,29 @@
             v-for="document in displayedDocuments"
             :key="`${document.type}-${document.id}`"
             :href="getViewUrl(document)"
-            class="block py-4 transition first:pt-5 last:pb-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 sm:px-3"
+            class="group block py-4 transition first:pt-5 last:pb-0 hover:bg-gray-50 dark:hover:bg-gray-800/50 sm:px-3"
           >
             <div class="flex items-start justify-between gap-4">
-              <div class="min-w-0">
-                <p class="font-semibold text-gray-900 dark:text-white">{{ document.title || 'Untitled document' }}</p>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                  {{ getTypeLabel(document.type) }}
-                  <span v-if="document.activity_year"> · {{ document.activity_year }}</span>
-                  <span v-if="document.author"> · {{ document.author }}</span>
-                </p>
+              <div class="flex min-w-0 items-start gap-3">
+                <div :class="getTypeIconClass(document.type)" class="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl">
+                  <component :is="getTypeIcon(document.type)" class="h-5 w-5" />
+                </div>
+                <div class="min-w-0">
+                  <p class="font-semibold text-gray-900 dark:text-white">{{ document.title || 'Untitled document' }}</p>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    {{ getTypeLabel(document.type) }}
+                    <span v-if="document.activity_year"> · {{ document.activity_year }}</span>
+                    <span v-if="document.author"> · {{ document.author }}</span>
+                  </p>
+                </div>
               </div>
-              <span class="shrink-0 text-sm font-medium text-blue-600 dark:text-blue-400">Open</span>
+              <span class="inline-flex shrink-0 items-center gap-1.5 rounded-lg px-2 py-1 text-sm font-semibold text-blue-600 transition group-hover:bg-blue-50 dark:text-blue-400 dark:group-hover:bg-blue-900/20">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" />
+                  <circle cx="12" cy="12" r="3" stroke-width="1.8" />
+                </svg>
+                View
+              </span>
             </div>
           </a>
         </div>
@@ -182,7 +193,9 @@ const {
   selectedYear,
   selectedAuthor,
   documentsSource,
-  filteredDocuments
+  filteredDocuments,
+  getTypeIcon,
+  getTypeIconClass
 } = useDashboard(props)
 
 const documentTypes = [
