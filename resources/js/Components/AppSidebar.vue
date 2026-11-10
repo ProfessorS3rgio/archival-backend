@@ -186,8 +186,10 @@
                         <Link
                           v-else
                           :href="subItem.path"
+                          :method="subItem.method || 'get'"
+                          :as="subItem.method === 'post' ? 'button' : 'a'"
                           :class="[
-                            'flex items-center px-3 py-2 text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200',
+                            'flex w-full items-center px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200',
                             {
                               'text-brand-500 dark:text-brand-400 bg-gray-100 dark:bg-gray-800': isActive(
                                 subItem.path
@@ -490,6 +492,11 @@ const menuGroups = [
         name: "Settings",
         subItems: isLegislator.value ? [
           {
+            name: "My Profile",
+            path: "/profile",
+            icon: UserCircleIcon,
+          },
+          {
             name: "Change Password",
             path: "/settings/change-password",
             icon: SettingsIcon,
@@ -497,9 +504,15 @@ const menuGroups = [
           {
             name: "Log Out",
             path: "/logout",
+            method: "post",
             icon: LogoutIcon,
           },
         ] : [
+          {
+            name: "My Profile",
+            path: "/profile",
+            icon: UserCircleIcon,
+          },
           {
             name: "Tools",
             path: "/settings",
@@ -539,6 +552,7 @@ const menuGroups = [
           {
             name: "Log Out",
             path: "/logout",
+            method: "post",
             icon: LogoutIcon,
           },
         ],

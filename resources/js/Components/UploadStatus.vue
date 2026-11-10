@@ -7,6 +7,7 @@
       :role="failed ? 'alert' : 'status'"
       aria-live="polite"
       aria-atomic="true"
+      :aria-busy="busy"
     >
       <div class="upload-card__accent h-1" />
       <div class="p-5">
@@ -25,7 +26,10 @@
             </svg>
           </div>
           <div class="min-w-0 flex-1 pt-0.5">
-            <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">Document transfer</p>
+            <p class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
+              <svg v-if="busy" class="h-3 w-3 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity="0.2" /><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
+              File upload
+            </p>
             <h2 class="mt-1 text-base font-semibold tracking-tight text-slate-900 dark:text-white">{{ title }}</h2>
           </div>
           <button v-if="!busy" type="button" @click="$emit('dismiss')" class="-mr-1 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 dark:hover:bg-slate-800 dark:hover:text-white" aria-label="Dismiss upload status">

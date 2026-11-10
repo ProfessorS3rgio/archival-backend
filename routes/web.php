@@ -125,6 +125,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('not.legislator')
         ->name('sp.destroy');
     Route::post('/logout', [DashboardController::class, 'logout'])->name('logout');
+
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::get('/profile/picture', [App\Http\Controllers\ProfileController::class, 'picture'])->name('profile.picture');
+    Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
     
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

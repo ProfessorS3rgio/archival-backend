@@ -60,6 +60,18 @@ that already exist. Do not run `migrate:fresh` on
 production. Rolling back this migration removes the party columns and their
 values; keep a database backup if those values need to be restored.
 
+For user profile pictures, run the following in maintenance mode after pulling
+and before `artisan up`:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_11_010000_add_profile_picture_path_to_users.php
+```
+
+This adds an optional picture path to each user without changing existing
+accounts. Pictures use the `private` disk (R2 in production) under
+`user-profiles/` and are served through the authenticated `/profile/picture`
+route. Users without a picture see their initials beside the role dropdown.
+
 Officials' profile pictures use the same `private` disk as documents (R2 in
 production), under `private/sp-profiles/`. The picture record stores its disk;
 older records default to `public` until copied. Images are served through the

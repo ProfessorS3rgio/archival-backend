@@ -40,6 +40,7 @@ Table personal_access_tokens {
 }
 
 Table users {
+  profile_picture_path varchar(255) [null]
   id "bigint unsigned" [pk, increment, not null]
   name varchar(255) [not null]
   email varchar(255) [unique, not null]

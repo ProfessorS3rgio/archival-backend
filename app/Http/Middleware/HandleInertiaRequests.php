@@ -39,7 +39,12 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => $request->user() ? [
+                    ...$request->user()->toArray(),
+                    'profile_picture_url' => $request->user()->profile_picture_path
+                        ? route('profile.picture', ['v' => sha1($request->user()->profile_picture_path)])
+                        : null,
+                ] : null,
             ],
             'flash' => [
                 'success' => session('success'),

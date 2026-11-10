@@ -20,6 +20,7 @@
 
       <!-- Form -->
       <form @submit.prevent="submit" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+          <UploadProgress :processing="form.processing" :progress="form.progress?.percentage ?? null" class="m-4" />
         <!-- Profile Picture Upload -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -164,6 +165,7 @@
 </template>
 
   <script setup>
+import UploadProgress from '@/Components/UploadProgress.vue'
 import { ref, watch, computed } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm } from '@inertiajs/vue3'
@@ -270,6 +272,7 @@ const handleFileSelect = (event) => {
 }
 
 const submit = () => {
+  if (form.processing) return
   form.post(`/sp-${props.termSlug}/officials`, {
     forceFormData: true,
     preserveScroll: true,

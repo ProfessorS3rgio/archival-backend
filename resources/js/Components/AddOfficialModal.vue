@@ -65,6 +65,7 @@
 
               <!-- Form Content -->
               <form @submit.prevent="submit" class="p-8 space-y-6">
+          <UploadProgress :processing="form.processing" :progress="form.progress?.percentage ?? null" class="m-4" />
                 <!-- Profile Picture Upload - Centered -->
                 <div class="flex justify-center">
                   <div>
@@ -221,6 +222,7 @@
 </template>
 
 <script setup>
+import UploadProgress from '@/Components/UploadProgress.vue'
 import { ref, watch, computed } from 'vue'
 import { useForm } from '@inertiajs/vue3'
 
@@ -350,6 +352,7 @@ const handleClose = () => {
 }
 
 const submit = () => {
+  if (form.processing) return
   form.post(`/sp-${props.termSlug}/officials`, {
     forceFormData: true,
     preserveScroll: true,

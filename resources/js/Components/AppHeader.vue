@@ -99,9 +99,14 @@
 
           <div class="relative">
             <button
+              type="button"
+              aria-label="Open account menu"
+              :aria-expanded="userMenuOpen"
               @click="userMenuOpen = !userMenuOpen"
               class="flex items-center text-sm text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             >
+              <img v-if="currentUser.profile_picture_url && !pictureFailed" :src="currentUser.profile_picture_url" alt="Your profile picture" class="mr-2 h-9 w-9 shrink-0 rounded-full object-cover" @error="pictureFailed = true" />
+              <span v-else class="mr-2 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-300" aria-hidden="true">{{ userInitials }}</span>
               <span class="mr-2">{{ userRoleLabel }}</span>
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -115,6 +120,7 @@
                 Profile
               </Link>
               <button
+                type="button"
                 @click.prevent="logout"
                 class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
               >
@@ -134,7 +140,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { Link, router, usePage } from '@inertiajs/vue3'
 import ThemeToggler from '@/ComponentsOld/common/ThemeToggler.vue'
 
@@ -153,6 +159,9 @@ const userMenuOpen = ref(false)
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
+const pictureFailed = ref(false)
+watch(() => currentUser.value.profile_picture_url, () => { pictureFailed.value = false })
+const userInitials = computed(() => String(currentUser.value.name || 'User').trim().split(/\s+/).slice(0, 2).map(part => Array.from(part)[0]).join('').toUpperCase())
 const officialsUrl = computed(() => {
   const terms = page.props.spTerms || []
   const latestTerm = terms[terms.length - 1]
@@ -179,6 +188,7 @@ const toggleApplicationMenu = () => {
 }
 
 const logout = () => {
+  userMenuOpen.value = false
   router.post('/logout')
 }
 </script>
