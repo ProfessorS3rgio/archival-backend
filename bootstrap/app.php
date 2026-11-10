@@ -13,9 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
+            \App\Http\Middleware\ValidateInputText::class,
+            \App\Http\Middleware\HandleFormResponses::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $exception, \Illuminate\Http\Request $request) {
+            return \App\Support\FormErrorResponse::respond($response, $request);
+        });
     })->create();

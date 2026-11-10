@@ -51,11 +51,16 @@ class DraftOrdinanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
             'status' => 'nullable|string|in:draft,in_review,pending_approval',
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:pdf,doc,docx|max:10240',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
+            'file_extracted_texts' => 'nullable|array',
+            'file_extracted_texts.*' => 'nullable|string',
             'added_by' => 'required|exists:users,id',
         ]);
 
@@ -198,11 +203,16 @@ class DraftOrdinanceController extends Controller
         $oldValues = $draft->getAttributes();
 
         $validated = $request->validate([
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
             'status' => 'nullable|string|in:draft,in_review,pending_approval',
+            'files' => 'nullable|array',
+            'files.*' => 'file|mimes:pdf,doc,docx|max:10240',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
+            'file_extracted_texts' => 'nullable|array',
+            'file_extracted_texts.*' => 'nullable|string',
         ]);
 
         $draft->update($validated);

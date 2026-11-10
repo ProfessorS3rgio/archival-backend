@@ -71,8 +71,8 @@ class AccomplishmentController extends Controller
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'accomplishment_year' => 'nullable|date',
-            'extracted_text' => 'nullable',
+            'accomplishment_year' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
         ]);
 
@@ -80,7 +80,7 @@ class AccomplishmentController extends Controller
         $validated['date_uploaded'] = now();
 
         // Handle extracted_text
-        $validated['extracted_text'] = is_string($validated['extracted_text']) ? $validated['extracted_text'] : (is_array($validated['extracted_text']) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
+        $validated['extracted_text'] = is_string($validated['extracted_text'] ?? null) ? $validated['extracted_text'] : (is_array($validated['extracted_text'] ?? null) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
 
         // Handle file upload
         if ($request->hasFile('file')) {
@@ -154,8 +154,8 @@ class AccomplishmentController extends Controller
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'accomplishment_year' => 'nullable|date',
-            'extracted_text' => 'nullable',
+            'accomplishment_year' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
             'is_visible' => 'boolean',
         ]);
@@ -164,7 +164,7 @@ class AccomplishmentController extends Controller
         $validated['last_modified_at'] = now();
 
         // Handle extracted_text
-        $validated['extracted_text'] = is_string($validated['extracted_text']) ? $validated['extracted_text'] : (is_array($validated['extracted_text']) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
+        $validated['extracted_text'] = is_string($validated['extracted_text'] ?? null) ? $validated['extracted_text'] : (is_array($validated['extracted_text'] ?? null) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
 
         // Handle file upload
         if ($request->hasFile('file')) {

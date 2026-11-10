@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\AccountRequest;
+use App\Http\Requests\ChangePasswordRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 
 class AccountController extends Controller
@@ -58,7 +59,7 @@ class AccountController extends Controller
     /**
      * Store a newly created user in storage.
      */
-    public function store(Request $request)
+    public function store(AccountRequest $request)
     {
         // Check if current user has admin role
         if (auth()->user()->role !== 'admin') {
@@ -66,27 +67,21 @@ class AccountController extends Controller
                 ->with('error', 'You do not have permission to create user accounts.');
         }
 
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'username' => 'required|string|max:255|unique:users',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin,staff,legislator',
-        ]);
+        DB::transaction(function () use ($request) {
+            $user = \App\Models\User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'username' => $request->username,
+                'password' => bcrypt($request->password),
+                'role' => $request->role,
+            ]);
 
-        $user = \App\Models\User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'password' => bcrypt($request->password),
-            'role' => $request->role,
-        ]);
-
-        // Log the user creation
-        \App\Services\LoggingService::logCreate(
-            $user,
-            "Created new user account: {$user->name} ({$user->username})"
-        );
+            // Log the user creation
+            \App\Services\LoggingService::logCreate(
+                $user,
+                "Created new user account: {$user->name} ({$user->username})"
+            );
+        });
 
         return redirect()->route('settings.manage-accounts')
             ->with('success', 'User account created successfully.');
@@ -95,7 +90,7 @@ class AccountController extends Controller
     /**
      * Update the specified user in storage.
      */
-    public function update(Request $request, $id)
+    public function update(AccountRequest $request, $id)
     {
         // Check if current user has admin role
         if (auth()->user()->role !== 'admin') {
@@ -105,46 +100,29 @@ class AccountController extends Controller
 
         $user = \App\Models\User::findOrFail($id);
 
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => [
-                'required',
-                'string',
-                'email',
-                'max:255',
-                Rule::unique('users', 'email')->ignore($user->id),
-            ],
-            'username' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('users', 'username')->ignore($user->id),
-            ],
-            'role' => ['required', Rule::in(['admin', 'staff', 'legislator'])],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
-        ]);
+        DB::transaction(function () use ($request, $user) {
+            $oldValues = $user->getAttributes();
 
-        $oldValues = $user->getAttributes();
+            $updateData = [
+                'name' => $request->name,
+                'email' => $request->email,
+                'username' => $request->username,
+                'role' => $request->role,
+            ];
 
-        $updateData = [
-            'name' => $request->name,
-            'email' => $request->email,
-            'username' => $request->username,
-            'role' => $request->role,
-        ];
+            if ($request->filled('password')) {
+                $updateData['password'] = Hash::make($request->password);
+            }
 
-        if ($request->filled('password')) {
-            $updateData['password'] = Hash::make($request->password);
-        }
+            $user->update($updateData);
 
-        $user->update($updateData);
-
-        // Log the user update
-        \App\Services\LoggingService::logUpdate(
-            $user,
-            $oldValues,
-            "Updated user account: {$user->name} ({$user->username})"
-        );
+            // Log the user update
+            \App\Services\LoggingService::logUpdate(
+                $user,
+                $oldValues,
+                "Updated user account: {$user->name} ({$user->username})"
+            );
+        });
 
         return redirect()->route('settings.manage-accounts')
             ->with('success', 'User account updated successfully.');
@@ -202,34 +180,25 @@ class AccountController extends Controller
     /**
      * Update the user's password.
      */
-    public function updatePassword(Request $request)
+    public function updatePassword(ChangePasswordRequest $request)
     {
-        $request->validate([
-            'current_password' => 'required|string',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
-
         $user = auth()->user();
+        DB::transaction(function () use ($request, $user) {
+            // Update password
+            $user->update([
+                'password' => bcrypt($request->password),
+            ]);
 
-        // Verify current password
-        if (!\Hash::check($request->current_password, $user->password)) {
-            return back()->withErrors(['current_password' => 'Current password is incorrect.']);
-        }
-
-        // Update password
-        $user->update([
-            'password' => bcrypt($request->password),
-        ]);
-
-        // Log the password change
-        \App\Services\LoggingService::logCustom(
-            'password_change',
-            'users',
-            $user->id,
-            null,
-            ['password_changed' => true],
-            "User {$user->name} ({$user->username}) changed their password"
-        );
+            // Log the password change
+            \App\Services\LoggingService::logCustom(
+                'password_change',
+                'users',
+                $user->id,
+                null,
+                ['password_changed' => true],
+                "User {$user->name} ({$user->username}) changed their password"
+            );
+        });
 
         return back()->with('success', 'Password changed successfully.');
     }

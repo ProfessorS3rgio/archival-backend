@@ -1,7 +1,7 @@
 import './bootstrap';
 import '@/assets/main.css';
 import { createApp, h } from 'vue'
-import { createInertiaApp } from '@inertiajs/vue3'
+import { createInertiaApp, router } from '@inertiajs/vue3'
 import ThemeProvider from '@/ComponentsOld/layout/ThemeProvider.vue'
 import PageLoading from '@/Components/PageLoading.vue'
 import VueSweetalert2 from 'vue-sweetalert2';
@@ -10,6 +10,10 @@ import PrimeVue from 'primevue/config';
 import 'primeicons/primeicons.css';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/index.esm.js'
 import { Ziggy } from './ziggy.js'
+import Swal from 'sweetalert2'
+import { registerFormErrorHandlers } from '@/utils/formErrors'
+
+registerFormErrorHandlers(router, (options) => Swal.fire(options))
 
 createInertiaApp({
   progress: false,

@@ -81,8 +81,8 @@ class CommitteeReportController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'committee_report_no' => 'nullable|string',
-            'subject' => 'required|string',
+            'committee_report_no' => 'nullable|string|max:255',
+            'subject' => 'required|string|max:255',
             'title' => 'required|string',
             'year' => 'nullable|integer|min:1900|max:' . (now()->year + 1),
             'files' => 'nullable|array',
@@ -169,8 +169,8 @@ class CommitteeReportController extends Controller
         }
 
         $validated = $request->validate([
-            'committee_report_no' => 'nullable|string',
-            'subject' => 'required|string',
+            'committee_report_no' => 'nullable|string|max:255',
+            'subject' => 'required|string|max:255',
             'title' => 'required|string',
             'year' => 'nullable|integer|min:1900|max:' . (now()->year + 1),
             'files' => 'nullable|array',

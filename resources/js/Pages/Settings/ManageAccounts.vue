@@ -237,29 +237,36 @@
                     Edit User
                   </h3>
                   <div class="mt-4 space-y-4">
+                    <FormErrorSummary :errors="editForm.errors" />
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
                       <input
                         v-model="editForm.name"
+                        maxlength="255"
                         type="text"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p v-if="editForm.errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.name }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
                       <input
                         v-model="editForm.username"
+                        maxlength="255"
                         type="text"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p v-if="editForm.errors.username" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.username }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
                       <input
                         v-model="editForm.email"
+                        maxlength="255"
                         type="email"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p v-if="editForm.errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.email }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
@@ -269,25 +276,33 @@
                       >
                         <option value="admin">Admin</option>
                         <option value="staff">Staff</option>
+                        <option value="legislator">Legislator</option>
                       </select>
+                      <p v-if="editForm.errors.role" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.role }}</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New Password</label>
                       <input
                         v-model="editForm.password"
+                        minlength="8"
+                        maxlength="72"
                         type="password"
                         autocomplete="new-password"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p v-if="editForm.errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.password }}</p>
+                      <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave blank to keep the password. New passwords need at least 8 characters, up to 72 bytes.</p>
                     </div>
                     <div>
                       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm Password</label>
                       <input
                         v-model="editForm.password_confirmation"
+                        maxlength="72"
                         type="password"
                         autocomplete="new-password"
                         class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
+                      <p v-if="editForm.errors.password_confirmation" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ editForm.errors.password_confirmation }}</p>
                     </div>
                   </div>
                 </div>
@@ -296,10 +311,11 @@
             <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <button
                 @click="saveUser"
+                :disabled="editForm.processing"
                 type="button"
                 class="w-full inline-flex justify-center rounded-lg border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
               >
-                Save Changes
+                {{ editForm.processing ? 'Saving...' : 'Save Changes' }}
               </button>
               <button
                 @click="showEditModal = false"
@@ -320,10 +336,11 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { Link, router, usePage } from '@inertiajs/vue3'
+import { Link, router, usePage, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { UserGroupIcon, UserCircleIcon, PlusIcon } from '@/icons'
 import Swal from 'sweetalert2'
+import FormErrorSummary from '@/Components/FormErrorSummary.vue'
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
@@ -339,7 +356,7 @@ const props = defineProps({
 const searchQuery = ref('')
 const roleFilter = ref('')
 const showEditModal = ref(false)
-const editForm = ref({
+const editForm = useForm({
   id: null,
   name: '',
   email: '',
@@ -391,7 +408,8 @@ const formatDate = (dateString) => {
 }
 
 const editUser = (user) => {
-  editForm.value = {
+  editForm.clearErrors()
+  Object.assign(editForm, {
     id: user.id,
     name: user.name,
     email: user.email,
@@ -399,20 +417,18 @@ const editUser = (user) => {
     role: (user.role || '').toString().trim().toLowerCase(),
     password: '',
     password_confirmation: ''
-  }
+  })
   showEditModal.value = true
 }
 
 const saveUser = () => {
-  const payload = {
-    ...editForm.value,
-    role: (editForm.value.role || '').toString().trim().toLowerCase(),
-  }
-
-  router.put(`/settings/manage-accounts/${editForm.value.id}`, payload, {
+  if (editForm.processing) return
+  editForm.put(`/settings/manage-accounts/${editForm.id}`, {
+    preserveScroll: true,
     onSuccess: () => {
+      editForm.reset('password', 'password_confirmation')
       showEditModal.value = false
-    }
+    },
   })
 }
 

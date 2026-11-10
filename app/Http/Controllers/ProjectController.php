@@ -87,15 +87,15 @@ class ProjectController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'code_no' => 'nullable|integer',
+            'code_no' => 'nullable|integer|min:-2147483648|max:2147483647',
             'district' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'project_name' => 'required|string|max:255',
             'year' => 'nullable|integer|min:1900|max:2100',
             'source_fund' => 'nullable|string|max:255',
             'source_type' => 'nullable|string|max:255',
-            'amount' => 'nullable|numeric|min:0',
-            'extracted_text' => 'nullable',
+            'amount' => 'nullable|numeric|min:0|max:9999999999.99',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB max
         ]);
 
@@ -179,15 +179,15 @@ class ProjectController extends Controller
         $oldValues = $project->getAttributes();
 
         $validated = $request->validate([
-            'code_no' => 'nullable|integer',
+            'code_no' => 'nullable|integer|min:-2147483648|max:2147483647',
             'district' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
             'project_name' => 'required|string|max:255',
             'year' => 'nullable|integer|min:1900|max:2100',
             'source_fund' => 'nullable|string|max:255',
             'source_type' => 'nullable|string|max:255',
-            'amount' => 'nullable|numeric|min:0',
-            'extracted_text' => 'nullable',
+            'amount' => 'nullable|numeric|min:0|max:9999999999.99',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file' => 'nullable|file|mimes:pdf,doc,docx|max:10240', // 10MB max
             'is_visible' => 'boolean',
         ]);

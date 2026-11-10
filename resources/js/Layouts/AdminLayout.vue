@@ -58,6 +58,7 @@
       </Transition>
 
       <main class="admin-content min-w-0 p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 bg-gray-50 dark:bg-gray-900">
+        <FormErrorSummary :errors="page.props.errors" />
         <slot></slot>
       </main>
       <!-- Footer -->
@@ -75,6 +76,7 @@ import { ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { usePage } from '@inertiajs/vue3'
 import AppHeader from '@/Components/AppHeader.vue'
 import AppSidebar from '@/Components/AppSidebar.vue'
+import FormErrorSummary from '@/Components/FormErrorSummary.vue'
 
 defineProps({
   title: {

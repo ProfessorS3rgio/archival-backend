@@ -149,16 +149,16 @@ class OrdinanceController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'ordinance_no' => 'nullable|string',
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
-            'date_approved' => 'nullable|date|after_or_equal:1000-01-01',
-            'municipality' => 'nullable|string',
+            'ordinance_no' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'date_approved' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'municipality' => 'nullable|string|max:255',
             'is_municipal' => 'boolean',
             'added_by' => 'required|integer',
-            'extracted_text' => 'nullable',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file_extracted_texts' => 'nullable|array',
             'file_extracted_texts.*' => 'nullable|string',
             'files' => 'nullable|array',
@@ -173,13 +173,13 @@ class OrdinanceController extends Controller
 
         // Create the ordinance
         $ordinance = Ordinance::create([
-            'ordinance_no' => $validated['ordinance_no'],
-            'author' => $validated['author'],
-            'session' => $validated['session'],
-            'title' => $validated['title'],
-            'subject' => $validated['subject'],
-            'date_approved' => $validated['date_approved'],
-            'municipality' => $validated['municipality'],
+            'ordinance_no' => $validated['ordinance_no'] ?? null,
+            'author' => $validated['author'] ?? null,
+            'session' => $validated['session'] ?? null,
+            'title' => $validated['title'] ?? null,
+            'subject' => $validated['subject'] ?? null,
+            'date_approved' => $validated['date_approved'] ?? null,
+            'municipality' => $validated['municipality'] ?? null,
             'is_municipal' => $validated['is_municipal'] ?? false,
             'added_by' => $validated['added_by'],
             'extracted_text' => $extractedText,
@@ -197,7 +197,7 @@ class OrdinanceController extends Controller
                 $extension = pathinfo($originalName, PATHINFO_EXTENSION);
                 
                 // Determine folder based on is_municipal
-                if ($validated['is_municipal']) {
+                if ($validated['is_municipal'] ?? false) {
                     // For municipal documents, create subfolder based on municipality name
                     $municipalityName = strtolower(str_replace(' ', '_', $validated['municipality']));
                     $folder = 'municipal/' . $municipalityName;
@@ -333,14 +333,14 @@ class OrdinanceController extends Controller
         \Log::info('Files data', $request->file('files') ?? []);
         
         $validated = $request->validate([
-            'ordinance_no' => 'nullable|string',
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
-            'date_approved' => 'nullable|date|after_or_equal:1000-01-01',
+            'ordinance_no' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'date_approved' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'added_by' => 'nullable|integer',
-            'extracted_text' => 'nullable',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file_extracted_texts' => 'nullable|array',
             'file_extracted_texts.*' => 'nullable|string',
             'remove_files' => 'nullable|array',
@@ -350,7 +350,7 @@ class OrdinanceController extends Controller
         ]);
 
         // Handle extracted_text
-        $validated['extracted_text'] = is_string($validated['extracted_text']) ? $validated['extracted_text'] : (is_array($validated['extracted_text']) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
+        $validated['extracted_text'] = is_string($validated['extracted_text'] ?? null) ? $validated['extracted_text'] : (is_array($validated['extracted_text'] ?? null) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
 
         $ordinance->update($validated);
 

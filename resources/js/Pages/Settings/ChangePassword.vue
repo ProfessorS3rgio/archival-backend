@@ -68,7 +68,7 @@
 
       <!-- Form Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm" novalidate>
           <div class="p-6 space-y-6">
             <!-- Security Icon Header -->
             <div class="flex items-center gap-4 pb-4 border-b border-gray-200 dark:border-gray-700">
@@ -92,6 +92,7 @@
                 <input
                   id="current_password"
                   v-model="form.current_password"
+                  autocomplete="current-password"
                   :type="showCurrentPassword ? 'text' : 'password'"
                   required
                   class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -111,7 +112,7 @@
                   </svg>
                 </button>
               </div>
-              <p v-if="errors.current_password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.current_password }}</p>
+              <p v-if="form.errors.current_password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.current_password }}</p>
             </div>
 
             <div class="border-t border-gray-200 dark:border-gray-700"></div>
@@ -125,6 +126,9 @@
                 <input
                   id="password"
                   v-model="form.password"
+                  minlength="8"
+                  maxlength="72"
+                  autocomplete="new-password"
                   :type="showNewPassword ? 'text' : 'password'"
                   required
                   class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -164,8 +168,8 @@
                 </div>
               </div>
               
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 8 characters</p>
-              <p v-if="errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password }}</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use at least 8 characters, up to 72 bytes. Accented characters and emoji may use more than one byte.</p>
+              <p v-if="form.errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.password }}</p>
             </div>
 
             <!-- Confirm New Password -->
@@ -177,6 +181,9 @@
                 <input
                   id="password_confirmation"
                   v-model="form.password_confirmation"
+                  minlength="8"
+                  maxlength="72"
+                  autocomplete="new-password"
                   :type="showConfirmPassword ? 'text' : 'password'"
                   required
                   class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -196,7 +203,7 @@
                   </svg>
                 </button>
               </div>
-              <p v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password_confirmation }}</p>
+              <p v-if="form.errors.password_confirmation" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.password_confirmation }}</p>
             </div>
           </div>
 
@@ -210,14 +217,14 @@
             </Link>
             <button
               type="submit"
-              :disabled="processing"
+              :disabled="form.processing"
               class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg v-if="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg v-if="form.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ processing ? 'Updating Password...' : 'Update Password' }}
+              {{ form.processing ? 'Updating Password...' : 'Update Password' }}
             </button>
           </div>
         </form>
@@ -255,19 +262,12 @@
 <script setup>
 import { ref, computed } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { Link, router, usePage } from '@inertiajs/vue3'
+import { Link, useForm, usePage } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
 const page = usePage()
 
-const props = defineProps({
-  errors: {
-    type: Object,
-    default: () => ({})
-  }
-})
-
-const form = ref({
+const form = useForm({
   current_password: '',
   password: '',
   password_confirmation: ''
@@ -276,12 +276,11 @@ const form = ref({
 const showCurrentPassword = ref(false)
 const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
-const processing = ref(false)
 
 const success = computed(() => page.props.flash?.success || null)
 
 const passwordStrength = computed(() => {
-  const password = form.value.password
+  const password = form.password
   if (!password) return { width: '0%', color: '', label: '', textColor: '' }
 
   let strength = 0
@@ -326,19 +325,11 @@ const checkPasswordStrength = () => {
 }
 
 const submitForm = () => {
-  processing.value = true
-  router.post('/settings/change-password', form.value, {
-    onFinish: () => {
-      processing.value = false
-    },
-    onSuccess: () => {
-      form.value = {
-        current_password: '',
-        password: '',
-        password_confirmation: ''
-      }
-    }
+  if (form.processing) return
+  form.post('/settings/change-password', {
+    preserveScroll: true,
+    onError: (errors) => document.getElementById(Object.keys(errors)[0])?.focus(),
+    onSuccess: () => form.reset(),
   })
 }
 </script>
-

@@ -37,6 +37,12 @@ export function useUploadSubmission(form, { request = axios.post, successDelay =
         throw error
       }
 
+      if (typeof response.data === 'string' && /^\s*</.test(response.data)) {
+        const error = new Error('The server returned a page instead of confirming the save.')
+        error.response = { status: 502 }
+        throw error
+      }
+
       uploadProgress.value = 100
       uploadState.value = 'success'
       uploadMessage.value = 'Upload complete. Your document has been saved.'

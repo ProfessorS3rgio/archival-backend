@@ -28,8 +28,8 @@ class SpTermController extends Controller
     {
         $validated = $request->validate([
             'term_no' => 'required|string|max:10|unique:sangguniang_panlalawigan_terms,term_no',
-            'start_year' => 'required|date',
-            'end_year' => 'required|date|after:start_year',
+            'start_year' => 'required|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'end_year' => 'required|date|after:start_year|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
         ]);
 
         $term = SangguniangPanlalawiganTerm::create($validated);
@@ -53,8 +53,8 @@ class SpTermController extends Controller
 
         $validated = $request->validate([
             'term_no' => 'required|string|max:10|unique:sangguniang_panlalawigan_terms,term_no,' . $termId . ',term_id',
-            'start_year' => 'required|date',
-            'end_year' => 'required|date|after:start_year',
+            'start_year' => 'required|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'end_year' => 'required|date|after:start_year|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
         ]);
 
         $term->update($validated);

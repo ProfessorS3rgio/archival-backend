@@ -92,7 +92,7 @@ class NationalOfficeCommunicationListController extends Controller
             'subject' => 'nullable|string|max:255',
             'provincial_resolution_no' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
-            'date_received' => 'nullable|date',
+            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'files' => 'nullable|array',
             'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
             'extracted_text' => 'nullable|string',
@@ -237,7 +237,7 @@ class NationalOfficeCommunicationListController extends Controller
             'subject' => 'nullable|string|max:255',
             'provincial_resolution_no' => 'nullable|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
-            'date_received' => 'nullable|date',
+            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'files' => 'nullable|array',
             'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
             'extracted_text' => 'nullable|string',

@@ -148,16 +148,16 @@ class ResolutionController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate(rules: [
-            'resolution_no' => 'nullable|string',
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
-            'date_approved' => 'nullable|date|after_or_equal:1000-01-01',
-            'municipality' => 'nullable|string',
+            'resolution_no' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'date_approved' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'municipality' => 'nullable|string|max:255',
             'is_municipal' => 'boolean',
             'added_by' => 'required|exists:users,id',
-            'extracted_text' => 'nullable',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file_extracted_texts' => 'nullable|array',
             'file_extracted_texts.*' => 'nullable|string',
             'files' => 'nullable|array',
@@ -166,16 +166,16 @@ class ResolutionController extends Controller
 
         // Create the resolution
         $resolution = Resolution::create([
-            'resolution_no' => $validated['resolution_no'],
-            'author' => $validated['author'],
-            'session' => $validated['session'],
-            'title' => $validated['title'],
+            'resolution_no' => $validated['resolution_no'] ?? null,
+            'author' => $validated['author'] ?? null,
+            'session' => $validated['session'] ?? null,
+            'title' => $validated['title'] ?? null,
             'subject' => $validated['subject'] ?? '',
-            'date_approved' => $validated['date_approved'],
-            'municipality' => $validated['municipality'],
+            'date_approved' => $validated['date_approved'] ?? null,
+            'municipality' => $validated['municipality'] ?? null,
             'is_municipal' => $validated['is_municipal'] ?? false,
             'added_by' => $validated['added_by'],
-            'extracted_text' => is_string($validated['extracted_text']) ? $validated['extracted_text'] : (is_array($validated['extracted_text']) ? implode('\n\n', array_filter($validated['extracted_text'])) : null),
+            'extracted_text' => is_string($validated['extracted_text'] ?? null) ? $validated['extracted_text'] : (is_array($validated['extracted_text'] ?? null) ? implode('\n\n', array_filter($validated['extracted_text'])) : null),
         ]);
 
         // Handle file uploads
@@ -190,7 +190,7 @@ class ResolutionController extends Controller
                 $counter = 1;
                 
                 // Determine folder based on is_municipal
-                if ($validated['is_municipal']) {
+                if ($validated['is_municipal'] ?? false) {
                     // For municipal documents, create subfolder based on municipality name
                     $municipalityName = strtolower(str_replace(' ', '_', $validated['municipality']));
                     $folder = 'municipal/' . $municipalityName;
@@ -339,14 +339,14 @@ class ResolutionController extends Controller
         ]);
         
         $validated = $request->validate([
-            'resolution_no' => 'nullable|string',
-            'author' => 'nullable|string',
-            'session' => 'nullable|string',
-            'title' => 'nullable|string',
-            'subject' => 'nullable|string',
-            'date_approved' => 'nullable|date|after_or_equal:1000-01-01',
+            'resolution_no' => 'nullable|string|max:255',
+            'author' => 'nullable|string|max:255',
+            'session' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'date_approved' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'added_by' => 'nullable|integer',
-            'extracted_text' => 'nullable',
+            'extracted_text' => ['nullable', new \App\Rules\TextOrTextList],
             'file_extracted_texts' => 'nullable|array',
             'file_extracted_texts.*' => 'nullable|string',
             'remove_files' => 'nullable|array',
@@ -362,7 +362,7 @@ class ResolutionController extends Controller
         $validated['subject'] = $validated['subject'] ?? '';
 
         // Handle extracted_text
-        $validated['extracted_text'] = is_string($validated['extracted_text']) ? $validated['extracted_text'] : (is_array($validated['extracted_text']) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
+        $validated['extracted_text'] = is_string($validated['extracted_text'] ?? null) ? $validated['extracted_text'] : (is_array($validated['extracted_text'] ?? null) ? implode('\n\n', array_filter($validated['extracted_text'])) : null);
 
         $resolution->update($validated);
 

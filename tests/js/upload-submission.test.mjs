@@ -95,3 +95,12 @@ test('oversized requests and expired login redirects are not reported as saved',
   await assert.rejects(state.submitUpload('/ordinances', {}))
   assert.match(state.uploadMessage.value, /session expired/i)
 })
+
+test('an HTML response cannot be mistaken for a confirmed document save', async () => {
+  const state = useUploadSubmission(form(), {
+    request: async () => ({ status: 200, data: '<!doctype html><html>Unconfirmed response</html>' }),
+  })
+  await assert.rejects(state.submitUpload('/ordinances', {}))
+  assert.equal(state.uploadState.value, 'error')
+  assert.match(state.uploadMessage.value, /could not confirm/)
+})

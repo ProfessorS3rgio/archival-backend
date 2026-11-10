@@ -17,6 +17,7 @@
 
       <!-- Form -->
       <form @submit.prevent="submit" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-6">
+        <FormErrorSummary :errors="errors" />
         <!-- Basic Information -->
         <div class="space-y-4">
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
@@ -347,6 +348,7 @@
 </template>
 
 <script setup>
+import FormErrorSummary from '@/Components/FormErrorSummary.vue'
 import UploadStatus from '@/Components/UploadStatus.vue'
 import { useUploadSubmission } from '@/composables/useUploadSubmission'
 import { ref, computed, onUnmounted, onMounted, watch } from 'vue'

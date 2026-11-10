@@ -60,7 +60,7 @@
 
       <!-- Form Card -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <form @submit.prevent="submitForm">
+        <form @submit.prevent="submitForm" novalidate>
           <div class="p-6 space-y-6">
             <!-- Personal Information Section -->
             <div>
@@ -78,12 +78,13 @@
                   <input
                     id="name"
                     v-model="form.name"
+                    maxlength="255"
                     type="text"
                     required
                     class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="Juan Dela Cruz"
                   />
-                  <p v-if="errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.name }}</p>
+                  <p v-if="form.errors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.name }}</p>
                 </div>
 
                 <div>
@@ -93,12 +94,13 @@
                   <input
                     id="email"
                     v-model="form.email"
+                    maxlength="255"
                     type="email"
                     required
                     class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="juan.delacruz@example.com"
                   />
-                  <p v-if="errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.email }}</p>
+                  <p v-if="form.errors.email" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.email }}</p>
                 </div>
               </div>
             </div>
@@ -123,13 +125,14 @@
                   <input
                     id="username"
                     v-model="form.username"
+                    maxlength="255"
                     type="text"
                     required
                     class="block w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     placeholder="juandelacruz"
                   />
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Username must be unique and contain no spaces</p>
-                  <p v-if="errors.username" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.username }}</p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use letters, numbers, periods, underscores, or hyphens. No spaces.</p>
+                  <p v-if="form.errors.username" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.username }}</p>
                 </div>
 
                 <div>
@@ -140,6 +143,9 @@
                     <input
                       id="password"
                       v-model="form.password"
+                      minlength="8"
+                      maxlength="72"
+                      autocomplete="new-password"
                       :type="showPassword ? 'text' : 'password'"
                       required
                       class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -159,8 +165,8 @@
                       </svg>
                     </button>
                   </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Password must be at least 6 characters</p>
-                  <p v-if="errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password }}</p>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Use at least 8 characters, up to 72 bytes. Accented characters and emoji may use more than one byte.</p>
+                  <p v-if="form.errors.password" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.password }}</p>
                 </div>
 
                 <div>
@@ -171,6 +177,9 @@
                     <input
                       id="password_confirmation"
                       v-model="form.password_confirmation"
+                      minlength="8"
+                      maxlength="72"
+                      autocomplete="new-password"
                       :type="showPasswordConfirmation ? 'text' : 'password'"
                       required
                       class="block w-full px-4 py-2.5 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -190,7 +199,7 @@
                       </svg>
                     </button>
                   </div>
-                  <p v-if="errors.password_confirmation" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.password_confirmation }}</p>
+                  <p v-if="form.errors.password_confirmation" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.password_confirmation }}</p>
                 </div>
               </div>
             </div>
@@ -271,7 +280,7 @@
                     </p>
                   </div>
                 </label>
-                <p v-if="errors.role" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ errors.role }}</p>
+                <p v-if="form.errors.role" class="mt-1 text-sm text-red-600 dark:text-red-400">{{ form.errors.role }}</p>
               </div>
             </div>
           </div>
@@ -286,14 +295,14 @@
             </Link>
             <button
               type="submit"
-              :disabled="processing"
+              :disabled="form.processing"
               class="inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <svg v-if="processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg v-if="form.processing" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ processing ? 'Creating Account...' : 'Create Account' }}
+              {{ form.processing ? 'Creating Account...' : 'Create Account' }}
             </button>
           </div>
         </form>
@@ -330,18 +339,11 @@
 <script setup>
 import { ref } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { Link, router } from '@inertiajs/vue3'
+import { Link, useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 import { UserCircleIcon } from '@/icons'
 
-const props = defineProps({
-  errors: {
-    type: Object,
-    default: () => ({})
-  }
-})
-
-const form = ref({
+const form = useForm({
   name: '',
   email: '',
   username: '',
@@ -352,25 +354,13 @@ const form = ref({
 
 const showPassword = ref(false)
 const showPasswordConfirmation = ref(false)
-const processing = ref(false)
 
 const submitForm = () => {
-  processing.value = true
-  router.post('/settings/add-accounts', form.value, {
-    onFinish: () => {
-      processing.value = false
-    },
-    onSuccess: () => {
-      form.value = {
-        name: '',
-        email: '',
-        username: '',
-        password: '',
-        password_confirmation: '',
-        role: 'staff'
-      }
-    }
+  if (form.processing) return
+  form.post('/settings/add-accounts', {
+    preserveScroll: true,
+    onError: (errors) => document.getElementById(Object.keys(errors)[0])?.focus(),
+    onSuccess: () => form.reset(),
   })
 }
 </script>
-

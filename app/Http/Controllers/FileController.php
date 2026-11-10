@@ -277,7 +277,8 @@ class FileController extends Controller
                 "Failed to convert file: {$originalName} - Error: {$e->getMessage()}"
             );
 
-            return response()->json(['error' => $e->getMessage()], 500);
+            report($e);
+            return response()->json(['error' => 'The file could not be converted. Check the file and try again, or contact the administrator.'], 500);
         }
     }
 }

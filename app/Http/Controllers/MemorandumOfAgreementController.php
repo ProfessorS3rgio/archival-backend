@@ -66,7 +66,7 @@ class MemorandumOfAgreementController extends Controller
     {
         $validated = $request->validate([
             'resolution_no' => 'nullable|string|max:255',
-            'date_received' => 'nullable|date',
+            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'title' => 'required|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
             'extracted_text' => 'nullable',
@@ -151,7 +151,7 @@ class MemorandumOfAgreementController extends Controller
 
         $validated = $request->validate([
             'resolution_no' => 'nullable|string|max:255',
-            'date_received' => 'nullable|date',
+            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
             'title' => 'required|string|max:255',
             'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
             'extracted_text' => 'nullable',
