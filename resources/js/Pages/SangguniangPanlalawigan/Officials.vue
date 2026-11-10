@@ -336,8 +336,8 @@ const getViceGovernor = () => {
 }
 
 const getProfilePicture = (member) => {
-  if (member.profile_picture && member.profile_picture.file_url) {
-    return `/storage/${member.profile_picture.file_url}`
+  if (member.profile_picture?.display_url) {
+    return member.profile_picture.display_url
   }
   // Default avatar SVG
   return `data:image/svg+xml,${encodeURIComponent(`

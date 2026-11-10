@@ -6,12 +6,15 @@ use App\Models\SangguniangPanlalawiganTerm;
 use App\Models\SangguniangPanlalawiganMember;
 use App\Models\SpProfilePicture;
 use App\Services\LoggingService;
+use App\Services\OfficialProfilePictures;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class SangguniangPanlalawiganController extends Controller
 {
+    public function __construct(private OfficialProfilePictures $pictures) {}
+
     /**
      * Display officials for a specific SP term
      */
@@ -94,7 +97,7 @@ class SangguniangPanlalawiganController extends Controller
             }
         } elseif ($validated['position'] === 'Board Member') {
             // Check district limits for Board Members
-            if (in_array($validated['district'], ['1st District', '2nd District'])) {
+            if (in_array($validated['district'] ?? null, ['1st District', '2nd District'])) {
                 $existingCount = SangguniangPanlalawiganMember::where('term_id', $validated['term_id'])
                     ->where('district', $validated['district'])
                     ->count();
@@ -118,36 +121,7 @@ class SangguniangPanlalawiganController extends Controller
             }
         }
 
-        // Create the member
-        $member = SangguniangPanlalawiganMember::create([
-            'term_id' => $validated['term_id'],
-            'district' => $validated['district'],
-            'full_name' => $validated['full_name'],
-            'extension' => $validated['extension'],
-            'position' => $validated['position'],
-        ]);
-
-        // Log the creation
-        LoggingService::logCreate($member, "Added SP official: {$member->full_name} as {$member->position}");
-
-        // Handle profile picture upload
-        if ($request->hasFile('profile_picture')) {
-            $file = $request->file('profile_picture');
-            $originalName = $file->getClientOriginalName();
-            $fileName = time() . '_' . uniqid() . '_' . $originalName;
-            $path = $file->storeAs('sp-profiles', $fileName, 'public');
-
-            $picture = SpProfilePicture::create([
-                'sp_member_id' => $member->member_id,
-                'added_by' => auth()->id(),
-                'file_name' => $originalName,
-                'file_url' => $path,
-                'file_type' => $file->getMimeType(),
-            ]);
-
-            // Log the profile picture upload
-            LoggingService::logCreate($picture, "Uploaded profile picture for SP official: {$member->full_name}");
-        }
+        $this->saveMember($request, $validated);
 
         return redirect()->route('sp.officials', ['termSlug' => $termSlug])
             ->with('success', 'Official added successfully');
@@ -159,9 +133,6 @@ class SangguniangPanlalawiganController extends Controller
     public function update(Request $request, $termSlug, $memberId)
     {
         $member = SangguniangPanlalawiganMember::findOrFail($memberId);
-
-        // Store old values for logging
-        $oldValues = $member->getOriginal();
 
         $validated = $request->validate([
             'term_id' => 'required|exists:sangguniang_panlalawigan_terms,term_id',
@@ -187,7 +158,7 @@ class SangguniangPanlalawiganController extends Controller
             }
         } elseif ($validated['position'] === 'Board Member') {
             // Check district limits for Board Members
-            if (in_array($validated['district'], ['1st District', '2nd District'])) {
+            if (in_array($validated['district'] ?? null, ['1st District', '2nd District'])) {
                 $existingCount = SangguniangPanlalawiganMember::where('term_id', $validated['term_id'])
                     ->where('district', $validated['district'])
                     ->where('member_id', '!=', $memberId)
@@ -213,47 +184,7 @@ class SangguniangPanlalawiganController extends Controller
             }
         }
 
-        // Update the member
-        $member->update([
-            'term_id' => $validated['term_id'],
-            'district' => $validated['district'],
-            'full_name' => $validated['full_name'],
-            'extension' => $validated['extension'],
-            'position' => $validated['position'],
-        ]);
-
-        // Log the update
-        LoggingService::logUpdate($member, $oldValues, "Updated SP official: {$member->full_name}");
-
-        // Handle profile picture upload
-        if ($request->hasFile('profile_picture')) {
-            // Delete old profile picture if exists
-            if ($member->profilePicture) {
-                $oldPicture = $member->profilePicture;
-                Storage::disk('public')->delete($oldPicture->file_url);
-                
-                // Log the deletion of old picture
-                LoggingService::logDelete($oldPicture, "Deleted old profile picture for SP official: {$member->full_name}");
-                
-                $oldPicture->delete();
-            }
-
-            $file = $request->file('profile_picture');
-            $originalName = $file->getClientOriginalName();
-            $fileName = time() . '_' . uniqid() . '_' . $originalName;
-            $path = $file->storeAs('sp-profiles', $fileName, 'public');
-
-            $picture = SpProfilePicture::create([
-                'sp_member_id' => $member->member_id,
-                'added_by' => auth()->id(),
-                'file_name' => $originalName,
-                'file_url' => $path,
-                'file_type' => $file->getMimeType(),
-            ]);
-
-            // Log the new profile picture upload
-            LoggingService::logCreate($picture, "Uploaded new profile picture for SP official: {$member->full_name}");
-        }
+        $this->saveMember($request, $validated, $member);
 
         return redirect()->route('sp.officials', ['termSlug' => $termSlug])
             ->with('success', 'Official updated successfully');
@@ -266,27 +197,68 @@ class SangguniangPanlalawiganController extends Controller
     {
         $member = SangguniangPanlalawiganMember::findOrFail($memberId);
         
-        // Store member details for logging
-        $memberName = $member->full_name;
-        $memberPosition = $member->position;
-        
-        // Delete profile picture file if exists
-        if ($member->profilePicture) {
-            $picture = $member->profilePicture;
-            Storage::disk('public')->delete($picture->file_url);
-            
-            // Log the profile picture deletion
-            LoggingService::logDelete($picture, "Deleted profile picture for SP official: {$memberName}");
-            
-            $picture->delete();
-        }
-        
-        // Log the member deletion
-        LoggingService::logDelete($member, "Deleted SP official: {$memberName} ({$memberPosition})");
-        
-        $member->delete();
+        DB::transaction(function () use ($member) {
+            if ($picture = $member->profilePicture) {
+                LoggingService::logDelete($picture, "Deleted profile picture for SP official: {$member->full_name}");
+                $picture->delete();
+                DB::afterCommit(fn () => $this->pictures->deleteFile($picture->getAttributes()));
+            }
+            LoggingService::logDelete($member, "Deleted SP official: {$member->full_name} ({$member->position})");
+            $member->delete();
+        });
 
         return redirect()->route('sp.officials', ['termSlug' => $termSlug])
             ->with('success', 'Official deleted successfully');
     }
+
+    private function saveMember(Request $request, array $validated, ?SangguniangPanlalawiganMember $member = null): void
+    {
+        // Keep the old image until both the replacement upload and database save succeed.
+        $uploaded = $request->hasFile('profile_picture')
+            ? $this->pictures->upload($request->file('profile_picture'))
+            : null;
+
+        try {
+            DB::transaction(function () use ($validated, $member, $uploaded) {
+                $attributes = [
+                    'term_id' => $validated['term_id'],
+                    'district' => $validated['district'] ?? null,
+                    'full_name' => $validated['full_name'],
+                    'extension' => $validated['extension'],
+                    'position' => $validated['position'],
+                ];
+                if ($member) {
+                    $oldValues = $member->getOriginal();
+                    $member->update($attributes);
+                    LoggingService::logUpdate($member, $oldValues, "Updated SP official: {$member->full_name}");
+                } else {
+                    $member = SangguniangPanlalawiganMember::create($attributes);
+                    LoggingService::logCreate($member, "Added SP official: {$member->full_name} as {$member->position}");
+                }
+
+                if ($uploaded) {
+                    $oldPicture = $member->profilePicture;
+                    if ($oldPicture) {
+                        LoggingService::logDelete($oldPicture, "Deleted old profile picture for SP official: {$member->full_name}");
+                        $oldPicture->delete();
+                    }
+                    $picture = SpProfilePicture::create([
+                        ...$uploaded,
+                        'sp_member_id' => $member->member_id,
+                        'added_by' => auth()->id(),
+                    ]);
+                    LoggingService::logCreate($picture, "Uploaded profile picture for SP official: {$member->full_name}");
+                    if ($oldPicture) {
+                        DB::afterCommit(fn () => $this->pictures->deleteFile($oldPicture->getAttributes()));
+                    }
+                }
+            });
+        } catch (\Throwable $error) {
+            if ($uploaded) {
+                $this->pictures->deleteFile($uploaded);
+            }
+            throw $error;
+        }
+    }
+
 }

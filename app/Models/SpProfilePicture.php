@@ -14,17 +14,25 @@ class SpProfilePicture extends Model
     protected $primaryKey = 'sp_profile_pictures_id';
     public $timestamps = false;
 
+    protected $appends = ['display_url'];
+
     protected $fillable = [
         'sp_member_id',
         'added_by',
         'file_name',
         'file_url',
         'file_type',
+        'disk',
     ];
 
     protected $casts = [
         'date_uploaded' => 'datetime',
     ];
+
+    public function getDisplayUrlAttribute(): string
+    {
+        return route('sp.profile-picture', ['picture' => $this->getKey()], false);
+    }
 
     public function member(): BelongsTo
     {

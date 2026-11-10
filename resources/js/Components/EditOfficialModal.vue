@@ -97,6 +97,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                           JPG, PNG up to 2MB
                         </p>
+                        <p v-if="form.errors.profile_picture" role="alert" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.profile_picture }}</p>
                       </div>
                     </div>
                   </div>
@@ -273,8 +274,8 @@ watch(() => props.member, (newMember) => {
     form.clearErrors()
 
     // Set preview image
-    if (newMember.profile_picture && newMember.profile_picture.file_url) {
-      previewImage.value = `/serve-file/${newMember.profile_picture.file_url}`
+    if (newMember.profile_picture?.display_url) {
+      previewImage.value = newMember.profile_picture.display_url
     } else {
       previewImage.value = `data:image/svg+xml,${encodeURIComponent(`
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%239CA3AF">
@@ -355,8 +356,8 @@ onMounted(() => {
     form.clearErrors()
 
     // Set preview image
-    if (props.member.profile_picture && props.member.profile_picture.file_url) {
-      previewImage.value = `/serve-file/${props.member.profile_picture.file_url}`
+    if (props.member.profile_picture?.display_url) {
+      previewImage.value = props.member.profile_picture.display_url
     }
   }
 

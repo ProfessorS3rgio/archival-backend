@@ -51,6 +51,7 @@
               <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
                 JPG, PNG up to 2MB
               </p>
+                        <p v-if="form.errors.profile_picture" role="alert" class="mt-2 text-sm text-red-600 dark:text-red-400">{{ form.errors.profile_picture }}</p>
             </div>
           </div>
         </div>

@@ -98,6 +98,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('committee-reports', CommitteeReportController::class);
 
     // Sangguniang Panlalawigan routes
+    Route::get('/official-profile-pictures/{picture}', function (\App\Models\SpProfilePicture $picture) {
+        return app(\App\Services\OfficialProfilePictures::class)->response($picture);
+    })->name('sp.profile-picture');
+
     Route::get('/sp-{termSlug}/officials', [SangguniangPanlalawiganController::class, 'officials'])
         ->name('sp.officials');
     Route::get('/sp-{termSlug}/add-officials', [SangguniangPanlalawiganController::class, 'create'])

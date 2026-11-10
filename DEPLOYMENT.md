@@ -34,6 +34,23 @@ maintenance mode, fix that failure before bringing the app up. Run database
 migrations only when the deployment requires them; do not import SQL backups
 as part of a routine code update.
 
+Officials' profile pictures use the same `private` disk as documents (R2 in
+production), under `private/sp-profiles/`. The picture record stores its disk;
+older records default to `public` until copied. Images are served through the
+authenticated `/official-profile-pictures/{picture}` route.
+
+For the profile-picture storage deployment, run these while in maintenance mode,
+after pulling and before `artisan up`:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_10_060000_add_disk_to_sp_profile_pictures.php
+runuser -u www-data -- php artisan officials:migrate-pictures --dry-run
+runuser -u www-data -- php artisan officials:migrate-pictures
+```
+
+The copy command verifies SHA-256 contents before changing each database record,
+retains the original local file as a backup, and can be rerun safely.
+
 `public/build` is generated on the server and ignored by Git. Keep runtime
 storage, installed dependencies, certificates, and production credentials on
 the server. `/root/archival-backend` is an older checkout and is not the live app.
