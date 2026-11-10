@@ -31,7 +31,7 @@ foreach ([false, true] as $enabled) {
     $response = $kernel->handle(Request::create('/settings/auto-fill', 'PATCH', ['auto_fill' => $enabled], [], [], ['HTTP_ACCEPT' => 'application/json']));
     check($response->isSuccessful() && json_decode($response->getContent(), true)['auto_fill'] === $enabled && Setting::getAutoFillEnabled() === $enabled, 'The auto-fill endpoint saves and confirms the requested preference');
 
-    foreach (['ordinances', 'resolutions', 'draft-ordinances', 'draft-resolutions', 'municipal-ordinances', 'municipal-resolutions'] as $type) {
+    foreach (['ordinances', 'resolutions', 'draft-ordinances', 'draft-resolutions', 'municipal-ordinances', 'municipal-resolutions', 'municipal-communications'] as $type) {
         $request = Request::create('/'.$type.'/create', 'GET', [], [], [], ['HTTP_X_INERTIA' => 'true', 'HTTP_ACCEPT' => 'text/html']);
         $request->headers->set('X-Inertia-Version', app(App\Http\Middleware\HandleInertiaRequests::class)->version($request));
         $response = $kernel->handle($request);

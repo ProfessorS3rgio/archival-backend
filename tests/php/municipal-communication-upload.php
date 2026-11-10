@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 set_exception_handler(function (Throwable $error): void { fwrite(STDERR, $error->getMessage()."\n"); exit(1); });
-foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_19_200000_create_municipalities_communication_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table'] as $file) {
+foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_16_102709_create_settings_table', '2025_10_19_200000_create_municipalities_communication_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table'] as $file) {
     (require __DIR__.'/../../database/migrations/'.$file.'.php')->up();
 }
 $admin = User::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'username' => 'admin', 'password' => 'password', 'role' => 'admin']);

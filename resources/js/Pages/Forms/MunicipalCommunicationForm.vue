@@ -24,7 +24,15 @@
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Communication Details
             </h3>
+            <button type="button" role="switch" aria-label="Auto-fill from attachment" :aria-checked="autoFillEnabled" :disabled="autoFillSaving" @click="toggleAutoFill"
+              class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm disabled:opacity-50"
+              :class="autoFillEnabled ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'">
+              Auto-fill: {{ autoFillSaving ? 'Saving…' : autoFillEnabled ? 'On' : 'Off' }}
+            </button>
           </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Auto-fill suggests blank details from readable document text. Review all suggestions; saved and manually entered values are kept.</p>
+          <p v-if="autoFillError" role="alert" class="text-sm text-red-600 dark:text-red-400">{{ autoFillError }}</p>
+          <p v-if="autoFillMessage" role="status" class="text-sm text-blue-700 dark:text-blue-300">{{ autoFillMessage }}</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Title -->
@@ -357,6 +365,7 @@ const page = usePage()
 const props = defineProps({
   municipalCommunication: Object,
   isEditing: Boolean,
+  autoFillEnabled: { type: Boolean, default: true },
 })
 
 const form = useForm({
@@ -375,13 +384,18 @@ const {
   selectedFiles,
   previewObjects,
   processingFiles,
+  autoFillEnabled,
+  autoFillSaving,
+  autoFillError,
+  autoFillMessage,
+  toggleAutoFill,
   handleFileSelect,
   removeFile,
   getFileType,
   formatFileSize,
   getOfficeEmbedUrl,
   cleanupAllPreviews
-} = useCommunicationFileUpload()
+} = useCommunicationFileUpload({ autoFillEnabled: props.autoFillEnabled, editing: props.isEditing })
 
 // Existing file for editing
 const existingFile = ref(null)

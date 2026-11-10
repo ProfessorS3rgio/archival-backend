@@ -1,5 +1,7 @@
 import { ref } from 'vue'
 import axios from 'axios'
+import { useAutoFillPreference } from './useAutoFillPreference.js'
+import { parseMunicipalCommunication, fillMunicipalCommunication } from '../utils/municipalCommunicationAutoFill.js'
 
 const officeExtensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
 const allowedExtensions = ['pdf', ...officeExtensions, 'jpg', 'jpeg', 'png']
@@ -14,7 +16,7 @@ async function extractPDF(file) {
     const pages = []
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
-      pages.push((await page.getTextContent()).items.map(item => item.str).join(' '))
+      pages.push((await page.getTextContent()).items.map(item => item.str + (item.hasEOL ? '\n' : ' ')).join(''))
     }
     return pages.join('\n')
   } finally {
@@ -27,11 +29,31 @@ async function extractDOCX(file) {
   return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value
 }
 
-export function useCommunicationFileUpload({ request = axios.post, extractPDFText = extractPDF, extractDOCXText = extractDOCX, objectUrls = URL } = {}) {
+export function useCommunicationFileUpload({ request = axios.post, extractPDFText = extractPDF, extractDOCXText = extractDOCX, objectUrls = URL, autoFillEnabled: initialAutoFill = true, editing = false, savePreference } = {}) {
   const selectedFiles = ref([])
   const previewObjects = ref([])
   const processingFiles = ref([])
   let generation = 0
+  let activeForm = null
+  let selectionBaseline = null
+  const autoFillMessage = ref('')
+  const baseline = form => Object.fromEntries(['title', 'subject', 'year', 'date_received'].map(field => [field, form[field]]))
+  const applyAutoFill = () => {
+    if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value) return
+    const text = previewObjects.value[0]?.extractedText || ''
+    const details = parseMunicipalCommunication(text, selectedFiles.value[0].name)
+    const fields = fillMunicipalCommunication(activeForm, details, selectionBaseline, { editing })
+    const labels = { title: 'title', subject: 'municipality', year: 'year', date_received: 'received date' }
+    autoFillMessage.value = !text.trim()
+      ? 'No readable text was extracted. Suggestions use the filename only. Enter the remaining details manually; scanned documents need OCR to read their text.'
+      : fields.length ? `Filled ${fields.map(field => labels[field]).join(', ')}. Review the details before saving.`
+        : 'No additional blank details could be identified. Existing values have been kept.'
+  }
+  const { autoFillEnabled, autoFillSaving, autoFillError, toggleAutoFill } = useAutoFillPreference(initialAutoFill, {
+    initiallyDisabled: editing,
+    ...(savePreference ? { request: savePreference } : {}),
+    onEnable: applyAutoFill,
+  })
 
   const getFileType = file => (file.name || '').split('.').pop().toLowerCase()
   const syncText = form => { form.extracted_text = previewObjects.value[0]?.extractedText || '' }
@@ -45,6 +67,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
     selectedFiles.value = []
     previewObjects.value = []
     processingFiles.value = []
+    autoFillMessage.value = ''
   }
 
   const handleFileSelect = async (event, form) => {
@@ -69,6 +92,8 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
 
     cleanupAllPreviews()
     const current = generation
+    activeForm = form
+    selectionBaseline = baseline(form)
     selectedFiles.value = [file]
     form.files = [file]
     form.extracted_text = ''
@@ -108,6 +133,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
         previewObjects.value = [preview]
         processingFiles.value = [false]
         syncText(form)
+        applyAutoFill()
       } else {
         revoke(preview)
       }
@@ -123,5 +149,5 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
   const formatFileSize = bytes => bytes < 1024 ? `${bytes} Bytes` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   const getOfficeEmbedUrl = url => url ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}` : ''
 
-  return { selectedFiles, previewObjects, processingFiles, handleFileSelect, removeFile, getFileType, formatFileSize, getOfficeEmbedUrl, cleanupAllPreviews }
+  return { selectedFiles, previewObjects, processingFiles, handleFileSelect, removeFile, getFileType, formatFileSize, getOfficeEmbedUrl, cleanupAllPreviews, autoFillEnabled, autoFillSaving, autoFillError, autoFillMessage, toggleAutoFill }
 }
