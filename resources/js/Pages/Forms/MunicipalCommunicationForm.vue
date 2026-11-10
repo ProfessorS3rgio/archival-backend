@@ -137,13 +137,12 @@
                         @change="handleFileSelect($event, form)"
                         class="sr-only"
                         accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png"
-                        multiple
                       />
                     </label>
-                    <p class="pl-1">or drag and drop</p>
+                    <p class="pl-1">to attach</p>
                   </div>
                   <p class="text-xs text-gray-500 dark:text-gray-400">
-                    PDF, DOC, DOCX  up to 10MB each
+                    One PDF, Word, Excel, PowerPoint, JPG, or PNG file, up to 10 MB
                   </p>
                 </div>
               </div>
@@ -214,7 +213,7 @@
                       type="application/pdf"
                     ></iframe>
                   </div>
-                  <div v-else-if="(getFileTypeFromName(existingFile.file_name) === 'docx' || getFileTypeFromName(existingFile.file_name) === 'doc') && props.municipalCommunication.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                  <div v-else-if="getFileTypeFromName(existingFile.file_name) === 'office' && props.municipalCommunication.public_preview_url" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
                     <iframe
                       :src="getOfficeEmbedUrl(props.municipalCommunication.public_preview_url)"
                       width="100%"
@@ -222,6 +221,9 @@
                       frameborder="0"
                       class="border border-gray-300 dark:border-gray-600 rounded"
                     ></iframe>
+                  </div>
+                  <div v-else-if="getFileTypeFromName(existingFile.file_name) === 'image'" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                    <img :src="`/serve-file/${existingFile.file_url}`" :alt="existingFile.file_name" class="max-h-[500px] mx-auto object-contain" />
                   </div>
                   <div v-else class="bg-gray-100 dark:bg-gray-700 rounded p-3 max-h-64 overflow-y-auto">
                     <p class="text-sm text-gray-900 dark:text-white whitespace-pre-wrap">{{ existingFile.extracted_text }}</p>
@@ -297,7 +299,11 @@
                           class="border border-gray-300 dark:border-gray-600 rounded"
                         ></iframe>
                       </div>
-                      <div v-else-if="previewObjects[index].type === 'error'" class="bg-red-50 dark:bg-red-900/20 rounded p-3">
+                      <div v-else-if="previewObjects[index].type === 'image'" class="bg-gray-100 dark:bg-gray-700 rounded p-2">
+                        <img :src="previewObjects[index].url" :alt="file.name" class="max-h-[500px] mx-auto object-contain" />
+                      </div>
+                      <p v-if="previewObjects[index].warning" class="mt-2 text-sm text-amber-700 dark:text-amber-300">{{ previewObjects[index].warning }}</p>
+                      <div v-if="previewObjects[index].type === 'error'" class="bg-red-50 dark:bg-red-900/20 rounded p-3">
                         <p class="text-xs text-red-600 dark:text-red-400">{{ previewObjects[index].content }}</p>
                       </div>
                     </div>
@@ -305,8 +311,8 @@
                 </div>
               </div>
 
-              <p v-if="errors.file" class="mt-1 text-sm text-red-600 dark:text-red-400">
-                {{ errors.file }}
+              <p v-if="errors.files || errors['files.0'] || errors.file" class="mt-1 text-sm text-red-600 dark:text-red-400">
+                {{ errors.files || errors['files.0'] || errors.file }}
               </p>
             </div>
           </div>
@@ -359,7 +365,7 @@ const form = useForm({
   year: new Date().getFullYear(),
   date_received: '',
   files: [],
-  extracted_text: []
+  extracted_text: ''
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
@@ -433,7 +439,8 @@ const getFileTypeFromName = (fileName) => {
   if (!fileName) return 'unknown'
   const extension = fileName.split('.').pop().toLowerCase()
   if (extension === 'pdf') return 'pdf'
-  if (['doc', 'docx'].includes(extension)) return 'docx'
+  if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(extension)) return 'office'
+  if (['jpg', 'jpeg', 'png'].includes(extension)) return 'image'
   return 'unknown'
 }
 
@@ -457,110 +464,26 @@ const submit = async () => {
     return
   }
 
-  // Set extracted text from files as a single string
-  form.extracted_text = selectedFiles.value && selectedFiles.value.length > 0
-    ? selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '').join('\n\n')
-    : ''
-
-  // For now, only send the first file since the database schema only supports one file per record
-  if (selectedFiles.value && selectedFiles.value.length > 0) {
-    form.files = [selectedFiles.value[0]]
-  } else {
-    form.files = []
+  const file = selectedFiles.value[0]
+  const data = new FormData()
+  for (const key of ['title', 'subject', 'year', 'date_received']) {
+    data.append(key, form[key] ?? '')
   }
-
-  // Handle file removal for editing
-  form.remove_existing_file = props.isEditing && removeExistingFileFlag.value ? true : false;
-
-  const submitMethod = props.isEditing ? 'put' : 'post'
-  const submitUrl = props.isEditing
+  data.append('remove_existing_file', props.isEditing && removeExistingFileFlag.value ? '1' : '0')
+  if (file) {
+    data.append('files[]', file)
+    data.append('extracted_text', previewObjects.value[0]?.extractedText || '')
+  }
+  if (props.isEditing) data.append('_method', 'PUT')
+  const url = props.isEditing
     ? `/municipal-communications/${props.municipalCommunication.municipalitites_communication_id}`
     : '/municipal-communications'
-
-  if (props.isEditing) {
-    // For editing, build FormData manually like OrdinanceForm does
-    const formData = new FormData();
-    
-    // Add all standard fields
-    Object.entries(form.data()).forEach(([key, value]) => {
-      // Skip files and extracted_text, we'll handle those separately
-      if (key !== 'files' && key !== 'extracted_text') {
-        formData.append(key, value);
-      }
-    });
-    
-    // Add remove_existing_file flag
-    formData.append('remove_existing_file', removeExistingFileFlag.value ? '1' : '0');
-    
-    // Add files if present
-    if (form.files && form.files.length > 0) {
-      for (let i = 0; i < form.files.length; i++) {
-        formData.append('files[]', form.files[i]);
-      }
-    }
-    
-    // Add extracted_text
-    if (form.extracted_text) {
-      formData.append('extracted_text', form.extracted_text);
-    }
-    
-    // Add method spoofing for PUT
-    formData.append('_method', 'PUT');
-    
-    // Submit using Axios directly
-    submitUpload(submitUrl, formData)
-      .then(response => {
-        console.log('Form submitted successfully');
-        router.visit('/municipal-communications');
-      })
-      .catch(error => {
-        console.error('Form submission error:', error);
-      });
-  } else {
-    // Create new municipal communication
-    console.log('Submitting CREATE with extracted_text:', form.extracted_text.substring(0, 100) + '...')
-    
-    // Build FormData for create as well
-    const formData = new FormData()
-
-    Object.entries(form.data()).forEach(([key, value]) => {
-      if (key !== 'files' && key !== 'extracted_text') {
-        formData.append(key, value)
-      }
-    })
-
-    if (form.files && form.files.length > 0) {
-      for (let i = 0; i < form.files.length; i++) {
-        formData.append('files[]', form.files[i])
-      }
-    }
-
-    if (form.extracted_text) {
-      formData.append('extracted_text', form.extracted_text)
-    }
-
-    submitUpload(submitUrl, formData)
-      .then(response => {
-        console.log('Form submitted successfully')
-        // Reset form on success
-        form.reset()
-        selectedFiles.value = []
-        existingFile.value = null
-        removeExistingFileFlag.value = false
-        cleanupAllPreviews()
-        previewObjects.value = []
-        router.visit('/municipal-communications')
-      })
-      .catch(error => {
-        console.error('Form submission error:', error)
-      })
+  try {
+    await submitUpload(url, data)
+    router.visit('/municipal-communications')
+  } catch {
+    // useUploadSubmission displays field/server errors and retains the attachment.
   }
-}
-
-// Remove existing file
-const removeExistingFile = () => {
-  existingFile.value = null
-  removeExistingFileFlag.value = true
 }
 
 // Format date utility

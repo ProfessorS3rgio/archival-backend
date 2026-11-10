@@ -37,7 +37,7 @@ class FileController extends Controller
     public function previewUpload(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'file' => 'required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx|max:10240',
         ]);
 
         $file = $request->file('file');
@@ -51,7 +51,11 @@ class FileController extends Controller
         // Store inside private disk under temp-previews/...
         $storedPath = $file->storeAs('temp-previews', $name, 'private');
 
-        $expiresAt = now()->addMinutes(10);
+        if (! $storedPath) {
+            throw \Illuminate\Validation\ValidationException::withMessages(['file' => 'The preview could not be prepared. You can still save the original attachment.']);
+        }
+
+        $expiresAt = now()->addMinutes(60);
         $signedUrl = URL::temporarySignedRoute('public-serve-file', $expiresAt, [
             'filename' => $storedPath,
         ]);

@@ -29,6 +29,15 @@ runuser -u www-data -- php artisan up
 curl --fail https://sibugaydevgroup.tech/up
 ```
 
+When `deploy/php/99-archival-uploads.ini` changes, apply the PHP-FPM upload
+limits after pulling (the default 2 MB limit is lower than the form's 10 MB):
+
+```sh
+install -m 644 deploy/php/99-archival-uploads.ini /etc/php/8.3/fpm/conf.d/99-archival-uploads.ini
+php-fpm8.3 -t
+systemctl reload php8.3-fpm
+```
+
 Resolve unexpected tracked changes before pulling. If a step fails after entering
 maintenance mode, fix that failure before bringing the app up. Run database
 migrations only when the deployment requires them; do not import SQL backups

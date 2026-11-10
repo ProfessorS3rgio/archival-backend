@@ -7,6 +7,8 @@ use App\Services\DocumentFilterService;
 use App\Services\LoggingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 
@@ -80,51 +82,8 @@ class MunicipalitiesCommunicationListController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subject' => 'nullable|string|max:255',
-            'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
-            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
-            'extracted_text' => 'nullable|string',
-        ]);
-
-        $validated['added_by'] = auth()->id();
-
-        // Handle file upload (take first file since schema only supports one)
-        if ($request->hasFile('files') && is_array($request->file('files')) && count($request->file('files')) > 0) {
-            $file = $request->file('files')[0]; // Take the first file
-
-            // Validate file attributes
-            $fileName = $file->getClientOriginalName();
-            $fileSize = $file->getSize();
-            $fileType = $file->getMimeType();
-
-            // Ensure file attributes are valid
-            if (empty($fileName) || $fileSize <= 0 || empty($fileType)) {
-                return back()->withErrors(['file' => 'Invalid file uploaded.']);
-            }
-
-            $fileName = time() . '_' . $fileName;
-            $filePath = $file->storeAs('municipal-communications', $fileName, 'private');
-
-            // Validate that file was stored successfully
-            if (!$filePath) {
-                return back()->withErrors(['file' => 'Failed to store file.']);
-            }
-
-            $validated['file_name'] = $file->getClientOriginalName();
-            $validated['file_url'] = $filePath;
-            $validated['file_size'] = $fileSize;
-            $validated['file_type'] = $fileType;
-            $validated['date_uploaded'] = now();
-        }
-
-        $communication = MunicipalitiesCommunicationList::create($validated);
-
-        // Log the creation
-        LoggingService::logCreate($communication, "Created municipal communication: {$communication->title}");
+        $validated = $this->validateInput($request);
+        $this->saveCommunication($request, $validated);
 
         return redirect()->route('municipal-communications.index')
             ->with('success', 'Municipal communication created successfully.');
@@ -136,11 +95,11 @@ class MunicipalitiesCommunicationListController extends Controller
     public function show(MunicipalitiesCommunicationList $municipalCommunication)
     {
         // Provide a signed public URL for Office Online previewing
-        $municipalCommunication->public_preview_url = URL::temporarySignedRoute(
+        $municipalCommunication->public_preview_url = $municipalCommunication->file_url ? URL::temporarySignedRoute(
             'public-serve-file',
             now()->addMinutes(60),
             ['filename' => $municipalCommunication->file_url]
-        );
+        ) : null;
 
         // Log the view
         LoggingService::logView($municipalCommunication, "Viewed municipal communication: {$municipalCommunication->title}");
@@ -156,11 +115,11 @@ class MunicipalitiesCommunicationListController extends Controller
     public function edit(MunicipalitiesCommunicationList $municipalCommunication)
     {
         // Provide a signed public URL for Office Online previewing
-        $municipalCommunication->public_preview_url = URL::temporarySignedRoute(
+        $municipalCommunication->public_preview_url = $municipalCommunication->file_url ? URL::temporarySignedRoute(
             'public-serve-file',
             now()->addMinutes(60),
             ['filename' => $municipalCommunication->file_url]
-        );
+        ) : null;
 
         return Inertia::render('Forms/MunicipalCommunicationForm', [
             'municipalCommunication' => $municipalCommunication,
@@ -177,80 +136,8 @@ class MunicipalitiesCommunicationListController extends Controller
             return redirect()->back()->with('error', 'You do not have permission to edit this document.');
         }
 
-        $oldValues = $municipalCommunication->getAttributes();
-
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'subject' => 'nullable|string|max:255',
-            'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
-            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
-            'files' => 'nullable|array',
-            'files.*' => 'file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240', // 10MB max
-            'extracted_text' => 'nullable|string',
-            'remove_existing_file' => 'nullable|boolean',
-        ]);
-
-        $validated['last_modified_by'] = auth()->id();
-        $validated['last_modified_at'] = now();
-
-        // Debug: Log the request data
-        \Log::info('Municipal communication update request', [
-            'remove_existing_file_raw' => $request->input('remove_existing_file'),
-            'remove_existing_file_boolean' => $request->boolean('remove_existing_file'),
-            'file_url' => $municipalCommunication->file_url,
-        ]);
-
-        // Handle existing file removal - check both string and boolean representations
-        $removeFile = $request->boolean('remove_existing_file') || $request->input('remove_existing_file') === 'true' || $request->input('remove_existing_file') === '1';
-        if ($removeFile && $municipalCommunication->file_url) {
-            \Log::info('Removing file:', ['path' => $municipalCommunication->file_url]);
-            Storage::disk('private')->delete($municipalCommunication->file_url);
-            $validated['file_name'] = null;
-            $validated['file_url'] = null;
-            $validated['file_size'] = null;
-            $validated['file_type'] = null;
-            $validated['date_uploaded'] = null;
-            $validated['extracted_text'] = null;
-        }
-
-        // Handle file upload (take first file since schema only supports one)
-        if ($request->hasFile('files') && is_array($request->file('files')) && count($request->file('files')) > 0) {
-            // Delete old file if exists
-            if ($municipalCommunication->file_url) {
-                Storage::disk('private')->delete($municipalCommunication->file_url);
-            }
-
-            $file = $request->file('files')[0]; // Take the first file
-
-            // Validate file attributes
-            $fileName = $file->getClientOriginalName();
-            $fileSize = $file->getSize();
-            $fileType = $file->getMimeType();
-
-            // Ensure file attributes are valid
-            if (empty($fileName) || $fileSize <= 0 || empty($fileType)) {
-                return back()->withErrors(['file' => 'Invalid file uploaded.']);
-            }
-
-            $fileName = time() . '_' . $fileName;
-            $filePath = $file->storeAs('municipal-communications', $fileName, 'private');
-
-            // Validate that file was stored successfully
-            if (!$filePath) {
-                return back()->withErrors(['file' => 'Failed to store file.']);
-            }
-
-            $validated['file_name'] = $file->getClientOriginalName();
-            $validated['file_url'] = $filePath;
-            $validated['file_size'] = $fileSize;
-            $validated['file_type'] = $fileType;
-            $validated['date_uploaded'] = now();
-        }
-
-        $municipalCommunication->update($validated);
-
-        // Log the update
-        LoggingService::logUpdate($municipalCommunication, $oldValues, "Updated municipal communication: {$municipalCommunication->title}");
+        $validated = $this->validateInput($request);
+        $this->saveCommunication($request, $validated, $municipalCommunication);
 
         return redirect()->route('municipal-communications.index')
             ->with('success', 'Municipal communication updated successfully.');
@@ -293,4 +180,86 @@ class MunicipalitiesCommunicationListController extends Controller
 
         return Storage::disk('private')->download($municipalCommunication->file_url, $municipalCommunication->file_name);
     }
+
+    private function validateInput(Request $request): array
+    {
+        return $request->validate([
+            'title' => 'required|string|max:255',
+            'subject' => 'nullable|string|max:255',
+            'year' => 'nullable|integer|min:1900|max:'.(date('Y') + 10),
+            'date_received' => 'nullable|date|after_or_equal:1000-01-01|before_or_equal:9999-12-31',
+            'files' => 'nullable|array|max:1',
+            'files.*' => 'bail|required|file|mimes:pdf,doc,docx,xls,xlsx,ppt,pptx,jpg,jpeg,png|max:10240',
+            'extracted_text' => 'nullable|string',
+            'remove_existing_file' => 'nullable|boolean',
+        ], [
+            'files.max' => 'Choose one attachment per municipal communication.',
+            'files.*.max' => 'The attachment must be no larger than 10 MB.',
+            'files.*.uploaded' => 'The file did not upload successfully. Please choose it again and retry.',
+        ]);
+    }
+
+    private function saveCommunication(Request $request, array $validated, ?MunicipalitiesCommunicationList $communication = null): void
+    {
+        unset($validated['files'], $validated['remove_existing_file']);
+        $file = array_values($request->file('files', []))[0] ?? null;
+        $path = null;
+        $oldPath = $communication?->file_url;
+        if ($file) {
+            try {
+                $path = $file->store('municipal-communications', 'private');
+                if (! $path) {
+                    throw new \RuntimeException('The attachment could not be stored.');
+                }
+            } catch (\Throwable $error) {
+                report($error);
+                throw ValidationException::withMessages(['files.0' => 'The attachment could not be saved. Please try again. Your existing attachment has been kept.']);
+            }
+            $validated = [...$validated,
+                'file_name' => mb_substr($file->getClientOriginalName(), 0, 255),
+                'file_url' => $path,
+                'file_size' => $file->getSize(),
+                'file_type' => $file->getMimeType(),
+                'date_uploaded' => now(),
+                'extracted_text' => $validated['extracted_text'] ?? '',
+            ];
+        } elseif ($request->boolean('remove_existing_file')) {
+            foreach (['file_name', 'file_url', 'file_size', 'file_type', 'date_uploaded', 'extracted_text'] as $field) {
+                $validated[$field] = null;
+            }
+        }
+
+        try {
+            DB::transaction(function () use ($communication, $validated, $oldPath, $path, $request) {
+                if ($communication) {
+                    $oldValues = $communication->getAttributes();
+                    $communication->update([...$validated, 'last_modified_by' => auth()->id(), 'last_modified_at' => now()]);
+                    LoggingService::logUpdate($communication, $oldValues, "Updated municipal communication: {$communication->title}");
+                } else {
+                    $communication = MunicipalitiesCommunicationList::create([...$validated, 'added_by' => auth()->id()]);
+                    LoggingService::logCreate($communication, "Created municipal communication: {$communication->title}");
+                }
+                if ($oldPath && ($path || $request->boolean('remove_existing_file'))) {
+                    DB::afterCommit(fn () => $this->deleteUnusedFile($oldPath));
+                }
+            });
+        } catch (\Throwable $error) {
+            if ($path) {
+                $this->deleteUnusedFile($path);
+            }
+            throw $error;
+        }
+    }
+
+    private function deleteUnusedFile(string $path): void
+    {
+        try {
+            if (! Storage::disk('private')->delete($path)) {
+                throw new \RuntimeException('Could not remove an unused municipal communication attachment.');
+            }
+        } catch (\Throwable $error) {
+            report($error);
+        }
+    }
+
 }

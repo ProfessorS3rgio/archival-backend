@@ -1,213 +1,127 @@
 import { ref } from 'vue'
 import axios from 'axios'
-import mammoth from 'mammoth'
-import * as pdfjsLib from 'pdfjs-dist'
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+const officeExtensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']
+const allowedExtensions = ['pdf', ...officeExtensions, 'jpg', 'jpeg', 'png']
 
-export function useCommunicationFileUpload() {
-  const selectedFiles = ref([])
-  const previewObjects = ref([])
-  const fileMetadata = ref([])
-  const processingFiles = ref([])
-
-  const extractTextFromPDF = async (file) => {
-    console.log('Extracting text from PDF:', file.name)
-    const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
-    let text = ''
+// Optional text extraction must never prevent previewing or saving the original file.
+async function extractPDF(file) {
+  const pdfjs = await import('pdfjs-dist')
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+  const task = pdfjs.getDocument({ data: await file.arrayBuffer() })
+  try {
+    const pdf = await task.promise
+    const pages = []
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i)
-      const textContent = await page.getTextContent()
-      text += textContent.items.map(item => item.str).join(' ') + '\n'
+      pages.push((await page.getTextContent()).items.map(item => item.str).join(' '))
     }
-    console.log('Extracted PDF text:', text.substring(0, 500) + '...')
-    return text
+    return pages.join('\n')
+  } finally {
+    await task.destroy()
   }
+}
 
-  const extractTextFromDOCX = async (file) => {
-    console.log('Extracting text from DOCX:', file.name)
-    const arrayBuffer = await file.arrayBuffer()
-    const result = await mammoth.extractRawText({ arrayBuffer })
-    console.log('Extracted DOCX text:', result.value.substring(0, 500) + '...')
-    return result.value
-  }
+async function extractDOCX(file) {
+  const mammoth = await import('mammoth')
+  return (await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() })).value
+}
 
-  const generateFilePreview = async (file, index, form) => {
-    try {
-      // Mark file as processing and initialize preview object with loading state
-      processingFiles.value[index] = true
-      previewObjects.value[index] = {
-        type: 'loading',
-        url: null,
-        content: null,
-        extractedText: null
-      }
+export function useCommunicationFileUpload({ request = axios.post, extractPDFText = extractPDF, extractDOCXText = extractDOCX, objectUrls = URL } = {}) {
+  const selectedFiles = ref([])
+  const previewObjects = ref([])
+  const processingFiles = ref([])
+  let generation = 0
 
-      if (file.type === 'application/pdf') {
-        // Create object URL for PDF preview
-        const objectUrl = URL.createObjectURL(file)
-        const extractedText = await extractTextFromPDF(file)
-        previewObjects.value[index] = {
-          type: 'pdf',
-          url: objectUrl,
-          content: null,
-          extractedText: extractedText
-        }
-      } else if (file.type.includes('word') || file.type.includes('docx') || file.type.includes('doc')) {
-        // Upload file to get temporary signed URL for Office preview
-        const formData = new FormData()
-        formData.append('file', file)
-        const response = await axios.post('/api/preview-upload', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          withCredentials: true
-        })
-        
-        if (response.data.error) {
-          throw new Error(response.data.error)
-        }
-        
-        // Extract text from the original file
-        const extractedText = await extractTextFromDOCX(file)
-        
-        previewObjects.value[index] = {
-          type: 'office',
-          url: response.data.url,
-          content: null,
-          extractedText: extractedText
-        }
-      }
-
-      fileMetadata.value[index] = fileMetadata.value[index] || {}
-      syncExtractedTextField(form)
-    } catch (error) {
-      console.error('Error generating preview for file:', file.name, error)
-      previewObjects.value[index] = {
-        type: 'error',
-        url: null,
-        content: 'Preview not available',
-        extractedText: null
-      }
-    } finally {
-      // Mark file as no longer processing
-      processingFiles.value[index] = false
-    }
-  }
-
-  const cleanupPreview = (index) => {
-    if (previewObjects.value[index] && previewObjects.value[index].url) {
-      URL.revokeObjectURL(previewObjects.value[index].url)
-    }
-    previewObjects.value[index] = null
-  }
-
-  const handleFileSelect = async (event, form) => {
-    const files = Array.from(event.target.files)
-    const validFiles = files.filter(file => {
-      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
-      const maxSize = 10 * 1024 * 1024 // 10MB
-
-      if (!validTypes.includes(file.type)) {
-        alert(`${file.name} is not a valid file type. Please upload PDF, DOC, or DOCX files only.`)
-        return false
-      }
-
-      if (file.size > maxSize) {
-        alert(`${file.name} is too large. Maximum file size is 10MB.`)
-        return false
-      }
-
-      return true
-    })
-
-    const startingIndex = selectedFiles.value.length
-
-    validFiles.forEach(() => {
-      fileMetadata.value.push({})
-      processingFiles.value.push(false) // Initialize processing state for each file
-    })
-
-    validFiles.forEach(file => {
-      selectedFiles.value.push(file)
-    })
-
-    // Generate previews for new files
-    for (const [i, file] of validFiles.entries()) {
-      const fileIndex = startingIndex + i
-      await generateFilePreview(file, fileIndex, form)
-    }
-  }
-
-  const removeFile = (index, form) => {
-    // Clean up preview for this file
-    cleanupPreview(index)
-
-    selectedFiles.value.splice(index, 1)
-    previewObjects.value.splice(index, 1)
-    fileMetadata.value.splice(index, 1)
-    processingFiles.value.splice(index, 1) // Remove processing state
-
-    syncExtractedTextField(form)
-  }
-
-  const getFileType = (file) => {
-    if (file.type === 'application/pdf') return 'pdf'
-    if (file.type === 'application/msword') return 'doc'
-    return 'docx'
-  }
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes'
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
-  }
-
-  const syncExtractedTextField = (form) => {
-    if (!form) return
-
-    const texts = selectedFiles.value.map((_, idx) => {
-      const preview = previewObjects.value[idx]
-      if (preview && typeof preview.extractedText === 'string') {
-        return preview.extractedText
-      }
-      return ''
-    }).filter(text => text.trim())
-
-    // Join all extracted texts with double newlines for comprehensive full-text search
-    form.extracted_text = texts.join('\n\n')
-  }
-
-  const getOfficeEmbedUrl = (fileUrl) => {
-    if (!fileUrl) return ''
-    return `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
+  const getFileType = file => (file.name || '').split('.').pop().toLowerCase()
+  const syncText = form => { form.extracted_text = previewObjects.value[0]?.extractedText || '' }
+  const revoke = preview => {
+    if (preview?.url?.startsWith('blob:')) objectUrls.revokeObjectURL(preview.url)
   }
 
   const cleanupAllPreviews = () => {
-    previewObjects.value.forEach((preview, index) => {
-      if (preview && preview.url) {
-        URL.revokeObjectURL(preview.url)
-      }
-    })
-    previewObjects.value = []
+    generation++
+    previewObjects.value.forEach(revoke)
     selectedFiles.value = []
-    fileMetadata.value = []
+    previewObjects.value = []
     processingFiles.value = []
   }
 
-  return {
-    selectedFiles,
-    previewObjects,
-    processingFiles,
-    handleFileSelect,
-    removeFile,
-    getFileType,
-    formatFileSize,
-    getOfficeEmbedUrl,
-    cleanupAllPreviews
+  const handleFileSelect = async (event, form) => {
+    const files = Array.from(event.target.files || [])
+    event.target.value = '' // Allow choosing the same file again after removal/failure.
+    form.clearErrors?.('files', 'files.0')
+    if (!files.length) return
+    if (files.length !== 1) {
+      form.setError('files', 'Choose one attachment per municipal communication.')
+      return
+    }
+    const file = files[0]
+    const type = getFileType(file)
+    if (!allowedExtensions.includes(type)) {
+      form.setError('files', 'Choose a PDF, Word, Excel, PowerPoint, JPG, or PNG file.')
+      return
+    }
+    if (file.size === 0 || file.size > 10 * 1024 * 1024) {
+      form.setError('files', 'Choose a non-empty file no larger than 10 MB.')
+      return
+    }
+
+    cleanupAllPreviews()
+    const current = generation
+    selectedFiles.value = [file]
+    form.files = [file]
+    form.extracted_text = ''
+    previewObjects.value = [{ type: 'loading', url: null, extractedText: '' }]
+    processingFiles.value = [true]
+    let preview = { type: 'error', url: null, extractedText: '', content: '' }
+    try {
+      if (type === 'pdf' || ['jpg', 'jpeg', 'png'].includes(type)) {
+        preview = { type: type === 'pdf' ? 'pdf' : 'image', url: objectUrls.createObjectURL(file), extractedText: '' }
+        if (type === 'pdf') {
+          try { preview.extractedText = await extractPDFText(file) } catch {
+            preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
+          }
+        }
+      } else {
+        // Mammoth supports DOCX only. Legacy DOC and other Office formats use the viewer directly.
+        if (type === 'docx') {
+          try { preview.extractedText = await extractDOCXText(file) } catch {
+            preview.warning = 'Search text could not be extracted. You can still upload the original file.'
+          }
+        }
+        const data = new FormData()
+        data.append('file', file)
+        const response = await request('/api/preview-upload', data, { headers: { Accept: 'application/json' }, timeout: 60000 })
+        if (!response.data?.url) throw new Error('Missing preview URL')
+        preview = { ...preview, type: 'office', url: response.data.url }
+      }
+    } catch (error) {
+      const status = error.response?.status
+      preview = { ...preview, type: 'error', content: status === 413
+        ? 'The server rejected the preview size. The attachment is still selected.'
+        : 'The preview could not be prepared. You can still upload the original file, or choose it again to retry.' }
+    } finally {
+      // Ignore a preview that finishes after its file was removed or replaced.
+      if (current === generation) {
+        preview.extractedText = typeof preview.extractedText === 'string' ? preview.extractedText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : ''
+        previewObjects.value = [preview]
+        processingFiles.value = [false]
+        syncText(form)
+      } else {
+        revoke(preview)
+      }
+    }
   }
+
+  const removeFile = (_, form) => {
+    cleanupAllPreviews()
+    form.files = []
+    form.extracted_text = ''
+  }
+
+  const formatFileSize = bytes => bytes < 1024 ? `${bytes} Bytes` : bytes < 1024 * 1024 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  const getOfficeEmbedUrl = url => url ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(url)}` : ''
+
+  return { selectedFiles, previewObjects, processingFiles, handleFileSelect, removeFile, getFileType, formatFileSize, getOfficeEmbedUrl, cleanupAllPreviews }
 }
