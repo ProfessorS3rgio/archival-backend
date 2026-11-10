@@ -7,7 +7,7 @@ const allowedExtensions = ['pdf', ...officeExtensions, 'jpg', 'jpeg', 'png']
 // Optional text extraction must never prevent previewing or saving the original file.
 async function extractPDF(file) {
   const pdfjs = await import('pdfjs-dist')
-  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
   const task = pdfjs.getDocument({ data: await file.arrayBuffer() })
   try {
     const pdf = await task.promise

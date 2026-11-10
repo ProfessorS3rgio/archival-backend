@@ -60,22 +60,30 @@ Route::middleware('auth')->group(function () {
         ]);
     });
     Route::get('/ordinances/create', function () {
-        return Inertia::render('Forms/OrdinanceForm');
+        return Inertia::render('Forms/OrdinanceForm', [
+            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
+        ]);
     })->name('ordinances.create');
 
 
     Route::get('/resolutions/create', function () {
-        return Inertia::render('Forms/ResolutionForm');
+        return Inertia::render('Forms/ResolutionForm', [
+            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
+        ]);
     })->name('resolutions.create');
 
 
     Route::get('/municipal-ordinances/create', function () {
-        return Inertia::render('Forms/OrdinanceForm');
+        return Inertia::render('Forms/OrdinanceForm', [
+            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
+        ]);
     })->name('municipal-ordinances.create');
 
 
     Route::get('/municipal-resolutions/create', function () {
-        return Inertia::render('Forms/ResolutionForm');
+        return Inertia::render('Forms/ResolutionForm', [
+            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
+        ]);
     })->name('municipal-resolutions.create');
 
     Route::get('/ordinances/provinces', [OrdinanceController::class, 'provincialIndex'])->name('ordinances.provincial');

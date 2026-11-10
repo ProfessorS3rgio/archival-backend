@@ -1,10 +1,11 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
+import { useAutoFillPreference } from './useAutoFillPreference.js'
 import mammoth from 'mammoth'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
 
 export function useFileUpload(autoFillEnabled = true) {
   const isEditPage = typeof window !== 'undefined' && /\/edit$/i.test(window.location.pathname)
@@ -12,44 +13,21 @@ export function useFileUpload(autoFillEnabled = true) {
   const previewObjects = ref([])
   const fileMetadata = ref([])
   const processingFiles = ref([]) // Track which files are being processed
-  const autoFillEnabledRef = ref(autoFillEnabled && !isEditPage)
   let formWatcherStop = null
-
-  const SETTINGS_URL = 'http://127.0.0.1:8000/settings/auto-fill'
-
-  const saveAutoFillSetting = async (enabled) => {
-    console.log('[FileUpload] saving auto-fill ->', enabled, 'URL:', SETTINGS_URL)
-    try {
-      const resp = await axios.patch(SETTINGS_URL, { auto_fill: enabled })
-      console.log('[FileUpload] save response:', resp && resp.data)
-      return resp
-    } catch (error) {
-      console.error('[FileUpload] Error saving auto-fill setting:', error)
-      try {
-        console.error('[FileUpload] error.config.url:', error.config && error.config.url)
-        console.error('[FileUpload] error.request.responseURL:', error.request && error.request.responseURL)
-      } catch (e) {
-        // ignore
+  let activeForm = null
+  const {
+    autoFillEnabled: autoFillEnabledRef,
+    autoFillSaving,
+    autoFillError,
+    toggleAutoFill,
+  } = useAutoFillPreference(autoFillEnabled, {
+    initiallyDisabled: isEditPage,
+    onEnable: async () => {
+      if (activeForm && selectedFiles.value.length) {
+        await autoFillForm(selectedFiles.value[0], activeForm, 0)
       }
-      if (error.response) {
-        console.error('[FileUpload] response data:', error.response.data)
-        console.error('[FileUpload] response status:', error.response.status)
-      }
-      // don't rethrow to avoid breaking UI toggle
-    }
-  }
-
-  const toggleAutoFill = async (e) => {
-    if (e && e.preventDefault) e.preventDefault()
-    if (isEditPage) {
-      console.log('[FileUpload] Auto-fill is disabled on edit pages')
-      autoFillEnabledRef.value = false
-      return
-    }
-    const newValue = !autoFillEnabledRef.value
-    autoFillEnabledRef.value = newValue
-    await saveAutoFillSetting(newValue)
-  }
+    },
+  })
 
   const extractTextFromPDF = async (file) => {
     console.log('Extracting text from PDF:', file.name)
@@ -257,8 +235,7 @@ export function useFileUpload(autoFillEnabled = true) {
   }
 
   const autoFillForm = async (file, form, fileIndex) => {
-    if (!autoFillEnabledRef.value || isEditPage) {
-      console.log('Auto-fill is disabled')
+    if (!autoFillEnabledRef.value) {
       return
     }
 
@@ -462,6 +439,7 @@ export function useFileUpload(autoFillEnabled = true) {
   }
 
   const handleFileSelect = async (event, form) => {
+    activeForm = form
     const files = Array.from(event.target.files)
     const validFiles = files.filter(file => {
       const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -573,6 +551,8 @@ export function useFileUpload(autoFillEnabled = true) {
     previewObjects,
     processingFiles,
     autoFillEnabled: autoFillEnabledRef,
+    autoFillSaving,
+    autoFillError,
     handleFileSelect,
     removeFile,
     getFileType,
