@@ -85,7 +85,18 @@
           <!-- Application menu items can go here -->
         </div>
         <div class="flex items-center gap-4">
-          <!-- ThemeToggler moved outside -->
+          <Link
+            v-if="officialsUrl"
+            :href="officialsUrl"
+            class="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100 hover:text-blue-600 dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-blue-400"
+            title="View Sangguniang Panlalawigan officials"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 0 0-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.28-.356-1.857M7 20H2v-2a3 3 0 0 1 5.356-1.857M7 20v-2a3 3 0 0 1 .356-1.857m0 0a5.002 5.002 0 0 1 9.288 0M15 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM7 10a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z" />
+            </svg>
+            <span class="hidden xl:inline">SP Officials</span>
+          </Link>
+
           <div class="relative">
             <button
               @click="userMenuOpen = !userMenuOpen"
@@ -142,6 +153,14 @@ const userMenuOpen = ref(false)
 
 const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
+const officialsUrl = computed(() => {
+  const terms = page.props.spTerms || []
+  const latestTerm = terms[terms.length - 1]
+
+  return latestTerm?.term_no
+    ? `/sp-${String(latestTerm.term_no).toLowerCase()}/officials`
+    : null
+})
 const userRoleLabel = computed(() => {
   const role = (currentUser.value?.role ?? '').toString().trim().toLowerCase()
   if (role === 'admin') return 'Admin'

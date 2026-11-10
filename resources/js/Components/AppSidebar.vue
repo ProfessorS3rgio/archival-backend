@@ -361,11 +361,11 @@ const generateSpMenuItems = () => {
           path: `/${termSlug}/officials`,
           icon: UserGroupIcon,
         },
-        {
+        ...(isLegislator.value ? [] : [{
           name: "Add officials",
           path: `/${termSlug}/add-officials`,
           icon: PlusIcon,
-        },
+        }]),
       ],
     }
   })

@@ -105,12 +105,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/sp-{termSlug}/officials', [SangguniangPanlalawiganController::class, 'officials'])
         ->name('sp.officials');
     Route::get('/sp-{termSlug}/add-officials', [SangguniangPanlalawiganController::class, 'create'])
+        ->middleware('not.legislator')
         ->name('sp.add-officials');
     Route::post('/sp-{termSlug}/officials', [SangguniangPanlalawiganController::class, 'store'])
+        ->middleware('not.legislator')
         ->name('sp.store');
     Route::match(['put', 'post'], '/sp-{termSlug}/officials/{memberId}', [SangguniangPanlalawiganController::class, 'update'])
+        ->middleware('not.legislator')
         ->name('sp.update');
     Route::delete('/sp-{termSlug}/officials/{memberId}', [SangguniangPanlalawiganController::class, 'destroy'])
+        ->middleware('not.legislator')
         ->name('sp.destroy');
     Route::post('/logout', [DashboardController::class, 'logout'])->name('logout');
     

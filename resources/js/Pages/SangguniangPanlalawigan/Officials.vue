@@ -11,7 +11,7 @@
             {{ getYearRange(term) }}
           </p>
         </div>
-        <div class="flex gap-3">
+        <div v-if="currentUser.role !== 'legislator'" class="flex gap-3">
           <button 
             @click="showAddModal = true"
             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
@@ -31,7 +31,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
           </svg>
           <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No officials yet</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Get started by adding an official.</p>
+          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            {{ currentUser.role === 'legislator' ? 'Officials will appear here when they are added by an authorized user.' : 'Get started by adding an official.' }}
+          </p>
         </div>
 
         <!-- Hierarchical Org Chart -->
@@ -50,7 +52,7 @@
                     @click="deleteMember(getViceGovernor().member_id)"
                     class="absolute top-0 right-0 bg-red-600 hover:bg-red-700 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                     title="Delete"
-                    v-if="currentUser.role === 'admin'"
+                    v-if="currentUser.role === 'admin' && currentUser.role !== 'legislator'"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -62,6 +64,7 @@
                     <span v-if="getViceGovernor().extension">{{ getViceGovernor().extension }}. </span>{{ getViceGovernor().full_name }}
                   </p>
                   <button
+                    v-if="currentUser.role !== 'legislator'"
                     @click="editMember(getViceGovernor())"
                     class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded mt-1"
                     title="Edit"
@@ -118,7 +121,7 @@
                           @click="deleteMember(member.member_id)"
                           class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           title="Delete"
-                          v-if="currentUser.role === 'admin'"
+                          v-if="currentUser.role === 'admin' && currentUser.role !== 'legislator'"
                         >
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -132,6 +135,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ member.position }}</p>
                       </div>
                       <button
+                        v-if="currentUser.role !== 'legislator'"
                         @click="editMember(member)"
                         class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Edit"
@@ -173,7 +177,7 @@
                           @click="deleteMember(member.member_id)"
                           class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           title="Delete"
-                          v-if="currentUser.role === 'admin'"
+                          v-if="currentUser.role === 'admin' && currentUser.role !== 'legislator'"
                         >
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -187,6 +191,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ member.position }}</p>
                       </div>
                       <button
+                        v-if="currentUser.role !== 'legislator'"
                         @click="editMember(member)"
                         class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Edit"
@@ -230,7 +235,7 @@
                           @click="deleteMember(member.member_id)"
                           class="absolute -top-1 -right-1 bg-red-600 hover:bg-red-700 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
                           title="Delete"
-                          v-if="currentUser.role === 'admin'"
+                          v-if="currentUser.role === 'admin' && currentUser.role !== 'legislator'"
                         >
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -244,6 +249,7 @@
                         <p class="text-xs text-gray-500 dark:text-gray-400">{{ member.position }}</p>
                       </div>
                       <button
+                        v-if="currentUser.role !== 'legislator'"
                         @click="editMember(member)"
                         class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity"
                         title="Edit"
@@ -274,6 +280,7 @@
 
     <!-- Add Official Modal -->
     <AddOfficialModal
+      v-if="currentUser.role !== 'legislator'"
       :show="showAddModal"
       :term="term"
       :termSlug="termSlug"
@@ -367,4 +374,3 @@ const confirmDelete = () => {
   })
 }
 </script>
-
