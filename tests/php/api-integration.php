@@ -33,6 +33,7 @@ function assertApi(bool $condition, string $message): void
 foreach (glob(__DIR__.'/../../database/migrations/*create*.php') as $file) {
     (require $file)->up();
 }
+(require __DIR__.'/../../database/migrations/2026_11_10_060000_add_disk_to_sp_profile_pictures.php')->up();
 
 $user = User::create(['name' => 'Creator', 'email' => 'creator@example.test', 'username' => 'creator', 'role' => 'admin', 'password' => 'Test!Password123']);
 Artisan::call('archival:issue-api-token', ['email' => 'sp@example.test', '--name' => 'SP integration']);
@@ -44,6 +45,10 @@ $token = $client->createToken('integration-test', ['documents:read'], now()->add
 $wrongToken = $client->createToken('wrong-ability', ['other:read'])->plainTextToken;
 $expiredToken = $client->createToken('expired', ['documents:read'], now()->subMinute())->plainTextToken;
 Storage::fake('private');
+$term = App\Models\SangguniangPanlalawiganTerm::create(['term_no' => '1st', 'start_year' => '2022-01-01', 'end_year' => '2025-12-31']);
+$member = $term->members()->create(['district' => '1st District', 'full_name' => 'Hon. API Official', 'extension' => 'Hon', 'position' => 'Board Member']);
+$picture = $member->profilePicture()->create(['added_by' => $user->id, 'file_name' => 'official.png', 'file_url' => 'sp-profiles/official.png', 'file_type' => 'image/png', 'disk' => 'private']);
+Storage::disk('private')->put('sp-profiles/official.png', "\x89PNG\r\n");
 $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
 
 function apiGet(string $path, ?string $token = null): Symfony\Component\HttpFoundation\Response
@@ -73,6 +78,12 @@ $types = [
 assertApi(apiGet('/api/v1/documents/types')->getStatusCode() === 401, 'Anonymous client cannot list document types');
 assertApi(apiGet('/api/v1/documents/types', $wrongToken)->getStatusCode() === 403, 'Token without documents:read is rejected');
 assertApi(apiGet('/api/v1/documents/types', $expiredToken)->getStatusCode() === 401, 'Expired integration token is rejected');
+assertApi(apiGet('/api/v1/sangguniang-panlalawigan/terms', $token)->getStatusCode() === 200, 'Integration client can list SP terms');
+$officials = apiGet('/api/v1/sangguniang-panlalawigan/1st/officials', $token);
+assertApi($officials->getStatusCode() === 200 && str_contains($officials->getContent(), 'API Official'), 'Integration client can list SP officials');
+$official = json_decode(apiGet('/api/v1/sangguniang-panlalawigan/1st/officials/'.$member->member_id, $token)->getContent(), true);
+assertApi(($official['data']['profile_picture']['filename'] ?? null) === 'official.png', 'Official detail includes profile picture metadata');
+assertApi(apiGet('/api/v1/sangguniang-panlalawigan/1st/officials/'.$member->member_id.'/picture', $token)->getStatusCode() === 200, 'Official profile picture is served through the API');
 $available = json_decode(apiGet('/api/v1/documents/types', $token)->getContent(), true);
 assertApi(! isset($available['data']['draft-resolutions']) && ! isset($available['data']['draft-ordinances']), 'Integration client type list omits drafts');
 

@@ -42,6 +42,24 @@ The type names below work with `GET /api/v1/documents/{type}`. The endpoint `GET
 | `national-offices` | National office communications |
 | `provincial-offices` | Provincial office communications |
 
+## Sangguniang Panlalawigan officials
+
+The same backend token can read officials and profile pictures. These endpoints
+are read-only:
+
+```text
+GET /api/v1/sangguniang-panlalawigan/terms
+GET /api/v1/sangguniang-panlalawigan/{term_no}/officials
+GET /api/v1/sangguniang-panlalawigan/{term_no}/officials/{member_id}
+GET /api/v1/sangguniang-panlalawigan/{term_no}/officials/{member_id}/picture
+```
+
+The official response contains the member's name, extension, position, district,
+term, and optional picture filename, MIME type, and authenticated picture URL.
+The Sangguniang backend should request the JSON and image with its private
+token, then cache or stream the result to public visitors. Archive storage
+credentials are never needed in the public website.
+
 For a single record, use the `GET /api/v1/Documents/{SingularType}/{id}` route, for example `GET /api/v1/Documents/Resolution/42` or `GET /api/v1/Documents/Project/42`. The list response contains each document's `id` and its `files` with authenticated `download_url` and `preview_url` values. Follow those URLs from the backend with the same bearer token. Do not give the bare URL to a browser unless that browser also has an authorized archive session.
 
 ## Search and pagination

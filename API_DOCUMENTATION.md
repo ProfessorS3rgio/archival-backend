@@ -5,6 +5,10 @@
 
 For a new Sangguniang Panlalawigan integration, start with [API_INTEGRATION.md](API_INTEGRATION.md). Its dedicated client receives only visible, non-draft documents.
 
+The same read-only client also supports Sangguniang Panlalawigan terms,
+officials, and authenticated profile-picture responses under
+`/api/v1/sangguniang-panlalawigan/...`.
+
 ## Overview
 The Archival System provides a REST API for accessing archived documents and their associated PDF files. This API allows external systems to query, preview, and download documents from the archive. All document files are PDFs that can be previewed inline or downloaded.
 

@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\MunicipalCommunicationApiController;
 use App\Http\Controllers\Api\OrdinanceApiController;
 use App\Http\Controllers\Api\ProjectApiController;
 use App\Http\Controllers\Api\ResolutionApiController;
+use App\Http\Controllers\Api\SangguniangPanlalawiganApiController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DraftOrdinanceController;
 use App\Http\Controllers\DraftResolutionController;
@@ -89,6 +90,11 @@ Route::prefix('v1')->middleware(['web', 'auth:sanctum', 'abilities:documents:rea
         Route::get('/{type}/{document}/files/{file}/download', [DocumentApiController::class, 'downloadFile'])
             ->name('api.documents.files.download');
     });
+
+    Route::get('/sangguniang-panlalawigan/terms', [SangguniangPanlalawiganApiController::class, 'terms']);
+    Route::get('/sangguniang-panlalawigan/{term}/officials', [SangguniangPanlalawiganApiController::class, 'officials']);
+    Route::get('/sangguniang-panlalawigan/{term}/officials/{member}', [SangguniangPanlalawiganApiController::class, 'official']);
+    Route::get('/sangguniang-panlalawigan/{term}/officials/{member}/picture', [SangguniangPanlalawiganApiController::class, 'picture']);
 
     // Legacy endpoints (keeping for backward compatibility)
     Route::get('/documents/types', [DocumentApiController::class, 'types']);
