@@ -52,6 +52,14 @@ Table users {
   updated_at timestamp [null]
 }
 
+Table api_clients {
+  id "bigint unsigned" [pk, increment, not null]
+  name varchar(255) [not null]
+  email varchar(255) [unique, not null]
+  created_at timestamp [null]
+  updated_at timestamp [null]
+}
+
 Table resolution_lists {
   resolution_id "bigint unsigned" [pk, increment, not null]
   resolution_draft_id "bigint unsigned" [null]

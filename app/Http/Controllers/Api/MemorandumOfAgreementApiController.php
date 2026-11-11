@@ -41,7 +41,7 @@ class MemorandumOfAgreementApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $moas = $query->paginate($perPage);
 
         return $this->okPaginated($moas, function ($moa) {

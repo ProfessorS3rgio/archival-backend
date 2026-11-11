@@ -53,7 +53,7 @@ class OrdinanceApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $ordinances = $query->paginate($perPage);
 
         return $this->okPaginated($ordinances, function ($ordinance) {

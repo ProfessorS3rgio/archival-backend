@@ -58,7 +58,7 @@ Route::middleware('auth')->group(function () {
             'user_id' => auth()->id(),
             'all_users' => \App\Models\User::all()->toArray()
         ]);
-    });
+    })->middleware(\App\Http\Middleware\AdminMiddleware::class);
     Route::get('/ordinances/create', function () {
         return Inertia::render('Forms/OrdinanceForm', [
             'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),

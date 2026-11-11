@@ -363,7 +363,7 @@ const generateSpMenuItems = () => {
           path: `/${termSlug}/officials`,
           icon: UserGroupIcon,
         },
-        ...(isLegislator.value ? [] : [{
+        ...((isLegislator.value || isStaff.value) ? [] : [{
           name: "Add officials",
           path: `/${termSlug}/add-officials`,
           icon: PlusIcon,
@@ -373,7 +373,7 @@ const generateSpMenuItems = () => {
   })
 }
 
-const menuGroups = [
+const menuGroups = computed(() => [
   {
     title: "Archival System",
     items: [
@@ -490,7 +490,7 @@ const menuGroups = [
       {
         icon: SettingsIcon,
         name: "Settings",
-        subItems: isLegislator.value ? [
+        subItems: (isLegislator.value || isStaff.value) ? [
           {
             name: "My Profile",
             path: "/profile",
@@ -557,14 +557,14 @@ const menuGroups = [
           },
         ],
       },
-      ...(isLegislator.value ? [] : [{
+      ...((isLegislator.value || isStaff.value) ? [] : [{
         icon: UserGroupIcon,
         name: "SANGGUNIAN PANLALAWIGAN",
         subItems: generateSpMenuItems(),
       }])
     ],
   },
-]
+])
 
 const isActive = (path) => page.url === path
 
@@ -578,7 +578,7 @@ const toggleSubmenu = (groupIndex, itemIndex) => {
 }
 
 const isAnySubmenuRouteActive = computed(() => {
-  return menuGroups.some((group) =>
+  return menuGroups.value.some((group) =>
     group.items.some(
       (item) =>
         item.subItems && item.subItems.some((subItem) =>
@@ -600,7 +600,7 @@ const isSubmenuOpen = (groupIndex, itemIndex) => {
     const parentIndex = parseInt(parts[0])
     const subItemName = parts.slice(1).join('-')
 
-    const parentItem = menuGroups[groupIndex]?.items[parentIndex]
+    const parentItem = menuGroups.value[groupIndex]?.items[parentIndex]
     if (parentItem?.subItems) {
       const subItem = parentItem.subItems.find(item => item.name === subItemName)
       return subItem?.subItems?.some((subSubItem) => isActive(subSubItem.path)) || false
@@ -609,7 +609,7 @@ const isSubmenuOpen = (groupIndex, itemIndex) => {
   }
 
   // Handle regular menu item indices
-  const item = menuGroups[groupIndex]?.items[itemIndex]
+  const item = menuGroups.value[groupIndex]?.items[itemIndex]
   return (
     isAnySubmenuRouteActive.value &&
     item?.subItems?.some((subItem) =>

@@ -21,13 +21,13 @@ use App\Http\Controllers\ResolutionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
-Route::post('/convert-file', [FileController::class, 'convertFile']);
-Route::post('/preview-upload', [FileController::class, 'previewUpload']);
+Route::post('/convert-file', [FileController::class, 'convertFile'])->middleware(['web', 'auth']);
+Route::post('/preview-upload', [FileController::class, 'previewUpload'])->middleware(['web', 'auth']);
 
-// Public API endpoints (authentication disabled for development)
-Route::prefix('v1')->group(function () {
+// Document APIs require a signed-in session or a Sanctum bearer token.
+Route::prefix('v1')->middleware(['web', 'auth:sanctum', 'abilities:documents:read', \App\Http\Middleware\RestrictApiClient::class, 'throttle:document-api'])->group(function () {
 
     // Clean RESTful endpoints
     Route::prefix('Documents')->group(function () {
@@ -99,7 +99,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/ordinances/{ordinance}', [OrdinanceApiController::class, 'show']);
 });
 
-Route::middleware('web')->group(function () {
+Route::middleware(['web', 'auth'])->group(function () {
 
     Route::apiResource('ordinances', OrdinanceController::class);
     Route::apiResource('resolutions', ResolutionController::class);

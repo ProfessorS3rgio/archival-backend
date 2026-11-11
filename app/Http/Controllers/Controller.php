@@ -10,19 +10,7 @@ abstract class Controller
      */
     protected function canEditDocument($document)
     {
-        $user = auth()->user();
-        
-        // Admin can edit all documents
-        if ($user->role === 'admin') {
-            return true;
-        }
-        
-        // Staff can only edit documents they created
-        if ($user->role === 'staff' && $document->added_by === $user->id) {
-            return true;
-        }
-        
-        return false;
+        return $this->canDeleteDocument($document);
     }
 
     /**

@@ -14,10 +14,13 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'not.legislator' => \App\Http\Middleware\NotLegislatorMiddleware::class,
+            'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
+            'ability' => \Laravel\Sanctum\Http\Middleware\CheckForAnyAbility::class,
         ]);
 
         $middleware->web(append: [
             \App\Http\Middleware\ValidateInputText::class,
+            \App\Http\Middleware\RestrictStaffAccess::class,
             \App\Http\Middleware\HandleFormResponses::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);

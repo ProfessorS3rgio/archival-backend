@@ -19,7 +19,7 @@ class AuthController extends Controller
 
         if (Auth::attempt(['username' => $request->username, 'password' => $request->password])) {
             $user = Auth::user();
-            $token = $user->createToken('API Token')->plainTextToken;
+            $token = $user->createToken('API Token', ['documents:read'], now()->addDays(90))->plainTextToken;
 
             // Log successful login
             LoggingService::logCustom(

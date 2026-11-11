@@ -32,6 +32,12 @@ class SettingsController extends Controller
             'auto_fill' => 'required|boolean',
         ]);
 
+        if ($request->user()->role === 'staff') {
+            // Document controls affect this staff session, never system settings.
+            $request->session()->put('staff_auto_fill', $request->boolean('auto_fill'));
+            return response()->json(['success' => true, 'auto_fill' => $request->boolean('auto_fill')]);
+        }
+
         $setting = Setting::first();
         $oldValue = $setting ? $setting->auto_fill : null;
 

@@ -4,6 +4,25 @@ Production runs from `/var/www/archival-backend` on branch `codex/r2-storage`.
 Use Git to transfer code. Keep `.env` on each machine; never copy the local
 `.env` to production. R2 holds private documents under `archival/private/`.
 
+The Staff access update requires no database migration. Rebuild frontend assets
+and refresh cached configuration using the normal deployment steps below.
+Document APIs now require a signed-in session or a Sanctum bearer token with
+`documents:read`; configure external integrations accordingly before deployment.
+Staff accounts see only their own records, including dashboard counts and search
+results. Administrative and log pages are hidden and protected on the server.
+
+The Sangguniang public website integration requires the `api_clients` migration.
+After pulling the code, run the migration before issuing its read token:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_12_010000_create_api_clients_table.php
+runuser -u www-data -- php artisan archival:issue-api-token archive-client@YOUR_DOMAIN --name="Sangguniang Panlalawigan" --expires=90
+```
+
+Place the printed token only in the other system's backend environment. See
+`API_INTEGRATION.md` for requests, rotation, and visibility checks. Do not run
+the issuer until the code is deployed and the migration succeeds.
+
 Commit and push changes locally:
 
 ```sh

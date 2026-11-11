@@ -62,7 +62,7 @@ class ResolutionApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $resolutions = $query->paginate($perPage);
 
         return $this->okPaginated($resolutions, function ($resolution) {

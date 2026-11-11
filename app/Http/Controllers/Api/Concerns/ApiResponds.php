@@ -4,9 +4,17 @@ namespace App\Http\Controllers\Api\Concerns;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Http\Request;
 
 trait ApiResponds
 {
+    protected function perPage(Request $request): int
+    {
+        $request->validate(['per_page' => ['sometimes', 'integer', 'min:1', 'max:100']]);
+
+        return (int) $request->input('per_page', 15);
+    }
+
     protected function ok(mixed $data, string $message = 'OK', int $status = 200): JsonResponse
     {
         return response()->json([

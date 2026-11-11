@@ -37,7 +37,7 @@ class AccomplishmentApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $accomplishments = $query->paginate($perPage);
 
         return $this->okPaginated($accomplishments, function ($accomplishment) {

@@ -3,6 +3,8 @@
 
 # Archival System API Documentation
 
+For a new Sangguniang Panlalawigan integration, start with [API_INTEGRATION.md](API_INTEGRATION.md). Its dedicated client receives only visible, non-draft documents.
+
 ## Overview
 The Archival System provides a REST API for accessing archived documents and their associated PDF files. This API allows external systems to query, preview, and download documents from the archive. All document files are PDFs that can be previewed inline or downloaded.
 
@@ -28,6 +30,23 @@ For production:
 ```
 https://your-domain.com/api/v1/
 ```
+
+## Authentication and Staff access
+
+Document endpoints require an authenticated application session or a Sanctum
+bearer token with the `documents:read` ability. External integrations must send:
+
+```http
+Authorization: Bearer <token>
+Accept: application/json
+```
+
+Staff responses include only documents created by that account and attachments
+belonging to those documents. Direct access to another creator's document or
+file is denied. Administrators retain access to all documents. Staff can still
+create/upload records and manage their own records through the application.
+System Logs, Laravel Logs, account management, SP management, and system-wide
+settings are unavailable to Staff. Profile and password settings remain available.
 
 ## Response Format
 

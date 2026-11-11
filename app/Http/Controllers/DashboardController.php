@@ -36,38 +36,36 @@ class DashboardController extends Controller
         $nationalOfficeCommunications = NationalOfficeCommunicationList::all();
         $provincialOffices = ProvincialOffice::all();
         $committeeReports = CommitteeReport::all();
-        $systemLogs = SystemLog::with('user')->latest('created_at')->take(5)->get();
+        $isAdmin = Auth::user()?->role === 'admin';
+        $systemLogs = $isAdmin ? SystemLog::with('user')->latest('created_at')->take(5)->get() : collect();
 
         // Count total staff (admin and staff roles)
-        $totalStaff = User::whereIn('role', ['admin', 'staff'])->count();
-
-        // Ensure user relationships are loaded
-        $systemLogs->load('user');
+        $totalStaff = $isAdmin ? User::whereIn('role', ['admin', 'staff'])->count() : 0;
 
         // Calculate total files and file size
-        $totalFiles = DB::table('resolution_files')->whereNotNull('file_size')->count() +
-                      DB::table('ordinance_files')->whereNotNull('file_size')->count() +
-                      DB::table('resolution_draft_files')->whereNotNull('file_size')->count() +
-                      DB::table('ordinance_draft_files')->whereNotNull('file_size')->count() +
-                      DB::table('accomplish_lists')->whereNotNull('file_size')->count() +
-                      DB::table('project_lists')->whereNotNull('file_size')->count() +
-                      DB::table('moa_lists')->whereNotNull('file_size')->count() +
-                      DB::table('municipalities_communication_lists')->whereNotNull('file_size')->count() +
-                      DB::table('national_offices_list')->whereNotNull('file_size')->count() +
-                      DB::table('provincial_offices_list')->whereNotNull('file_size')->count() +
-                      DB::table('committee_reports')->whereNotNull('file_size')->count();
+        $totalFiles = \App\Models\ResolutionFile::query()->whereNotNull('file_size')->count() +
+                      \App\Models\OrdinanceFile::query()->whereNotNull('file_size')->count() +
+                      \App\Models\DraftResolutionFile::query()->whereNotNull('file_size')->count() +
+                      \App\Models\DraftOrdinanceFile::query()->whereNotNull('file_size')->count() +
+                      \App\Models\Accomplishment::query()->whereNotNull('file_size')->count() +
+                      \App\Models\Project::query()->whereNotNull('file_size')->count() +
+                      \App\Models\MemorandumOfAgreement::query()->whereNotNull('file_size')->count() +
+                      \App\Models\MunicipalitiesCommunicationList::query()->whereNotNull('file_size')->count() +
+                      \App\Models\NationalOfficeCommunicationList::query()->whereNotNull('file_size')->count() +
+                      \App\Models\ProvincialOffice::query()->whereNotNull('file_size')->count() +
+                      \App\Models\CommitteeReport::query()->whereNotNull('file_size')->count();
 
-        $totalFileSize = DB::table('resolution_files')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('ordinance_files')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('resolution_draft_files')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('ordinance_draft_files')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('accomplish_lists')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('project_lists')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('moa_lists')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('municipalities_communication_lists')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('national_offices_list')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('provincial_offices_list')->whereNotNull('file_size')->sum('file_size') +
-                         DB::table('committee_reports')->whereNotNull('file_size')->sum('file_size');
+        $totalFileSize = \App\Models\ResolutionFile::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\OrdinanceFile::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\DraftResolutionFile::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\DraftOrdinanceFile::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\Accomplishment::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\Project::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\MemorandumOfAgreement::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\MunicipalitiesCommunicationList::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\NationalOfficeCommunicationList::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\ProvincialOffice::query()->whereNotNull('file_size')->sum('file_size') +
+                         \App\Models\CommitteeReport::query()->whereNotNull('file_size')->sum('file_size');
 
         $allDocuments = [
             'ordinances' => $ordinances->map(function ($item) {
@@ -221,24 +219,24 @@ class DashboardController extends Controller
     private function getAvailableAuthors($ordinances, $resolutions, $draftOrdinances, $draftResolutions)
     {
         // Use raw SQL UNION queries for maximum performance
-        $authors = DB::table('ordinance_lists')
+        $authors = \App\Models\Ordinance::query()
             ->select('author')
             ->whereNotNull('author')
             ->where('author', '!=', '')
             ->union(
-                DB::table('resolution_lists')
+                \App\Models\Resolution::query()
                     ->select('author')
                     ->whereNotNull('author')
                     ->where('author', '!=', '')
             )
             ->union(
-                DB::table('ordinance_draft')
+                \App\Models\DraftOrdinance::query()
                     ->select('author')
                     ->whereNotNull('author')
                     ->where('author', '!=', '')
             )
             ->union(
-                DB::table('resolution_draft')
+                \App\Models\DraftResolution::query()
                     ->select('author')
                     ->whereNotNull('author')
                     ->where('author', '!=', '')

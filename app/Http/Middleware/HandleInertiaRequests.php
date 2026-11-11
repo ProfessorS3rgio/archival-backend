@@ -50,7 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => session('success'),
                 'error' => session('error'),
             ],
-            'spTerms' => SangguniangPanlalawiganTerm::orderBy('start_year')->get(),
+            'spTerms' => $request->user()?->role === 'staff' ? [] : SangguniangPanlalawiganTerm::orderBy('start_year')->get(),
         ];
     }
 }

@@ -111,7 +111,7 @@ class DocumentApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $documents = $query->paginate($perPage);
 
         $message = ucfirst(str_replace('-', ' ', $type)) . ' retrieved successfully';
@@ -213,6 +213,10 @@ class DocumentApiController extends Controller
             'provincial-offices' => 'Provincial Office Communications',
             'committee-reports' => 'Committee Reports',
         ];
+
+        if (request()->user() instanceof \App\Models\ApiClient) {
+            unset($types['draft-resolutions'], $types['draft-ordinances']);
+        }
 
         return $this->ok($types, 'Document types retrieved successfully');
     }

@@ -50,7 +50,7 @@ class ProjectApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $projects = $query->paginate($perPage);
 
         return $this->okPaginated($projects, function ($project) {

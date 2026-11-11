@@ -37,7 +37,7 @@ class CommitteeReportApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $reports = $query->paginate($perPage);
 
         return $this->okPaginated($reports, function ($report) {

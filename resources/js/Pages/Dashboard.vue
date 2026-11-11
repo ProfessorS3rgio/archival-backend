@@ -276,7 +276,7 @@
         </div>
 
         <!-- Total Staff -->
-        <div class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
+        <div v-if="isAdmin" class="rounded-2xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-white/[0.03] hover:shadow-lg transition-shadow duration-200">
           <div class="flex items-center justify-between">
             <div>
               <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Total Staff</p>
@@ -330,7 +330,7 @@
                 <div>
                   <h3 class="text-lg font-semibold text-gray-800 dark:text-white/90">Document Activity</h3>
                   <p class="mt-1 text-gray-500 text-sm dark:text-gray-400">
-                    Search and browse all documents in the system
+                    {{ isStaff ? 'Search and browse your own records' : 'Search and browse all documents in the system' }}
                   </p>
                 </div>
               </div>
@@ -549,7 +549,7 @@
                 </div>
                 <span class="text-sm font-medium text-violet-900 dark:text-violet-100">New Committee Report</span>
               </Link>
-              <Link v-if="!isReadOnlyUser" href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
+              <Link v-if="isAdmin" href="/system-logs" class="flex items-center p-3 bg-gray-50 dark:bg-gray-900/20 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900/30 transition-colors group">
                 <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center mr-3">
                   <InfoCircleIcon class="w-4 h-4 text-gray-600 dark:text-gray-400" />
                 </div>
@@ -657,7 +657,7 @@
                 Committee Reports
               </button>
               <button
-                v-if="!isReadOnlyUser"
+                v-if="isAdmin"
                 @click="activeTab = 'systemlogs'"
                 :class="[
                   'px-4 py-2 text-sm font-medium rounded-md transition-colors',
@@ -692,7 +692,7 @@
                 ? '/provincial-offices'
                 : activeTab === 'committee-reports'
                 ? '/committee-reports'
-                : (isReadOnlyUser ? '/dashboard' : '/system-logs')" 
+                : (isAdmin ? '/system-logs' : '/dashboard')"
               class="text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
               View all  
@@ -983,7 +983,7 @@
           </div>
 
           <!-- System Logs Tab Content -->
-          <div v-if="!isReadOnlyUser" v-show="activeTab === 'systemlogs'" class="space-y-4">
+          <div v-if="isAdmin" v-show="activeTab === 'systemlogs'" class="space-y-4">
             <div v-for="log in recentSystemLogs.slice(0, 5)" :key="log.id" class="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
               <div class="flex-shrink-0">
                 <div :class="[
@@ -1173,10 +1173,11 @@ const page = usePage()
 const currentUser = computed(() => page.props.auth?.user ?? {})
 const isStaff = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'staff')
 const isLegislator = computed(() => (currentUser.value?.role ?? '').toString().trim().toLowerCase() === 'legislator')
+const isAdmin = computed(() => currentUser.value.role === 'admin')
 const isReadOnlyUser = computed(() => isLegislator.value)
 
-watch([isReadOnlyUser, activeTab], ([readOnly, tab]) => {
-  if (readOnly && tab === 'systemlogs') {
+watch([isAdmin, activeTab], ([admin, tab]) => {
+  if (!admin && tab === 'systemlogs') {
     activeTab.value = 'ordinances'
   }
 }, { immediate: true })

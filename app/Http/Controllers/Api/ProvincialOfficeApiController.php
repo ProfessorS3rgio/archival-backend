@@ -36,7 +36,7 @@ class ProvincialOfficeApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $communications = $query->paginate($perPage);
 
         return $this->okPaginated($communications, function ($communication) {

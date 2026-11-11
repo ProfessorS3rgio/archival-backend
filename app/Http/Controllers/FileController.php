@@ -14,6 +14,7 @@ class FileController extends Controller
 {
     public function servePrivateFile(string $filename, ?string $downloadName = null)
     {
+        abort_unless(\App\Support\StaffDocumentAccess::canReadPath($filename), 404);
         abort_if(Str::contains($filename, ['..', '\\']), 404);
 
         $disk = Storage::disk('private');

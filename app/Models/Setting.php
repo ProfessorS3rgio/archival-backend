@@ -19,6 +19,9 @@ class Setting extends Model
      */
     public static function getAutoFillEnabled(): bool
     {
+        if (auth()->user()?->role === 'staff' && request()->hasSession() && request()->session()->has('staff_auto_fill')) {
+            return request()->session()->get('staff_auto_fill');
+        }
         $setting = self::first();
         return $setting ? $setting->auto_fill : true; // Default to true if no setting exists
     }

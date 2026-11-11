@@ -48,7 +48,7 @@ class DraftResolutionApiController extends Controller
         }
 
         // Pagination
-        $perPage = $request->get('per_page', 15);
+        $perPage = $this->perPage($request);
         $draftResolutions = $query->paginate($perPage);
 
         return $this->okPaginated($draftResolutions, function ($draftResolution) {

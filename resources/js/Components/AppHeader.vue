@@ -163,6 +163,7 @@ const pictureFailed = ref(false)
 watch(() => currentUser.value.profile_picture_url, () => { pictureFailed.value = false })
 const userInitials = computed(() => String(currentUser.value.name || 'User').trim().split(/\s+/).slice(0, 2).map(part => Array.from(part)[0]).join('').toUpperCase())
 const officialsUrl = computed(() => {
+  if (currentUser.value.role === 'staff') return null
   const terms = page.props.spTerms || []
   const latestTerm = terms[terms.length - 1]
 
