@@ -4,6 +4,8 @@ The archive exposes a read-only JSON API at `https://YOUR_ARCHIVE_HOST/api/v1`. 
 
 The existing document tables default `is_visible` to `true`. Review records before enabling the public website and mark anything that should remain internal as hidden. The API's JSON serializers list fields explicitly and do not return the stored `extracted_text`, but a visible document's file can be downloaded in full.
 
+Staff users may read and download every record. They may edit or delete only records created by their own account.
+
 ## Set up the integration
 
 Run the new migration on the archive server before issuing a token:

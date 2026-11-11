@@ -159,17 +159,17 @@ foreach ($types as $route => $class) {
     }
     $ownRecords[$route] = $ids['own'];
     check(accessRequest('/download/'.$downloadTypes[$route].'/'.$downloadIds['own'], $staff)->isSuccessful(), "Staff can download their own {$route} file");
-    check(accessRequest('/download/'.$downloadTypes[$route].'/'.$downloadIds['foreign'], $staff)->getStatusCode() >= 400, "Staff cannot download another creator's {$route} file by ID");
+    check(accessRequest('/download/'.$downloadTypes[$route].'/'.$downloadIds['foreign'], $staff)->isSuccessful(), "Staff can download another creator's {$route} file");
     check(accessRequest('/'.$route.'/'.$ids['own'].'/edit', $staff)->isSuccessful(), "Staff can open their own {$route} edit form");
     $response = accessRequest('/'.$route, $staff);
-    check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-'.$route) && ! str_contains($response->getContent(), 'foreign-private-'.$route), "Staff {$route} listing includes only their own records");
+    check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-'.$route) && str_contains($response->getContent(), 'foreign-private-'.$route), "Staff {$route} listing includes all records");
     check(accessRequest('/'.$route.'/'.$ids['own'], $staff)->isSuccessful(), "Staff can view their own {$route} record");
     foreach (['', '/edit'] as $suffix) {
-        check(accessRequest('/'.$route.'/'.$ids['foreign'].$suffix, $staff)->getStatusCode() >= 400, "Staff cannot open another creator's {$route}{$suffix} URL");
+        check(accessRequest('/'.$route.'/'.$ids['foreign'].$suffix, $staff)->isSuccessful(), "Staff can open another creator's {$route}{$suffix} URL");
     }
     $response = accessRequest('/'.$route.'/'.$ids['foreign'], $staff, 'PUT', [$titleField => 'Tampered']);
     check($response->getStatusCode() >= 400 && $class::withoutGlobalScopes()->find($ids['foreign'])->{$titleField} === 'foreign-private-'.$route, "Staff cannot update another creator's {$route} record");
-    check(accessRequest('/serve-file/access/foreign-'.$route.'.pdf', $staff)->getStatusCode() >= 400, "Staff cannot stream another creator's {$route} file directly");
+    check(accessRequest('/serve-file/access/foreign-'.$route.'.pdf', $staff)->isSuccessful(), "Staff can stream another creator's {$route} file directly");
     check(accessRequest('/serve-file/access/own-'.$route.'.pdf', $staff)->isSuccessful(), "Staff can stream their own {$route} file");
     check(accessRequest('/'.$route.'/create', $staff)->isSuccessful(), "Staff retain {$route} create-form access");
 }
@@ -180,21 +180,21 @@ foreach (['/profile', '/settings/change-password'] as $uri) {
     check(accessRequest($uri, $staff)->isSuccessful(), "Staff retain account access to {$uri}");
 }
 $response = accessRequest('/dashboard', $staff);
-check($response->isSuccessful() && ! str_contains($response->getContent(), 'foreign-private-'), 'Staff dashboard does not leak other creators records');
+check($response->isSuccessful() && str_contains($response->getContent(), 'foreign-private-'), 'Staff dashboard includes other creators records for review');
 $html = $response->getContent();
 preg_match('/data-page="([^"]+)"/', $html, $match);
 $page = json_decode(html_entity_decode($match[1] ?? '', ENT_QUOTES), true);
 check(isset($page['props']) && $page['props']['recentSystemLogs'] === [] && $page['props']['spTerms'] === [], 'Staff dashboard receives no logs or SP management data');
-check($page['props']['stats']['nationalOfficeCommunications'] === 1 && $page['props']['stats']['totalFiles'] === 0, 'Staff dashboard statistics include only owned records and file metadata');
-check(! in_array('foreign-author', $page['props']['availableAuthors'], true), 'Staff author filters exclude other creators data');
+check($page['props']['stats']['nationalOfficeCommunications'] === 4 && $page['props']['stats']['totalFiles'] === 0, 'Staff dashboard statistics include all visible records and file metadata');
+check(in_array('foreign-author', $page['props']['availableAuthors'], true), 'Staff author filters include other creators data');
 foreach (['/api/v1/Documents/projects', '/api/v1/documents/projects'] as $uri) {
     check(accessRequest($uri, null)->getStatusCode() === 401, 'Anonymous APIs cannot bypass Staff record restrictions');
     $response = accessRequest($uri, $staff);
-    check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-projects') && ! str_contains($response->getContent(), 'foreign-private-projects'), 'Authenticated Staff APIs are scoped to owned records');
+    check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-projects') && str_contains($response->getContent(), 'foreign-private-projects'), 'Authenticated Staff APIs can review all records');
 }
 $readToken = $staff->createToken('staff-read-test', ['documents:read'])->plainTextToken;
 $response = accessRequest('/api/v1/Documents/projects', null, 'GET', [], $readToken);
-check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-projects') && ! str_contains($response->getContent(), 'foreign-private-projects'), 'Bearer-token Staff access remains limited to owned records');
+check($response->isSuccessful() && str_contains($response->getContent(), 'own-private-projects') && str_contains($response->getContent(), 'foreign-private-projects'), 'Bearer-token Staff access can review all records');
 $wrongToken = $staff->createToken('staff-wrong-ability', ['other:read'])->plainTextToken;
 check(accessRequest('/api/v1/Documents/projects', null, 'GET', [], $wrongToken)->getStatusCode() === 403, 'Document API rejects bearer tokens without the read ability');
 $response = accessRequest('/projects', $users['admin']);

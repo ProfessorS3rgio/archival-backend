@@ -8,8 +8,9 @@ The Staff access update requires no database migration. Rebuild frontend assets
 and refresh cached configuration using the normal deployment steps below.
 Document APIs now require a signed-in session or a Sanctum bearer token with
 `documents:read`; configure external integrations accordingly before deployment.
-Staff accounts see only their own records, including dashboard counts and search
-results. Administrative and log pages are hidden and protected on the server.
+Staff accounts can review and download all records, while edit and delete
+actions remain limited to records they created. Administrative and log pages are
+hidden and protected on the server.
 
 The Sangguniang public website integration requires the `api_clients` migration.
 After pulling the code, run the migration before issuing its read token:

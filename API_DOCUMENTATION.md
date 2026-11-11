@@ -41,10 +41,11 @@ Authorization: Bearer <token>
 Accept: application/json
 ```
 
-Staff responses include only documents created by that account and attachments
-belonging to those documents. Direct access to another creator's document or
-file is denied. Administrators retain access to all documents. Staff can still
-create/upload records and manage their own records through the application.
+Staff responses include the full document archive, including records created by
+other accounts. Staff can read and download those records, but can edit or
+delete only records created by their own account. Administrators retain access
+to all documents and actions. Staff can create/upload records and manage their
+own records through the application.
 System Logs, Laravel Logs, account management, SP management, and system-wide
 settings are unavailable to Staff. Profile and password settings remain available.
 
