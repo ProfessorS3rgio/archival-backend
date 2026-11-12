@@ -100,10 +100,8 @@
                   />
                 </button>
                 <a
-                  v-else-if="item.external"
+                  v-else-if="item.fullPage"
                   :href="item.path"
-                  target="_blank"
-                  rel="noopener noreferrer"
                   :class="[
                     'flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors duration-200 group',
                     {
@@ -547,7 +545,7 @@ const menuGroups = computed(() => [
             name: "Laravel Logs",
             path: "/log-viewer",
             icon: ArchiveIcon,
-            external: true,
+            fullPage: true,
           },
           {
             name: "Log Out",

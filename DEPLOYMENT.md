@@ -46,6 +46,7 @@ cd /var/www/archival-backend
 git status --short
 git pull --ff-only origin codex/r2-storage
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
+runuser -u www-data -- php artisan log-viewer:publish
 npm ci
 python3 -m venv scripts/.venv
 scripts/.venv/bin/python -m pip install --upgrade pip

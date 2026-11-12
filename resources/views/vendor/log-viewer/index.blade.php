@@ -10,7 +10,6 @@
 
     <title>Log Viewer{{ config('app.name') ? ' - ' . config('app.name') : '' }}</title>
 
-    <!-- Style sheets-->
     <link href="{{ asset(mix('app.css', config('log-viewer.assets_path'))) }}" rel="stylesheet" onerror="alert('app.css failed to load. Please refresh the page, re-publish Log Viewer assets, or fix routing for vendor assets.')">
 </head>
 
@@ -19,12 +18,16 @@
     <router-view></router-view>
 </div>
 
-<!-- Global LogViewer Object -->
 <script>
     window.LogViewer = @json($logViewerScriptVariables);
 
-    // Add additional headers for LogViewer requests like so:
-    // window.LogViewer.headers['Authorization'] = 'Bearer xxxxxxx';
+    // Older Log Viewer sessions can retain file-type filters that no longer
+    // exist. Clear that stale filter so the current Laravel log is visible.
+    try {
+        window.localStorage.removeItem('selectedFileTypes');
+    } catch (error) {
+        // Storage may be disabled; the viewer still works without it.
+    }
 </script>
 <script src="{{ asset(mix('app.js', config('log-viewer.assets_path'))) }}" onerror="alert('app.js failed to load. Please refresh the page, re-publish Log Viewer assets, or fix routing for vendor assets.')"></script>
 </body>
