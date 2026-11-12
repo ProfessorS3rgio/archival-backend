@@ -24,6 +24,12 @@ Place the printed token only in the other system's backend environment. See
 `API_INTEGRATION.md` for requests, rotation, and visibility checks. Do not run
 the issuer until the code is deployed and the migration succeeds.
 
+Apply the additive API filter indexes after pulling the code:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_12_020000_add_api_filter_indexes.php
+```
+
 Commit and push changes locally:
 
 ```sh

@@ -78,6 +78,12 @@ Table resolution_lists {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    date_approved
+    is_visible
+  }
 }
 
 Table resolution_files {
@@ -91,6 +97,10 @@ Table resolution_files {
   extracted_text longtext [null]
   updated_at timestamp [null]
   uploaded_at timestamp [null, default: `CURRENT_TIMESTAMP`]
+
+  indexes {
+    uploaded_by
+  }
 }
 
 Table sessions {
@@ -125,6 +135,12 @@ Table ordinance_lists {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    date_approved
+    is_visible
+  }
 }
 
 Table ordinance_files {
@@ -139,6 +155,11 @@ Table ordinance_files {
   extracted_text longtext [null]
   uploaded_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [null]
+
+  indexes {
+    year
+    uploaded_by
+  }
 }
 
 Table resolution_draft {
@@ -156,6 +177,12 @@ Table resolution_draft {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    is_visible
+    year
+  }
 }
 
 Table resolution_draft_files {
@@ -170,6 +197,10 @@ Table resolution_draft_files {
   uploaded_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   created_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [null]
+
+  indexes {
+    uploaded_by
+  }
 }
 
 Table settings {
@@ -191,6 +222,11 @@ Table ordinance_draft {
   created_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   status varchar(255) [null]
   updated_at timestamp [null]
+
+  indexes {
+    added_by
+    year
+  }
 }
 
 Table ordinance_draft_files {
@@ -205,6 +241,10 @@ Table ordinance_draft_files {
   uploaded_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   created_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [null]
+
+  indexes {
+    uploaded_by
+  }
 }
 
 Table accomplish_lists {
@@ -226,6 +266,12 @@ Table accomplish_lists {
   last_modified_at timestamp [null]
   respondent varchar(255) [null]
   complainant varchar(255) [null]
+
+  indexes {
+    accomplishment_year
+    is_visible
+    uploaded_by
+  }
 }
 
 Table project_lists {
@@ -252,6 +298,12 @@ Table project_lists {
   year year [null]
   respondent varchar(255) [null]
   complainant varchar(255) [null]
+
+  indexes {
+    added_by
+    is_visible
+    year
+  }
 }
 
 Table committee_categories {
@@ -262,6 +314,10 @@ Table committee_categories {
   is_active boolean [not null, default: true]
   created_at timestamp [null, default: `CURRENT_TIMESTAMP`]
   updated_at timestamp [null]
+
+  indexes {
+    added_by
+  }
 }
 
 Table committee_reports {
@@ -281,6 +337,12 @@ Table committee_reports {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    is_visible
+    year
+  }
 }
 
 Table moa_lists {
@@ -301,6 +363,13 @@ Table moa_lists {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    date_received
+    is_visible
+    year
+  }
 }
 
 Table municipalities_communication_lists {
@@ -321,6 +390,13 @@ Table municipalities_communication_lists {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    date_received
+    is_visible
+    year
+  }
 }
 
 Table national_offices_list {
@@ -342,6 +418,13 @@ Table national_offices_list {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    date_received
+    is_visible
+    year
+  }
 }
 
 Table provincial_offices_list {
@@ -362,6 +445,13 @@ Table provincial_offices_list {
   is_visible boolean [not null, default: true]
   last_modified_by "bigint unsigned" [null]
   last_modified_at timestamp [null]
+
+  indexes {
+    added_by
+    Date_received
+    is_visible
+    year
+  }
 }
 
 Table cache {
