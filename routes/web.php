@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
+use Illuminate\Http\Request;
 
 // Public, signed access to private files (used by external previewers like Office Online)
 Route::match(['GET', 'HEAD'], '/public/serve-file/{filename}', function ($filename) {
@@ -44,6 +45,29 @@ Route::get('/login', function () {
 Route::post('/login', [DashboardController::class, 'login'])->name('login.post');
 
 Route::middleware('auth')->group(function () {
+    Route::post('/merge-pdfs', function (Request $request, \App\Services\PdfMerger $merger) {
+        $request->validate([
+            'files' => ['required', 'array', 'min:2', 'max:20'],
+            'files.*' => ['required', 'file', 'mimes:pdf', 'max:10240'],
+        ]);
+
+        $files = array_values($request->file('files', []));
+        if (array_sum(array_map(static fn ($file): int => (int) $file->getSize(), $files)) > 50 * 1024 * 1024) {
+            return response()->json(['message' => 'The combined PDF size may not exceed 50 MB.'], 422);
+        }
+
+        $output = $merger->merge($files);
+        $originalName = pathinfo(basename((string) $files[0]->getClientOriginalName()), PATHINFO_FILENAME);
+        $safeName = preg_replace('/[^A-Za-z0-9._-]+/', '-', $originalName) ?: 'merged-document';
+        $downloadName = trim($safeName, '.-_') ?: 'merged-document';
+        $downloadName .= '.pdf';
+
+        return response()->download($output, $downloadName, [
+            'Content-Type' => 'application/pdf',
+            'X-Content-Type-Options' => 'nosniff',
+        ])->deleteFileAfterSend(true);
+    })->name('merge-pdfs');
+
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
     // Dashboard view routes (no edit button, back to home)

@@ -19,14 +19,12 @@ use App\Http\Controllers\DraftResolutionController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\OrdinanceController;
 use App\Http\Controllers\ResolutionController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
 Route::post('/convert-file', [FileController::class, 'convertFile'])->middleware(['web', 'auth']);
 Route::post('/preview-upload', [FileController::class, 'previewUpload'])->middleware(['web', 'auth']);
-
 // Document APIs require a signed-in session or a Sanctum bearer token.
 Route::prefix('v1')->middleware(['web', 'auth:sanctum', 'abilities:documents:read', \App\Http\Middleware\RestrictApiClient::class, 'throttle:document-api'])->group(function () {
 

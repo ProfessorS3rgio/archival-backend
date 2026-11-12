@@ -47,6 +47,9 @@ git status --short
 git pull --ff-only origin codex/r2-storage
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 npm ci
+python3 -m venv scripts/.venv
+scripts/.venv/bin/python -m pip install --upgrade pip
+scripts/.venv/bin/python -m pip install -r scripts/requirements.txt
 runuser -u www-data -- php artisan down --retry=60
 npm run build
 runuser -u www-data -- php artisan config:cache

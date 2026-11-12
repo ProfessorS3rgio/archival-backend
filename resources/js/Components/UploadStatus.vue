@@ -28,7 +28,7 @@
           <div class="min-w-0 flex-1 pt-0.5">
             <p class="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400 dark:text-slate-500">
               <svg v-if="busy" class="h-3 w-3 animate-spin motion-reduce:animate-none" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="3" opacity="0.2" /><path d="M12 3a9 9 0 0 1 9 9" stroke="currentColor" stroke-width="3" stroke-linecap="round" /></svg>
-              File upload
+              {{ operation === 'merge' ? 'PDF merge' : 'File upload' }}
             </p>
             <h2 class="mt-1 text-base font-semibold tracking-tight text-slate-900 dark:text-white">{{ title }}</h2>
           </div>
@@ -41,10 +41,10 @@
 
         <div v-if="busy" class="mt-5">
           <div class="mb-2 flex items-center justify-between text-xs">
-            <span class="font-medium text-slate-500 dark:text-slate-400">{{ state === 'saving' ? 'Finishing up' : 'Transferring files' }}</span>
+            <span class="font-medium text-slate-500 dark:text-slate-400">{{ state === 'saving' ? 'Finishing up' : operation === 'merge' ? 'Merging PDFs' : 'Transferring files' }}</span>
             <span class="font-semibold tabular-nums text-slate-800 dark:text-slate-100">{{ progress === null ? 'Connecting…' : `${progress}%` }}</span>
           </div>
-          <div role="progressbar" aria-label="File transfer progress" :aria-valuenow="progress ?? undefined" aria-valuemin="0" aria-valuemax="100" class="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+          <div role="progressbar" :aria-label="operation === 'merge' ? 'PDF merge progress' : 'File transfer progress'" :aria-valuenow="progress ?? undefined" aria-valuemin="0" aria-valuemax="100" class="h-1.5 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
             <div class="upload-card__bar h-full rounded-full transition-[width] duration-500 ease-out" :class="{ 'upload-card__bar--indeterminate': progress === null }" :style="{ width: progress === null ? '35%' : `${progress}%` }" />
           </div>
         </div>
@@ -76,6 +76,7 @@ const props = defineProps({
   state: { type: String, required: true },
   progress: { type: Number, default: null },
   message: { type: String, default: '' },
+  operation: { type: String, default: 'upload' },
 })
 defineEmits(['dismiss'])
 const steps = ['Upload', 'Save', 'Done']
@@ -84,7 +85,13 @@ const busy = computed(() => ['uploading', 'saving'].includes(props.state))
 const tone = computed(() => failed.value ? 'error' : props.state === 'success' ? 'success' : 'active')
 const currentStep = computed(() => props.state === 'success' ? 2 : props.state === 'saving' ? 1 : 0)
 const ringProgress = computed(() => props.state === 'saving' ? 85 : Math.max(8, props.progress ?? 15))
-const title = computed(() => ({
+const title = computed(() => props.operation === 'merge' ? ({
+  uploading: 'Merging your PDFs',
+  saving: 'Finalizing the merged file',
+  success: 'PDFs merged successfully',
+  'network-error': 'Merge connection interrupted',
+  error: 'Let’s fix the PDF merge',
+}[props.state] || 'PDF merge') : ({
   uploading: 'Your files are on their way',
   saving: 'Almost there',
   success: 'All saved. You’re ready.',

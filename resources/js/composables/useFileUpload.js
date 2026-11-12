@@ -13,6 +13,7 @@ export function useFileUpload(autoFillEnabled = true) {
   const previewObjects = ref([])
   const fileMetadata = ref([])
   const processingFiles = ref([]) // Track which files are being processed
+  const mergingFiles = ref(false)
   let formWatcherStop = null
   let activeForm = null
   const {
@@ -510,6 +511,50 @@ export function useFileUpload(autoFillEnabled = true) {
   }
   }
 
+  const mergeSelectedFiles = async (form) => {
+    if (selectedFiles.value.length < 2 || selectedFiles.value.some(file => file.type !== 'application/pdf')) {
+      throw new Error('Select at least two PDF files to merge.')
+    }
+
+    mergingFiles.value = true
+    try {
+      const data = new FormData()
+      selectedFiles.value.forEach(file => data.append('files[]', file))
+      const response = await axios.post('/merge-pdfs', data, {
+        headers: { 'Content-Type': 'multipart/form-data', Accept: 'application/pdf' },
+        responseType: 'blob',
+        withCredentials: true,
+        timeout: 180000,
+      })
+      const mergedText = typeof form.extracted_text === 'string' ? form.extracted_text : ''
+      const disposition = response.headers?.['content-disposition'] || ''
+      const encodedName = disposition.match(/filename\*=UTF-8''([^;]+)/i)?.[1]
+      const plainName = disposition.match(/filename="?([^";]+)"?/i)?.[1]
+      const mergedName = encodedName
+        ? decodeURIComponent(encodedName)
+        : (plainName || `${selectedFiles.value[0]?.name?.replace(/\.pdf$/i, '') || 'merged-document'}.pdf`)
+      const merged = new File([response.data], mergedName, { type: 'application/pdf' })
+      cleanupAllPreviews()
+      selectedFiles.value = [merged]
+      previewObjects.value = [{
+        type: 'pdf',
+        url: URL.createObjectURL(merged),
+        content: null,
+        // Preserve text already extracted from the source PDFs. Do not parse
+        // the merged file again; merging does not change its text content.
+        extractedText: mergedText,
+      }]
+      fileMetadata.value = []
+      processingFiles.value = [false]
+      form.files = [merged]
+      form.file_extracted_texts = [mergedText]
+    } catch (error) {
+      form.setError?.('files', error?.message || 'The PDFs could not be merged. Please try again.')
+    } finally {
+      mergingFiles.value = false
+    }
+  }
+
   const getFileType = (file) => {
     if (file.type === 'application/pdf') return 'pdf'
     if (file.type === 'application/msword') return 'doc'
@@ -550,11 +595,13 @@ export function useFileUpload(autoFillEnabled = true) {
     selectedFiles,
     previewObjects,
     processingFiles,
+    mergingFiles,
     autoFillEnabled: autoFillEnabledRef,
     autoFillSaving,
     autoFillError,
     handleFileSelect,
     removeFile,
+    mergeSelectedFiles,
     getFileType,
     formatFileSize,
     toggleAutoFill,

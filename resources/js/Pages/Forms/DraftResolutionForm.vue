@@ -191,7 +191,10 @@
 
           <!-- Selected Files Preview -->
           <div v-if="selectedFiles.length > 0" class="space-y-2">
-            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Selected Files:</h4>
+            <div class="mb-2 flex items-center justify-between gap-2">
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300">Selected Files:</h4>
+              <MergePdfButton :files="selectedFiles" :loading="mergingFiles" @merge="mergeSelectedFiles(form)" />
+            </div>
             <div class="space-y-2">
               <div v-for="(file, index) in selectedFiles" :key="index" class="border border-purple-200 dark:border-purple-600 rounded-lg p-4 bg-purple-50 dark:bg-purple-900/10">
                 <div class="flex items-center justify-between mb-3">
@@ -374,6 +377,7 @@ import FloatingFooter from '@/Components/FloatingFooter.vue'
 import { useForm, usePage } from '@inertiajs/vue3'
 import { Link, router } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
+import MergePdfButton from '@/Components/MergePdfButton.vue'
 import { useFileUpload } from '@/composables/useFileUpload'
 
 const page = usePage()
@@ -411,11 +415,13 @@ const {
   selectedFiles,
   previewObjects,
   processingFiles,
+  mergingFiles,
   autoFillEnabled,
   autoFillSaving,
   autoFillError,
   handleFileSelect,
   removeFile,
+  mergeSelectedFiles,
   getFileType,
   formatFileSize,
   toggleAutoFill,

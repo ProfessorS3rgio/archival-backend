@@ -47,6 +47,18 @@ return [
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'root' => env('AWS_PRIVATE_ROOT', 'private'),
+            'retries' => [
+                'mode' => env('AWS_RETRY_MODE', 'standard'),
+                'max_attempts' => (int) env('AWS_MAX_ATTEMPTS', 4),
+            ],
+            'http' => [
+                'connect_timeout' => (float) env('AWS_CONNECT_TIMEOUT', 15),
+                'timeout' => (float) env('AWS_HTTP_TIMEOUT', 300),
+                // Avoid intermittent cURL/TLS record resets seen with HTTP/2 on local PHP.
+                'curl' => [
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                ],
+            ],
             'throw' => true,
         ] : [
             'driver' => 'local',
@@ -74,6 +86,17 @@ return [
             'url' => env('AWS_URL'),
             'endpoint' => env('AWS_ENDPOINT'),
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
+            'retries' => [
+                'mode' => env('AWS_RETRY_MODE', 'standard'),
+                'max_attempts' => (int) env('AWS_MAX_ATTEMPTS', 4),
+            ],
+            'http' => [
+                'connect_timeout' => (float) env('AWS_CONNECT_TIMEOUT', 15),
+                'timeout' => (float) env('AWS_HTTP_TIMEOUT', 300),
+                'curl' => [
+                    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+                ],
+            ],
             'throw' => false,
             'report' => false,
         ],

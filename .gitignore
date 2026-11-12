@@ -19,6 +19,9 @@
 /storage/pail
 /storage/certs
 /vendor
+__pycache__/
+*.pyc
+scripts/.venv/
 Homestead.json
 Homestead.yaml
 Thumbs.db
