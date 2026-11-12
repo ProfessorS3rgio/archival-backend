@@ -181,6 +181,20 @@
                             ]"
                           />
                         </button>
+                        <a
+                          v-else-if="subItem.fullPage"
+                          :href="subItem.path"
+                          :class="[
+                            'flex w-full items-center px-3 py-2 text-left text-sm rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors duration-200',
+                            {
+                              'text-brand-500 dark:text-brand-400 bg-gray-100 dark:bg-gray-800': isActive(subItem.path),
+                              'text-gray-700 dark:text-gray-300': !isActive(subItem.path),
+                            },
+                          ]"
+                        >
+                          <component :is="subItem.icon || DocsIcon" class="w-4 h-4 mr-2" />
+                          {{ subItem.name }}
+                        </a>
                         <Link
                           v-else
                           :href="subItem.path"
