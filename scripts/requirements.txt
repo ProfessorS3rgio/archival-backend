@@ -1,2 +1,3 @@
-comtypes>=1.2.0
+# Microsoft Word automation is Windows-only. Linux uses LibreOffice instead.
+comtypes>=1.2.0; sys_platform == "win32"
 pypdf>=6.0,<7.0

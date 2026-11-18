@@ -530,6 +530,11 @@ const menuGroups = computed(() => [
             path: "/settings",
             icon: SettingsIcon,
           },
+          ...(page.props.archiveChatAvailable ? [{
+            name: "Chatbot",
+            path: "/settings/chatbot",
+            icon: ChatIcon,
+          }] : []),
           {
             name: "Manage Accounts",
             path: "/settings/manage-accounts",

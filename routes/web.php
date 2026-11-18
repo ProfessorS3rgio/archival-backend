@@ -14,6 +14,7 @@ use App\Http\Controllers\AccomplishmentController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\MemorandumOfAgreementController;
 use App\Http\Controllers\CommitteeReportController;
+use App\Http\Middleware\LocalArchiveChat;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -164,6 +165,9 @@ Route::middleware('auth')->group(function () {
     
     // Account Management routes (admin only)
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function() {
+        Route::get('/settings/chatbot', fn () => Inertia::render('Settings/Chatbot', [
+            'askUrl' => route('archive-chat.ask', [], false),
+        ]))->middleware(LocalArchiveChat::class)->name('settings.chatbot');
         Route::get('/settings/manage-accounts', [App\Http\Controllers\AccountController::class, 'index'])->name('settings.manage-accounts');
         Route::get('/settings/add-accounts', [App\Http\Controllers\AccountController::class, 'create'])->name('settings.add-accounts');
         Route::post('/settings/add-accounts', [App\Http\Controllers\AccountController::class, 'store'])->name('settings.add-accounts.store');

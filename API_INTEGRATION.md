@@ -106,3 +106,49 @@ The `?preview=1` URL returns the same file with inline disposition. File bytes a
 Deploy the code and run migrations first. Issue a token on the archive server, configure the Sangguniang backend environment, then test `GET /api/v1/documents/types`, a list query, a visible record, a hidden record (404), and a download. Restart the consumer after changing its environment. For rotation, issue a new token, switch the consumer, verify it, then delete the old entry from `personal_access_tokens` for that API client. Keep the archive `.env` and the consumer `.env` separate.
 
 The detailed field and route reference is in [API_DOCUMENTATION.md](API_DOCUMENTATION.md).
+
+## Try the archive chatbot on localhost
+
+Enable the chatbot in the local environment and supply an integration token with
+`documents:read`. Use `ARCHIVE_CHAT_SOURCE_URL=https://sibugaydevgroup.tech/api/v1`,
+`ARCHIVE_CHAT_SOURCE_TOKEN` for the private token, and `ARCHIVE_CHAT_ENABLED=true`.
+If local configuration is cached, clear it with `php artisan config:clear`.
+
+Start Ollama locally with `qwen3:1.7b` and `embeddinggemma` downloaded. Index a
+confirmed public ordinance or resolution by its numeric API record ID, then
+start Laravel on loopback. Replace `42` with an approved record that has a
+searchable PDF attachment. Use a dedicated PowerShell session. These session
+variables make accidental visits to database-backed pages fail locally even if
+the default database connection in `.env` points at production.
+
+```powershell
+$env:CACHE_STORE = 'array'
+$env:SESSION_DRIVER = 'array'
+$env:DB_CONNECTION = 'archive-chat-only'
+php artisan archival:chat-index ordinances 42
+php artisan serve --host=127.0.0.1 --port=8000 --no-reload
+```
+
+Open `http://127.0.0.1:8000/api/archive-chat`. These routes use the archive API
+and Ollama without starting a Laravel session or accessing the configured
+default database. The local index under `storage/app/archive-chat` contains extracted
+text and vectors. Re-run the index command when a source changes. Only
+currently visible, approved records can be selected for answers or PDFs.
+Scanned pages need an existing text layer. This prototype scans the local index
+for similarity and is intended for a small document sample.
+
+### Use the local MySQL benchmark as the source
+
+Set `ARCHIVE_CHAT_ENABLED=true` and `ARCHIVE_CHAT_SOURCE=mysql` in the local
+`.env`. Set `ARCHIVE_CHAT_DB_DATABASE`, `ARCHIVE_CHAT_DB_USERNAME`, and
+`ARCHIVE_CHAT_DB_PASSWORD` to your benchmark credentials. Set
+`ARCHIVE_CHAT_DB_PORT` if MySQL listens on a port other than 3306. This named
+connection uses `127.0.0.1`. Use an account with `SELECT` access to the four
+ordinance and resolution tables. The regular `DB_*` settings may stay in place.
+
+The benchmark must have the archive schema and corresponding PDFs under
+`storage/app/private`, using the same relative paths as the `file_url` values in
+the benchmark database. Clear cached configuration, then run the same PowerShell
+commands above with an approved, visible benchmark record ID. MySQL records use
+a separate local index so you can switch back to the API without reindexing its
+records.

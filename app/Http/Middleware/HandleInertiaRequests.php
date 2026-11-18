@@ -50,6 +50,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => session('success'),
                 'error' => session('error'),
             ],
+            'archiveChatAvailable' => fn () => $request->user()?->role === 'admin' && LocalArchiveChat::available($request),
             'spTerms' => $request->user()?->role === 'staff' ? [] : SangguniangPanlalawiganTerm::orderBy('start_year')->get(),
         ];
     }

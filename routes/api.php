@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AccomplishmentApiController;
+use App\Http\Controllers\Api\ArchiveChatController;
 use App\Http\Controllers\Api\CommitteeReportApiController;
 use App\Http\Controllers\Api\DocumentApiController;
 use App\Http\Controllers\Api\NationalOfficeCommunicationApiController;
@@ -19,7 +20,16 @@ use App\Http\Controllers\DraftResolutionController;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\OrdinanceController;
 use App\Http\Controllers\ResolutionController;
+use App\Http\Middleware\LocalArchiveChat;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
+
+Route::prefix('archive-chat')->middleware(LocalArchiveChat::class)->group(function () {
+    Route::get('/', fn () => new Response(view('archive-chat')->render()));
+    Route::post('/ask', [ArchiveChatController::class, 'ask'])->name('archive-chat.ask');
+    Route::get('/sources/{type}/{id}/{file}', [ArchiveChatController::class, 'pdf'])
+        ->whereIn('type', ['ordinances', 'resolutions'])->whereNumber(['id', 'file'])->name('archive-chat.pdf');
+});
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 

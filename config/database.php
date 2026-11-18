@@ -31,6 +31,19 @@ return [
 
     'connections' => [
 
+        'archive_chat_mysql' => [
+            'driver' => 'mysql',
+            'host' => '127.0.0.1',
+            'port' => env('ARCHIVE_CHAT_DB_PORT', 3306),
+            'database' => env('ARCHIVE_CHAT_DB_DATABASE'),
+            'username' => env('ARCHIVE_CHAT_DB_USERNAME'),
+            'password' => env('ARCHIVE_CHAT_DB_PASSWORD', ''),
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
