@@ -3,14 +3,11 @@ import { Head } from '@inertiajs/vue3'
 import { nextTick, ref } from 'vue'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
 
-const props = defineProps({ askUrl: { type: String, required: true }, assistantUrl: { type: String, required: true } })
+const props = defineProps({ assistantUrl: { type: String, required: true } })
 
-const question = ref('')
 const messages = ref([])
 const pending = ref(false)
-const input = ref(null)
 const latestReply = ref(null)
-const showFreeQuestion = ref(false)
 
 const menu = [
   { label: 'Recent resolutions', intent: 'recent_resolutions' },
@@ -48,43 +45,9 @@ async function runMenu(item) {
   }
 }
 
-async function ask() {
-  const text = question.value.trim()
-  if (!text || pending.value) return
-
-  messages.value.push({ question: text, reply: null })
-  const message = messages.value.at(-1)
-  question.value = ''
-  pending.value = true
-  await nextTick()
-  latestReply.value?.scrollIntoView({ block: 'nearest' })
-
-  try {
-    const response = await fetch(props.askUrl, {
-      method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: text }),
-    })
-    const data = await response.json()
-
-    message.reply = response.ok ? data : {
-      answer: data.message || 'The archive could not complete the search.',
-      status: 'error',
-    }
-  } catch {
-    message.reply = { answer: 'The local chat server could not respond. Please try again.', status: 'error' }
-  } finally {
-    pending.value = false
-    await nextTick()
-    latestReply.value?.scrollIntoView({ block: 'nearest' })
-  }
-}
-
 async function clearChat() {
   messages.value = []
-  question.value = ''
   await nextTick()
-  input.value?.focus()
 }
 </script>
 
@@ -143,25 +106,7 @@ async function clearChat() {
             {{ item.label }}
           </button>
         </div>
-        <button type="button" class="text-sm text-blue-700 underline dark:text-blue-300" @click="showFreeQuestion = !showFreeQuestion">{{ showFreeQuestion ? 'Hide' : 'Ask a specific question' }}</button>
       </div>
-
-      <form v-if="showFreeQuestion" class="space-y-3 border-t border-gray-200 bg-gray-50 px-5 py-5 sm:px-7 dark:border-gray-700 dark:bg-gray-900/40" @submit.prevent="ask">
-        <label for="archive-question" class="block text-sm font-medium text-gray-900 dark:text-gray-100">Your question</label>
-        <textarea
-          id="archive-question"
-          ref="input"
-          v-model="question"
-          rows="2"
-          maxlength="500"
-          required
-          placeholder="What does Ordinance 2022-607 say about the barangay subsidy?"
-          class="block w-full resize-y rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-gray-600 dark:bg-gray-900 dark:text-gray-100"
-        />
-        <button type="submit" :disabled="pending || !question.trim()" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
-          {{ pending ? 'Searching…' : 'Ask the archive' }}
-        </button>
-      </form>
     </section>
   </AdminLayout>
 </template>

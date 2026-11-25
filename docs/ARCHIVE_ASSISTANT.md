@@ -10,7 +10,7 @@ This project uses a button-first assistant for public archive searches. Menu act
 4. The API returns a short message and structured document items.
 5. The UI renders the results and links to the public document page.
 
-The assistant does not require an LLM for these menu actions. The existing free-text RAG endpoint can remain available as an optional fallback for questions that do not fit a supported menu action.
+The assistant does not require an LLM for these menu actions. The public/admin assistant page is button-only; the legacy free-text RAG endpoint is retained server-side temporarily so existing integrations do not break while they migrate.
 
 ## Endpoint
 
