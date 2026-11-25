@@ -75,49 +75,74 @@ export function useFileUpload(autoFillEnabled = true) {
     return typeof response.data?.text === 'string' ? response.data.text : ''
   }
 
-  const parseDocumentText = (text) => {
+  const cleanTitleCandidate = (value) => value
+    .replace(/^[^A-Za-z]+/, '')
+    .replace(/\b(?:EXPLANATORY\s+NOTE|WHEREAS|BE\s+IT)\b[\s\S]*$/i, '')
+    .replace(/\s+/g, ' ')
+    .replace(/[,:;.-]+$/, '')
+    .trim()
+
+  const parseDocumentText = (text, fileName = '') => {
     console.log('Parsing document text:', text.substring(0, 500) + '...')
     const data = {}
 
-    // Updated patterns for ordinance/resolution documents
     const patterns = {
       ordinance_no: /(?:ORDINANCE\s+NO\.?|NO\.?|NUMBER)\s*:?\s*(\d+(?:-\d+)?)/i,
       resolution_no: /(?:RESOLUTION\s+NO\.?)\s*:?\s*([\d\s-]+)/i,
-      author: /(?:Provincial\s+)?Governor\s+([^,\n]+)|Author:\s*([^,\n]+)/i,
-      title: /A\s+(?:RESOLUTION|ORDINANCE)\s+([^.]+)/i,
       subject: /(?:WHEREAS\s*,?\s*)+([^.]+)\./i,
-      session: /(\d+\s*(?:st|nd|rd|th)\s+REGULAR\s+SESSION)/i,
+      session: /(\d{1,3})\s*(?:st|nd|rd|th|["”'′`]*)\s+REGULAR\s+SESSION/i,
       date_approved: /(?:ADOPTED|APPROVED|APPROVE|ENACTED)\s+on\s+this\s+(\d+)\s*(?:st|nd|rd|th)?\s+day\s+of\s+(\w+)\s+(\d{4})/i
     }
 
     Object.keys(patterns).forEach(key => {
       const match = text.match(patterns[key])
       console.log(`Pattern ${key}: match =`, match)
-      if (match) {
-        if (key === 'author') {
-          const name = match[1] || match[2]
-          if (name) data[key] = name.trim()
-        } else if (key === 'title') {
-          // Limit title to 6 words
-          const fullTitle = match[1].trim()
-          const words = fullTitle.split(/\s+/).slice(0, 6)
-          data[key] = words.join(' ')
-        } else if (key === 'date_approved' && match[2] && match[3]) {
-          // Combine date parts
-          const day = parseInt(match[1])
-          const month = match[2]
-          const year = parseInt(match[3])
-          const months = { 'January': 0, 'February': 1, 'March': 2, 'April': 3, 'May': 4, 'June': 5, 'July': 6, 'August': 7, 'September': 8, 'October': 9, 'November': 10, 'December': 11 }
-          const monthIndex = months[month]
-          if (monthIndex !== undefined) {
-            const date = new Date(Date.UTC(year, monthIndex, day))
-            data[key] = date.toISOString().split('T')[0]
-          }
-        } else if (match[1]) {
-          data[key] = match[1].trim()
+      if (!match) return
+
+      if (key === 'date_approved' && match[2] && match[3]) {
+        const day = parseInt(match[1])
+        const month = match[2]
+        const year = parseInt(match[3])
+        const months = { january: 0, february: 1, march: 2, april: 3, may: 4, june: 5, july: 6, august: 7, september: 8, october: 9, november: 10, december: 11 }
+        const monthIndex = months[month.toLowerCase()]
+        if (monthIndex !== undefined) {
+          data[key] = new Date(Date.UTC(year, monthIndex, day)).toISOString().split('T')[0]
         }
+      } else if (key === 'session' && match[1]) {
+        const number = parseInt(match[1], 10)
+        const ordinal = number % 100 >= 11 && number % 100 <= 13
+          ? 'th'
+          : ({ 1: 'st', 2: 'nd', 3: 'rd' }[number % 10] || 'th')
+        data[key] = `${number}${ordinal} REGULAR SESSION`
+      } else if (match[1]) {
+        data[key] = match[1].trim()
       }
     })
+
+    // Resolutions and ordinances commonly use “ENACTED ON October 13, 2026”
+    // instead of “approved on this 13th day of October 2026”.
+    if (!data.date_approved) {
+      const enactedMatch = text.match(/(?:ENACTED|APPROVED|ADOPTED)\s+ON\s+(?:THIS\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?\s*,?\s*((?:19|20)\d{1,2})/i)
+      if (enactedMatch) {
+        const months = { january: 0, february: 1, march: 2, april: 3, may: 4, june: 5, july: 6, august: 7, september: 8, october: 9, november: 10, december: 11 }
+        const monthIndex = months[enactedMatch[1].toLowerCase()]
+        let year = enactedMatch[3]
+        if (year.length === 3 && /^(19|20)\d{2}/.test(fileName)) {
+          year = fileName.match(/^(?:19|20)\d{2}/)[0]
+        }
+        if (monthIndex !== undefined && year.length === 4) {
+          data.date_approved = new Date(Date.UTC(parseInt(year, 10), monthIndex, parseInt(enactedMatch[2], 10))).toISOString().split('T')[0]
+        }
+      }
+    }
+
+    // Prefer the actual heading. This avoids treating “A Ordinance No.” as
+    // a title and returning only “No”.
+    const headingMatch = text.match(/\b(?:AN\s+ORDINANCE|A\s+RESOLUTION)\s+(?:NO\.?\s*[\d-]+\s*)?([^\r\n]+)/i)
+    const headingTitle = headingMatch ? cleanTitleCandidate(headingMatch[1]) : ''
+    if (headingTitle && headingTitle.split(/\s+/).length >= 2) {
+      data.title = headingTitle.split(/\s+/).slice(0, 12).join(' ')
+    }
 
     console.log('Parsed data:', data)
     return data
@@ -299,7 +324,7 @@ export function useFileUpload(autoFillEnabled = true) {
       }
 
       if (text) {
-        const extractedData = parseDocumentText(text)
+        const extractedData = parseDocumentText(text, file.name)
 
         if (fileIndex !== undefined && fileIndex !== null) {
           fileMetadata.value[fileIndex] = {
