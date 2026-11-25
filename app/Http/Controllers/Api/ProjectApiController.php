@@ -18,7 +18,7 @@ class ProjectApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Project::query();
+        $query = $this->visible(Project::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -91,6 +91,7 @@ class ProjectApiController extends Controller
      */
     public function show(Project $project): JsonResponse
     {
+        $this->ensureVisible($project);
         $files = [];
         if ($project->file_name && $project->file_url) {
             $files[] = [

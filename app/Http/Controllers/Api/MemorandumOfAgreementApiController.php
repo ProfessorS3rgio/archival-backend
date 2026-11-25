@@ -18,7 +18,7 @@ class MemorandumOfAgreementApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = MemorandumOfAgreement::query();
+        $query = $this->visible(MemorandumOfAgreement::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -77,6 +77,7 @@ class MemorandumOfAgreementApiController extends Controller
      */
     public function show(MemorandumOfAgreement $moa): JsonResponse
     {
+        $this->ensureVisible($moa);
         $files = [];
         if ($moa->file_name && $moa->file_url) {
             $files[] = [

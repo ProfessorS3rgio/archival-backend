@@ -42,7 +42,7 @@ class DocumentApiController extends Controller
 
         $config = $validTypes[$type];
         $model = app($config['model']);
-        $query = $model->query();
+        $query = $this->visible($model->query());
 
         $table = $model->getTable();
         $hasColumn = function (string $column) use ($table): bool {
@@ -241,6 +241,7 @@ class DocumentApiController extends Controller
 
         // Find the document
         $document = $model->where($documentIdField, $documentId)->firstOrFail();
+        $this->ensureVisible($document);
 
         // Find the file
         $file = $fileModel->where($fileModel->getKeyName(), $fileId)

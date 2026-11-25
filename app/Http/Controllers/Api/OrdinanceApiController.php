@@ -19,7 +19,7 @@ class OrdinanceApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Ordinance::with('files');
+        $query = $this->visible(Ordinance::with('files'));
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -86,6 +86,7 @@ class OrdinanceApiController extends Controller
      */
     public function show(Ordinance $ordinance): JsonResponse
     {
+        $this->ensureVisible($ordinance);
         $ordinance->load('files');
 
         $data = [
@@ -118,6 +119,7 @@ class OrdinanceApiController extends Controller
      */
     public function downloadFile(Request $request, Ordinance $ordinance, OrdinanceFile $file): \Symfony\Component\HttpFoundation\StreamedResponse
     {
+        $this->ensureVisible($ordinance);
         \Log::info("Download/Preview attempt for ordinance {$ordinance->ordinance_id}, file {$file->file_id}");
 
         // Ensure the file belongs to the ordinance

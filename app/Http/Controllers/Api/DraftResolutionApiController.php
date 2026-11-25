@@ -19,7 +19,7 @@ class DraftResolutionApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = DraftResolution::with('files');
+        $query = $this->visible(DraftResolution::with('files'));
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -83,6 +83,7 @@ class DraftResolutionApiController extends Controller
      */
     public function show(DraftResolution $draftResolution): JsonResponse
     {
+        $this->ensureVisible($draftResolution);
         $draftResolution->load('files');
 
         $data = [

@@ -18,7 +18,7 @@ class NationalOfficeCommunicationApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = NationalOfficeCommunicationList::query();
+        $query = $this->visible(NationalOfficeCommunicationList::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -73,6 +73,7 @@ class NationalOfficeCommunicationApiController extends Controller
      */
     public function show(NationalOfficeCommunicationList $communication): JsonResponse
     {
+        $this->ensureVisible($communication);
         $files = [];
         if ($communication->file_name && $communication->file_url) {
             $files[] = [

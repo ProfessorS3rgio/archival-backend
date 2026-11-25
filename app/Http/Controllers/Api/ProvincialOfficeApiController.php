@@ -18,7 +18,7 @@ class ProvincialOfficeApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ProvincialOffice::query();
+        $query = $this->visible(ProvincialOffice::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -71,6 +71,7 @@ class ProvincialOfficeApiController extends Controller
      */
     public function show(ProvincialOffice $communication): JsonResponse
     {
+        $this->ensureVisible($communication);
         $files = [];
         if ($communication->file_name && $communication->file_url) {
             $files[] = [

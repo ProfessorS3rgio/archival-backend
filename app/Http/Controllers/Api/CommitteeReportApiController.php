@@ -18,7 +18,7 @@ class CommitteeReportApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = CommitteeReport::query();
+        $query = $this->visible(CommitteeReport::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -72,6 +72,7 @@ class CommitteeReportApiController extends Controller
      */
     public function show(CommitteeReport $report): JsonResponse
     {
+        $this->ensureVisible($report);
         $files = [];
         if ($report->file_name && $report->file_url) {
             $files[] = [

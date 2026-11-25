@@ -19,7 +19,7 @@ class DraftOrdinanceApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = DraftOrdinance::with('files');
+        $query = $this->visible(DraftOrdinance::with('files'));
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -83,6 +83,7 @@ class DraftOrdinanceApiController extends Controller
      */
     public function show(DraftOrdinance $draftOrdinance): JsonResponse
     {
+        $this->ensureVisible($draftOrdinance);
         $draftOrdinance->load('files');
 
         $data = [

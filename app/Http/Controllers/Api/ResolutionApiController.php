@@ -19,7 +19,7 @@ class ResolutionApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Resolution::with('files');
+        $query = $this->visible(Resolution::with('files'));
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -98,6 +98,7 @@ class ResolutionApiController extends Controller
      */
     public function show(Resolution $resolution): JsonResponse
     {
+        $this->ensureVisible($resolution);
         $resolution->load('files');
 
         $data = [
@@ -133,6 +134,7 @@ class ResolutionApiController extends Controller
      */
     public function downloadFile(Request $request, Resolution $resolution, ResolutionFile $file): \Symfony\Component\HttpFoundation\StreamedResponse
     {
+        $this->ensureVisible($resolution);
         // Ensure the file belongs to the resolution
         if ($file->resolution_id !== $resolution->resolution_id) {
             abort(404, 'File not found');

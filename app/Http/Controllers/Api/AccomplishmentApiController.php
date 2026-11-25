@@ -18,7 +18,7 @@ class AccomplishmentApiController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Accomplishment::query();
+        $query = $this->visible(Accomplishment::query());
 
         // Search functionality
         if ($request->has('search') && $request->search) {
@@ -73,6 +73,7 @@ class AccomplishmentApiController extends Controller
      */
     public function show(Accomplishment $accomplishment): JsonResponse
     {
+        $this->ensureVisible($accomplishment);
         $files = [];
         if ($accomplishment->file_name && $accomplishment->file_url) {
             $files[] = [
