@@ -2,11 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -36,6 +36,11 @@ class AppServiceProvider extends ServiceProvider
             $key = $user ? get_class($user).':'.$user->getAuthIdentifier() : 'ip:'.$request->ip();
 
             return Limit::perMinute(120)->by($key);
+        });
+
+        RateLimiter::for('archive-assistant', function (Request $request) {
+            return Limit::perMinute((int) config('archive-chat.public_rate_limit', 30))
+                ->by('archive-assistant:'.$request->ip());
         });
     }
 }

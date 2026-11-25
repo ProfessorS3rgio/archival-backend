@@ -39,6 +39,18 @@ Responses contain `message` and an `items` array. Each item includes the record 
 
 Messenger buttons should send the same intent names as postback payloads. The webhook can forward the payload to this endpoint and format the returned `items` as Messenger buttons or generic templates. Keep the endpoint behind authentication or a signed webhook between the Messenger adapter and Laravel; never expose database credentials to the client.
 
+## Public deployment
+
+The public endpoint is disabled by default. On the server, set these values in the production `.env`, then clear the Laravel config cache:
+
+```dotenv
+ARCHIVE_CHAT_PUBLIC_ENABLED=true
+ARCHIVE_CHAT_PUBLIC_HOSTS=sibugaydevgroup.tech
+ARCHIVE_CHAT_PUBLIC_RATE_LIMIT=30
+```
+
+`POST /api/archive-chat/assistant` accepts JSON only, requires HTTPS for non-local hosts, permits only configured host names, and is rate-limited per client IP. Keep the local-only routes separate; never expose the free-text LLM route publicly without an independent security review.
+
 ## Adding a menu action
 
 1. Add the intent to the controller validation allow-list.

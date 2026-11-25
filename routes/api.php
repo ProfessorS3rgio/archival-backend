@@ -21,16 +21,22 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\OrdinanceController;
 use App\Http\Controllers\ResolutionController;
 use App\Http\Middleware\LocalArchiveChat;
+use App\Http\Middleware\PublicArchiveAssistant;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('archive-chat')->middleware(LocalArchiveChat::class)->group(function () {
     Route::get('/', fn () => new Response(view('archive-chat')->render()));
     Route::post('/ask', [ArchiveChatController::class, 'ask'])->name('archive-chat.ask');
-    Route::post('/assistant', [ArchiveChatController::class, 'assistant'])->name('archive-chat.assistant');
     Route::get('/sources/{type}/{id}/{file}', [ArchiveChatController::class, 'pdf'])
         ->whereIn('type', ['ordinances', 'resolutions'])->whereNumber(['id', 'file'])->name('archive-chat.pdf');
 });
+
+// Public, read-only menu assistant. Enable explicitly in production and keep
+// the host allow-list/rate limiter in place before exposing it publicly.
+Route::post('/archive-chat/assistant', [ArchiveChatController::class, 'assistant'])
+    ->middleware([PublicArchiveAssistant::class, 'throttle:archive-assistant'])
+    ->name('archive-chat.assistant');
 
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 
