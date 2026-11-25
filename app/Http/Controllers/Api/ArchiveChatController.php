@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Services\ArchiveAssistant;
 use App\Services\ArchiveChat;
 use App\Services\ArchiveChatSource;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -27,6 +28,8 @@ class ArchiveChatController
             $data = $validator->validated();
 
             return new JsonResponse($assistant->run($data['intent'], $data['input'] ?? []));
+        } catch (QueryException) {
+            return new JsonResponse(['message' => 'The archive assistant is temporarily unavailable.'], 503);
         } catch (RuntimeException $error) {
             return new JsonResponse(['message' => $error->getMessage()], 422);
         }
