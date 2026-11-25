@@ -463,7 +463,7 @@ const form = useForm({
   amount: props.project?.amount || '',
   file: null,
   files: [], // Add files array for composable compatibility
-  extracted_text: '',
+  extracted_text: props.project?.extracted_text || '',
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)

@@ -512,7 +512,7 @@ const form = useForm({
   municipality: props.ordinance?.municipality || '',
   is_municipal: props.ordinance?.is_municipal ?? page.url.includes('municipal'),
   files: [],
-  extracted_text: '',
+  extracted_text: props.ordinance?.extracted_text || '',
   file_extracted_texts: [],
   remove_files: [] // Track files to be removed
 })
@@ -597,7 +597,10 @@ const submit = () => {
   const fileExtractedTexts = selectedFiles.value.map((_, index) => {
     return previewObjects.value[index]?.extractedText ?? ''
   })
-  const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const extractedFromFiles = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const concatenatedExtractedText = selectedFiles.value.length > 0
+    ? extractedFromFiles
+    : (typeof form.extracted_text === 'string' ? form.extracted_text : '')
 
   // Build FormData for both create and update to ensure proper array handling
   const formData = new FormData();

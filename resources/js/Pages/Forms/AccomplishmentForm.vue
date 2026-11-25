@@ -297,7 +297,7 @@ const form = useForm({
   complainant: props.accomplishment?.complainant || '',
   accomplishment_year: props.accomplishment?.accomplishment_year || '',
   file: null,
-  extracted_text: '',
+  extracted_text: props.accomplishment?.extracted_text || '',
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)

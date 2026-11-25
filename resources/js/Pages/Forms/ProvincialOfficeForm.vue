@@ -380,7 +380,7 @@ const form = useForm({
   year: new Date().getFullYear(),
   Date_received: '',
   files: [],
-  extracted_text: ''
+  extracted_text: props.provincialOffice?.extracted_text || ''
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
