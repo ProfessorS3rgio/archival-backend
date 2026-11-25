@@ -33,12 +33,12 @@ return [
 
         'archive_chat_mysql' => [
             'driver' => 'mysql',
-            // Use the application's existing database credentials.
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', 3306),
-            'database' => env('DB_DATABASE'),
-            'username' => env('DB_USERNAME'),
-            'password' => env('DB_PASSWORD', ''),
+            // Dedicated read-only credentials for archive assistant queries.
+            'host' => env('ARCHIVE_CHAT_DB_HOST', '127.0.0.1'),
+            'port' => env('ARCHIVE_CHAT_DB_PORT', 3306),
+            'database' => env('ARCHIVE_CHAT_DB_DATABASE'),
+            'username' => env('ARCHIVE_CHAT_DB_USERNAME'),
+            'password' => env('ARCHIVE_CHAT_DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',
