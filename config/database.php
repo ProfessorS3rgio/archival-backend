@@ -33,14 +33,12 @@ return [
 
         'archive_chat_mysql' => [
             'driver' => 'mysql',
-            // Dedicated ARCHIVE_CHAT_DB_* values are optional. Fall back to
-            // the application's existing local MySQL connection so production
-            // does not need duplicate credentials in .env.
-            'host' => env('ARCHIVE_CHAT_DB_HOST', env('DB_HOST', '127.0.0.1')),
-            'port' => env('ARCHIVE_CHAT_DB_PORT', env('DB_PORT', 3306)),
-            'database' => env('ARCHIVE_CHAT_DB_DATABASE', env('DB_DATABASE')),
-            'username' => env('ARCHIVE_CHAT_DB_USERNAME', env('DB_USERNAME')),
-            'password' => env('ARCHIVE_CHAT_DB_PASSWORD', env('DB_PASSWORD', '')),
+            // Use the application's existing database credentials.
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', 3306),
+            'database' => env('DB_DATABASE'),
+            'username' => env('DB_USERNAME'),
+            'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix' => '',

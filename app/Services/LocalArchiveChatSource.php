@@ -78,7 +78,7 @@ class LocalArchiveChatSource
             throw new RuntimeException('The benchmark connection must use MySQL on 127.0.0.1.');
         }
         if (blank($config['database'] ?? null) || blank($config['username'] ?? null)) {
-            throw new RuntimeException('Configure ARCHIVE_CHAT_DB_DATABASE and ARCHIVE_CHAT_DB_USERNAME for local MySQL.');
+            throw new RuntimeException('Configure the existing DB_DATABASE and DB_USERNAME settings for local MySQL.');
         }
 
         return DB::connection(self::CONNECTION);
