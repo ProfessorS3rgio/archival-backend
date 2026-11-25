@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\ArchiveAssistant;
 use App\Services\ArchiveChat;
 use App\Services\ArchiveChatSource;
 use Illuminate\Http\JsonResponse;
@@ -12,6 +13,25 @@ use RuntimeException;
 
 class ArchiveChatController
 {
+    public function assistant(Request $request, ArchiveAssistant $assistant): JsonResponse
+    {
+        $validator = Validator::make($request->json()->all(), [
+            'intent' => 'required|string|in:recent_ordinances,recent_resolutions,ordinance_by_number,resolution_by_number,ordinance_search,resolution_search,records_by_year',
+            'input' => 'nullable|array',
+        ]);
+        if ($validator->fails()) {
+            return new JsonResponse(['message' => $validator->errors()->first()], 422);
+        }
+
+        try {
+            $data = $validator->validated();
+
+            return new JsonResponse($assistant->run($data['intent'], $data['input'] ?? []));
+        } catch (RuntimeException $error) {
+            return new JsonResponse(['message' => $error->getMessage()], 422);
+        }
+    }
+
     public function ask(Request $request, ArchiveChat $chat): JsonResponse
     {
         $validator = Validator::make($request->json()->all(), ['question' => 'required|string|max:500']);

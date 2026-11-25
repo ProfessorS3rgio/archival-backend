@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('archive-chat')->middleware(LocalArchiveChat::class)->group(function () {
     Route::get('/', fn () => new Response(view('archive-chat')->render()));
     Route::post('/ask', [ArchiveChatController::class, 'ask'])->name('archive-chat.ask');
+    Route::post('/assistant', [ArchiveChatController::class, 'assistant'])->name('archive-chat.assistant');
     Route::get('/sources/{type}/{id}/{file}', [ArchiveChatController::class, 'pdf'])
         ->whereIn('type', ['ordinances', 'resolutions'])->whereNumber(['id', 'file'])->name('archive-chat.pdf');
 });

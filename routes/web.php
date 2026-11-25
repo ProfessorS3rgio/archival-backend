@@ -167,6 +167,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function() {
         Route::get('/settings/chatbot', fn () => Inertia::render('Settings/Chatbot', [
             'askUrl' => route('archive-chat.ask', [], false),
+            'assistantUrl' => route('archive-chat.assistant', [], false),
         ]))->middleware(LocalArchiveChat::class)->name('settings.chatbot');
         Route::get('/settings/manage-accounts', [App\Http\Controllers\AccountController::class, 'index'])->name('settings.manage-accounts');
         Route::get('/settings/add-accounts', [App\Http\Controllers\AccountController::class, 'create'])->name('settings.add-accounts');
