@@ -1,8 +1,16 @@
 # Droplet deployment
 
-Production runs from `/var/www/archival-backend` on branch `codex/r2-storage`.
+Production runs from `/var/www/archival-backend` on branch `main`.
 Use Git to transfer code. Keep `.env` on each machine; never copy the local
 `.env` to production. R2 holds private documents under `archival/private/`.
+
+Install the Linux OCR prerequisites once on the production droplet:
+
+```sh
+apt-get update
+apt-get install -y poppler-utils tesseract-ocr tesseract-ocr-eng
+runuser -u www-data -- sh -lc 'command -v pdftoppm && command -v tesseract'
+```
 
 The Staff access update requires no database migration. Rebuild frontend assets
 and refresh cached configuration using the normal deployment steps below.
@@ -33,10 +41,10 @@ runuser -u www-data -- php artisan migrate --force --path=database/migrations/20
 Commit and push changes locally:
 
 ```sh
-git switch codex/r2-storage
+git switch main
 git add <changed-code-files>
 git commit -m "Describe the change"
-git push origin codex/r2-storage
+git push origin main
 ```
 
 Deploy from the droplet as root:
@@ -44,7 +52,8 @@ Deploy from the droplet as root:
 ```sh
 cd /var/www/archival-backend
 git status --short
-git pull --ff-only origin codex/r2-storage
+git switch main
+git pull --ff-only origin main
 COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 install -d -m 755 public/vendor/log-viewer
 chown www-data:www-data public/vendor/log-viewer
@@ -60,6 +69,12 @@ runuser -u www-data -- php artisan view:cache
 runuser -u www-data -- php artisan up
 curl --fail https://sibugaydevgroup.tech/up
 ```
+
+PDFs with an embedded text layer are parsed automatically. Image-only PDFs are
+rendered with `pdftoppm` and OCRed with `tesseract`; install the packages above
+on Linux production. Windows development also needs `pdftoppm` and
+`tesseract` available on `PATH` for scanned PDFs. If OCR is unavailable, the
+original PDF still uploads, but its `extracted_text` remains empty.
 
 When `deploy/php/99-archival-uploads.ini` changes, apply the PHP-FPM upload
 limits after pulling (the default 2 MB limit is lower than the form's 10 MB):

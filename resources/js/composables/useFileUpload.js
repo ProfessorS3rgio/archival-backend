@@ -1,7 +1,6 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useAutoFillPreference } from './useAutoFillPreference.js'
-import mammoth from 'mammoth'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // Configure PDF.js worker
@@ -40,16 +39,40 @@ export function useFileUpload(autoFillEnabled = true) {
       const textContent = await page.getTextContent()
       text += textContent.items.map(item => item.str).join(' ') + '\n'
     }
+    // PDF.js can read only a PDF's text layer. Ask the backend to parse/OCR
+    // image-only PDFs so their text can still be saved as extracted_text.
+    if (!text.trim()) {
+      const data = new FormData()
+      data.append('file', file)
+      const response = await axios.post('/api/convert-file', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+        timeout: 180000,
+      })
+      if (response.data?.error) throw new Error(response.data.error)
+      text = typeof response.data?.text === 'string' ? response.data.text : ''
+      console.log('PDF text obtained from server/OCR, length:', text.length)
+    }
     console.log('Extracted PDF text:', text.substring(0, 500) + '...')
     return text
   }
 
-  const extractTextFromDOCX = async (file) => {
-    console.log('Extracting text from DOCX:', file.name)
-    const arrayBuffer = await file.arrayBuffer()
-    const result = await mammoth.extractRawText({ arrayBuffer })
-    console.log('Extracted DOCX text:', result.value.substring(0, 500) + '...')
-    return result.value
+  // Office text extraction is intentionally server-side. Windows uses
+  // comtypes/Word and Linux uses LibreOffice through /api/convert-file.
+  const extractTextFromOffice = async (file) => {
+    const data = new FormData()
+    data.append('file', file)
+    const response = await axios.post('/api/convert-file', data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      withCredentials: true,
+      timeout: 120000,
+    })
+
+    if (response.data?.error) {
+      throw new Error(response.data.error)
+    }
+
+    return typeof response.data?.text === 'string' ? response.data.text : ''
   }
 
   const parseDocumentText = (text) => {
@@ -248,7 +271,7 @@ export function useFileUpload(autoFillEnabled = true) {
       if (file.type === 'application/pdf') {
         console.log('Processing as PDF')
         const index = selectedFiles.value.indexOf(file)
-        if (index !== -1 && previewObjects.value[index] && previewObjects.value[index].extractedText) {
+        if (index !== -1 && previewObjects.value[index] && typeof previewObjects.value[index].extractedText === 'string') {
           text = previewObjects.value[index].extractedText
         } else {
           text = await extractTextFromPDF(file)
@@ -258,29 +281,17 @@ export function useFileUpload(autoFillEnabled = true) {
           }
         }
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        console.log('Using extracted text from preview for DOCX')
+        console.log('Extracting DOCX text through the server conversion environment')
         const index = selectedFiles.value.indexOf(file)
         if (index !== -1 && previewObjects.value[index] && previewObjects.value[index].extractedText) {
           text = previewObjects.value[index].extractedText
         } else {
-          // Fallback: extract again if not available
-          text = await extractTextFromDOCX(file)
+          text = await extractTextFromOffice(file)
         }
         console.log('Extracted text from DOCX:', text.substring(0, 500) + '...')
       } else if (file.type === 'application/msword') {
-        console.log('DOC file - extracting text via backend conversion')
-        const formData = new FormData()
-        formData.append('file', file)
-        const response = await axios.post('/api/convert-file', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          withCredentials: true
-        })
-        if (response.data.error) {
-          throw new Error(response.data.error)
-        }
-        text = response.data.text
+        console.log('Extracting DOC text through the server conversion environment')
+        text = await extractTextFromOffice(file)
         console.log('Extracted text from DOC via backend:', text.substring(0, 500) + '...')
       } else {
         console.log('Unsupported file type:', file.type)
@@ -373,14 +384,24 @@ export function useFileUpload(autoFillEnabled = true) {
         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
         file.type === 'application/msword'
       ) {
-        // DOCX/DOC: upload temporarily and preview via Office Online embed (requires public signed URL)
+        // DOCX/DOC: keep the original file and preview it through Office
+        // Online. The conversion endpoint is used separately for extracted_text.
         let extractedText = null
         if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
           try {
-            extractedText = await extractTextFromDOCX(file)
+            extractedText = await extractTextFromOffice(file)
             console.log('DOCX text extracted successfully, length:', extractedText?.length)
           } catch (err) {
             console.error('Failed to extract DOCX text:', err)
+          }
+        } else {
+          // Legacy DOC files cannot be parsed in the browser. Use the same
+          // server conversion endpoint used by auto-fill.
+          try {
+            extractedText = await extractTextFromOffice(file)
+            console.log('DOC text extracted successfully, length:', extractedText.length)
+          } catch (err) {
+            console.error('Failed to extract DOC text:', err)
           }
         }
 

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Services\LoggingService;
+use App\Services\PdfTextExtractionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
-use Smalot\PdfParser\Parser;
 
 class FileController extends Controller
 {
@@ -49,7 +49,9 @@ class FileController extends Controller
         $extension = strtolower($file->getClientOriginalExtension());
         $name = (string) Str::uuid() . '.' . $extension;
 
-        // Store inside private disk under temp-previews/...
+        // Store the original Office file unchanged. Office Online receives
+        // this signed URL; conversion is only used by /convert-file when the
+        // application needs extracted_text.
         $storedPath = $file->storeAs('temp-previews', $name, 'private');
 
         if (! $storedPath) {
@@ -160,10 +162,9 @@ class FileController extends Controller
 
         try {
             if ($extension === 'pdf') {
-                // Extract text directly from PDF
-                $parser = new Parser();
-                $pdf = $parser->parseFile($inputPath);
-                $text = $pdf->getText();
+                // Extract text directly from PDF, falling back to OCR for
+                // scanned/image-only PDFs so extracted_text is still useful.
+                $text = app(PdfTextExtractionService::class)->extract($inputPath);
                 $pdfContent = file_get_contents($inputPath);
             } else if (in_array($extension, ['doc', 'docx'])) {
                 // Convert DOC/DOCX to PDF using Python script with comtypes (Windows) or LibreOffice (Linux)
@@ -239,10 +240,9 @@ class FileController extends Controller
                     throw new \Exception('DOC/DOCX conversion failed. Please ensure Python and comtypes library are installed, and that Microsoft Word (Windows) or LibreOffice (Linux/macOS) is available.');
                 }
 
-                // Extract text from PDF using Smalot PDF Parser
-                $parser = new Parser();
-                $pdf = $parser->parseFile($pdfPath);
-                $text = $pdf->getText();
+                // Extract text from the converted PDF. OCR is only used when
+                // the converted output has no text layer.
+                $text = app(PdfTextExtractionService::class)->extract($pdfPath);
                 $pdfContent = file_get_contents($pdfPath);
 
                 // Clean up PDF

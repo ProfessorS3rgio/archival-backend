@@ -323,7 +323,7 @@ const form = useForm({
   title: props.memorandumOfAgreement?.title || '',
   year: props.memorandumOfAgreement?.year || currentYear,
   file: null,
-  extracted_text: '',
+  extracted_text: props.memorandumOfAgreement?.extracted_text || '',
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)

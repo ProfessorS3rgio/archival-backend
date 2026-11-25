@@ -404,7 +404,7 @@ const form = useForm({
   status: props.draft?.status || 'draft',
   added_by: props.draft?.added_by || '',
   files: [],
-  extracted_text: [],
+  extracted_text: props.draftResolution?.extracted_text || '',
   remove_files: [] // Track files to be removed
 })
 
@@ -459,7 +459,10 @@ const submit = () => {
 
   // Prepare extracted text data
   const fileExtractedTexts = selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
-  const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const extractedFromFiles = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const concatenatedExtractedText = selectedFiles.value.length > 0
+    ? extractedFromFiles
+    : (typeof form.extracted_text === 'string' ? form.extracted_text : '')
 
   // Build FormData for both create and update
   const formData = new FormData();

@@ -376,7 +376,7 @@ const form = useForm({
   title: props.report?.title || '',
   year: props.report?.year || new Date().getFullYear(),
   files: [],
-  extracted_text: '',
+  extracted_text: props.committeeReport?.extracted_text || '',
 })
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
@@ -434,7 +434,10 @@ const submit = () => {
 
   // Prepare extracted text data
   const fileExtractedTexts = selectedFiles.value.map((_, index) => previewObjects.value[index]?.extractedText ?? '')
-  const concatenatedExtractedText = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const extractedFromFiles = fileExtractedTexts.filter(text => text.trim()).join('\n\n')
+  const concatenatedExtractedText = selectedFiles.value.length > 0
+    ? extractedFromFiles
+    : (typeof form.extracted_text === 'string' ? form.extracted_text : '')
 
   // Build FormData
   const formData = new FormData();

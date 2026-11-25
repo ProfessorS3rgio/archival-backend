@@ -83,6 +83,7 @@ Table resolution_lists {
     added_by
     date_approved
     is_visible
+    (resolution_no, title, subject, author, extracted_text) [name: 'ft_resolution_lists_search', type: fulltext]
   }
 }
 
@@ -100,6 +101,7 @@ Table resolution_files {
 
   indexes {
     uploaded_by
+    (file_name, extracted_text) [name: 'ft_resolution_files_search', type: fulltext]
   }
 }
 
@@ -140,6 +142,7 @@ Table ordinance_lists {
     added_by
     date_approved
     is_visible
+    (ordinance_no, title, subject, author, extracted_text) [name: 'ft_ordinance_lists_search', type: fulltext]
   }
 }
 
@@ -159,6 +162,7 @@ Table ordinance_files {
   indexes {
     year
     uploaded_by
+    (file_name, extracted_text) [name: 'ft_ordinance_files_search', type: fulltext]
   }
 }
 
@@ -182,6 +186,7 @@ Table resolution_draft {
     added_by
     is_visible
     year
+    (title, subject, author) [name: 'ft_resolution_draft_search', type: fulltext]
   }
 }
 
@@ -200,6 +205,7 @@ Table resolution_draft_files {
 
   indexes {
     uploaded_by
+    (file_name, extracted_text) [name: 'ft_resolution_draft_files_search', type: fulltext]
   }
 }
 
@@ -226,6 +232,7 @@ Table ordinance_draft {
   indexes {
     added_by
     year
+    (title, subject, author) [name: 'ft_ordinance_draft_search', type: fulltext]
   }
 }
 
@@ -244,6 +251,7 @@ Table ordinance_draft_files {
 
   indexes {
     uploaded_by
+    (file_name, extracted_text) [name: 'ft_ordinance_draft_files_search', type: fulltext]
   }
 }
 
@@ -271,6 +279,7 @@ Table accomplish_lists {
     accomplishment_year
     is_visible
     uploaded_by
+    (title, respondent, complainant, extracted_text) [name: 'ft_accomplish_lists_search', type: fulltext]
   }
 }
 
@@ -303,6 +312,7 @@ Table project_lists {
     added_by
     is_visible
     year
+    (location, project_name, source_fund, respondent, complainant, extracted_text) [name: 'ft_project_lists_search', type: fulltext]
   }
 }
 
@@ -342,6 +352,7 @@ Table committee_reports {
     added_by
     is_visible
     year
+    (committee_report_no, subject, title, file_name, extracted_text) [name: 'ft_committee_reports_search', type: fulltext]
   }
 }
 
@@ -369,6 +380,7 @@ Table moa_lists {
     date_received
     is_visible
     year
+    (resolution_no, title, file_name, extracted_text) [name: 'ft_moa_lists_search', type: fulltext]
   }
 }
 
@@ -396,6 +408,7 @@ Table municipalities_communication_lists {
     date_received
     is_visible
     year
+    (title, subject, file_name, extracted_text) [name: 'ft_municipalities_communication_lists_search', type: fulltext]
   }
 }
 
@@ -424,6 +437,7 @@ Table national_offices_list {
     date_received
     is_visible
     year
+    (provincial_resolution_no, subject, title, file_name, extracted_text) [name: 'ft_national_offices_list_search', type: fulltext]
   }
 }
 
@@ -451,6 +465,7 @@ Table provincial_offices_list {
     Date_received
     is_visible
     year
+    (title, subject, file_name, extracted_text) [name: 'ft_provincial_offices_list_search', type: fulltext]
   }
 }
 
