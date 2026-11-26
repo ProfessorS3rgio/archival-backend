@@ -115,20 +115,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
             preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
           }
           if (!preview.extractedText.trim()) {
-            try {
-              const data = new FormData()
-              data.append('file', file)
-              const response = await request('/api/convert-file', data, {
-                headers: { Accept: 'application/json' },
-                timeout: 180000,
-              })
-              preview.extractedText = typeof response.data?.text === 'string' ? response.data.text : ''
-              if (!preview.extractedText.trim()) {
-                preview.warning = 'This PDF has no readable text. You can still preview and upload it; scanned documents require Tesseract OCR on the server.'
-              }
-            } catch {
-              preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
-            }
+            preview.warning = 'This PDF has no readable text. You can still preview and upload it; the server will check it after Create.'
           }
         }
       } else {

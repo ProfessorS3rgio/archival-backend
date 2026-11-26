@@ -39,20 +39,7 @@ export function useFileUpload(autoFillEnabled = true) {
       const textContent = await page.getTextContent()
       text += textContent.items.map(item => item.str).join(' ') + '\n'
     }
-    // PDF.js can read only a PDF's text layer. Ask the backend to parse/OCR
-    // image-only PDFs so their text can still be saved as extracted_text.
-    if (!text.trim()) {
-      const data = new FormData()
-      data.append('file', file)
-      const response = await axios.post('/api/convert-file', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
-        timeout: 180000,
-      })
-      if (response.data?.error) throw new Error(response.data.error)
-      text = typeof response.data?.text === 'string' ? response.data.text : ''
-      console.log('PDF text obtained from server/OCR, length:', text.length)
-    }
+    // Scanned PDFs are OCRed from the stored file after Create.
     console.log('Extracted PDF text:', text.substring(0, 500) + '...')
     return text
   }
