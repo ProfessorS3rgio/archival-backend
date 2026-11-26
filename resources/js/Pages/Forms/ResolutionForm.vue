@@ -53,7 +53,7 @@
           </div>
 
           <p v-if="autoFillError" role="alert" class="text-sm text-red-600 dark:text-red-400">{{ autoFillError }}</p>
-          <p v-if="autoFillBusy" role="status" class="text-sm text-blue-700 dark:text-blue-300">Reading the document for auto-fill. Scanned PDFs may take a little longer.</p>
+          <p v-if="autoFillBusy" role="status" class="text-sm text-blue-700 dark:text-blue-300">Reading the PDF text for auto-fill.</p>
           <p v-else-if="props.resolution && !autoFillEnabled" class="text-sm text-gray-500 dark:text-gray-400">Auto-fill starts off while editing to protect saved details. Turn it on to fill from a new attachment.</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

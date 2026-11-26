@@ -2,7 +2,7 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useAutoFillPreference } from './useAutoFillPreference.js'
 
-export function useFileUpload(autoFillEnabled = true, { extractPDFText = null, extractScannedPDFText = null } = {}) {
+export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } = {}) {
   const isEditPage = typeof window !== 'undefined' && /\/edit$/i.test(window.location.pathname)
   const selectedFiles = ref([])
   const previewObjects = ref([])
@@ -46,23 +46,8 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null, e
         console.error('PDF.js could not read the text layer; trying server OCR for auto-fill:', error)
       }
     }
-    // PDF.js cannot read scanned pages. OCR here is only for form autofill;
-    // the queued job independently owns the saved extracted_text.
-    if (!text.trim()) {
-      if (extractScannedPDFText) {
-        text = await extractScannedPDFText(file)
-      } else {
-        const data = new FormData()
-        data.append('file', file)
-        const response = await axios.post('/api/convert-file', data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-          withCredentials: true,
-          timeout: 180000,
-        })
-        if (response.data?.error) throw new Error(response.data.error)
-        text = typeof response.data?.text === 'string' ? response.data.text : ''
-      }
-    }
+    // Keep autofill fast: scanned PDFs have no PDF.js text layer. The
+    // background job performs OCR for saved extracted_text after Create.
     console.log('Extracted PDF text:', text.substring(0, 500) + '...')
     return text
   }

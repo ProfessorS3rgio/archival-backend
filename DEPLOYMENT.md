@@ -77,12 +77,10 @@ on Linux production. Windows development also needs `pdftoppm` and
 original PDF still uploads, but its `extracted_text` remains empty.
 
 On the `ImprovingUploadFIle` branch, PDF.js reads the PDF's text layer in the
-browser for optional form autofill. If the PDF is scanned, the existing
-`/api/convert-file` OCR endpoint supplies autofill suggestions before saving.
-The preview and Create button are available while autofill runs; users who want
-the suggestions should wait for the auto-fill status to finish. PDF search text
-(`extracted_text`) comes from the queued server job after the document is saved;
-that job uses Tesseract for scanned PDFs.
+browser for optional form autofill. PDF.js reads PDFs with an embedded text
+layer; it does not run OCR. Scanned PDF autofill fields must be entered manually.
+PDF search text (`extracted_text`) comes from the queued server job after the
+document is saved; that job uses Tesseract for scanned PDFs.
 Search results may take a short time to include the PDF text. Set up the worker
 before testing this branch on a server. The production checkout remains on
 `main` unless a separate deployment is explicitly planned.
