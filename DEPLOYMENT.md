@@ -85,7 +85,9 @@ Search results may take a short time to include the PDF text. Set up the worker
 before testing this branch on a server. The production checkout remains on
 `main` unless a separate deployment is explicitly planned.
 
-Run the additive queue migration, then install and start the dedicated worker:
+Run the additive queue migration, then install and enable the production
+systemd worker. This is a separate long-running process from PHP-FPM; systemd
+starts it on boot and restarts it if it exits.
 
 ```sh
 runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_26_000000_create_pdf_extraction_queue_tables.php
@@ -98,8 +100,8 @@ systemctl status archival-pdf-text.service
 After later code updates, run `php artisan queue:restart` and check
 `systemctl status archival-pdf-text.service`. Keep `DB_QUEUE_RETRY_AFTER` above
 the worker's 900-second timeout (the default is 960). The PDF job always uses
-the database queue, so a local `queue:work database --queue=pdf-text` process
-is also needed when testing background extraction on Windows.
+the database queue. On Windows, `npm run dev` starts a local queue worker
+alongside Vite and `php artisan serve`; leave that command running while testing.
 
 When `deploy/php/99-archival-uploads.ini` changes, apply the PHP-FPM upload
 limits after pulling (the default 2 MB limit is lower than the form's 10 MB):

@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "concurrently \"npm run dev:vite\" \"npm run dev:laravel\"",
+        "dev": "concurrently -k -n vite,server,pdf-queue \"npm run dev:vite\" \"npm run dev:laravel\" \"php artisan queue:work database --queue=pdf-text --sleep=3 --tries=3 --timeout=900\"",
         "dev:vite": "vite",
         "dev:laravel": "php artisan serve",
         "build": "vite build",
