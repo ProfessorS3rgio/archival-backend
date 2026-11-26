@@ -41,7 +41,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
   const baseline = form => Object.fromEntries(['title', 'subject', 'year', 'date_received'].map(field => [field, form[field]]))
   const applyAutoFill = () => {
     if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value || processingFiles.value.some(Boolean) || pendingPdfExtraction) return
-    const text = previewObjects.value[0]?.extractedText || ''
+    const text = previewObjects.value[0]?.autoFillText || previewObjects.value[0]?.extractedText || ''
     const details = parseMunicipalCommunication(text, selectedFiles.value[0].name)
     const fields = fillMunicipalCommunication(activeForm, details, selectionBaseline, { editing })
     const labels = { title: 'title', subject: 'municipality', year: 'year', date_received: 'received date' }
@@ -104,17 +104,17 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
     let preview = { type: 'error', url: null, extractedText: '', content: '' }
     try {
       if (type === 'pdf' || ['jpg', 'jpeg', 'png'].includes(type)) {
-        preview = { type: type === 'pdf' ? 'pdf' : 'image', url: objectUrls.createObjectURL(file), extractedText: '' }
+        preview = { type: type === 'pdf' ? 'pdf' : 'image', url: objectUrls.createObjectURL(file), extractedText: '', autoFillText: '' }
         if (type === 'pdf') {
           // The local PDF preview and Create button are ready before optional
           // autofill extraction. The stored file is indexed after Create.
           previewObjects.value = [preview]
           processingFiles.value = [false]
           pendingPdfExtraction = true
-          try { preview.extractedText = await extractPDFText(file) } catch {
+          try { preview.autoFillText = await extractPDFText(file) } catch {
             preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
           }
-          if (!preview.extractedText.trim()) {
+          if (!preview.autoFillText.trim()) {
             preview.warning = 'This PDF has no readable text. You can still preview and upload it; the server will check it after Create.'
           }
         }
@@ -143,6 +143,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
       if (current === generation) {
         pendingPdfExtraction = false
         preview.extractedText = typeof preview.extractedText === 'string' ? preview.extractedText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : ''
+        preview.autoFillText = typeof preview.autoFillText === 'string' ? preview.autoFillText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : ''
         previewObjects.value = [preview]
         processingFiles.value = [false]
         syncText(form)

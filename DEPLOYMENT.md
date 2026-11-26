@@ -76,10 +76,12 @@ on Linux production. Windows development also needs `pdftoppm` and
 `tesseract` available on `PATH` for scanned PDFs. If OCR is unavailable, the
 original PDF still uploads, but its `extracted_text` remains empty.
 
-On the `ImprovingUploadFIle` branch, PDF search text is extracted after the
-document is saved. The preview and Create button are available while optional
-form autofill runs. The stored PDF is processed by a database queue worker;
-search results may take a short time to include its text. Set up the worker
+On the `ImprovingUploadFIle` branch, PDF.js reads the PDF's text layer in the
+browser for optional form autofill. The preview and Create button are available
+while autofill runs. PDF search text (`extracted_text`) comes from the queued
+server job after the document is saved; that job uses Tesseract for scanned PDFs.
+Scanned PDFs without a text layer need manual form details before saving.
+Search results may take a short time to include the PDF text. Set up the worker
 before testing this branch on a server. The production checkout remains on
 `main` unless a separate deployment is explicitly planned.
 

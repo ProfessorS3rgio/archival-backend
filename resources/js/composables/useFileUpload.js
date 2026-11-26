@@ -1,12 +1,8 @@
 import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useAutoFillPreference } from './useAutoFillPreference.js'
-import * as pdfjsLib from 'pdfjs-dist'
 
-// Configure PDF.js worker
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
-
-export function useFileUpload(autoFillEnabled = true) {
+export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } = {}) {
   const isEditPage = typeof window !== 'undefined' && /\/edit$/i.test(window.location.pathname)
   const selectedFiles = ref([])
   const previewObjects = ref([])
@@ -30,7 +26,10 @@ export function useFileUpload(autoFillEnabled = true) {
   })
 
   const extractTextFromPDF = async (file) => {
+    if (extractPDFText) return extractPDFText(file)
     console.log('Extracting text from PDF:', file.name)
+    const pdfjsLib = await import('pdfjs-dist')
+    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
     const arrayBuffer = await file.arrayBuffer()
     const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     let text = ''
@@ -283,14 +282,16 @@ export function useFileUpload(autoFillEnabled = true) {
       if (file.type === 'application/pdf') {
         console.log('Processing as PDF')
         const index = selectedFiles.value.indexOf(file)
-        if (index !== -1 && previewObjects.value[index] && typeof previewObjects.value[index].extractedText === 'string') {
-          text = previewObjects.value[index].extractedText
+        const preview = index !== -1 ? previewObjects.value[index] : null
+        if (preview?.autoFillText) {
+          text = preview.autoFillText
         } else {
           text = await extractTextFromPDF(file)
-          // Store the extracted text for later use
-          if (index !== -1 && previewObjects.value[index]) {
-            previewObjects.value[index].extractedText = text
-          }
+          // The file may have been removed or replaced while PDF.js ran.
+          if (index === -1 || previewObjects.value[index] !== preview) return
+          // Keep PDF.js text for form autofill only. The server job owns the
+          // saved PDF's extracted_text, including scanned-file OCR.
+          preview.autoFillText = text
         }
       } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         console.log('Extracting DOCX text through the server conversion environment')
@@ -381,7 +382,8 @@ export function useFileUpload(autoFillEnabled = true) {
           type: 'pdf',
           url: objectUrl,
           content: null,
-          extractedText: ''
+          extractedText: '',
+          autoFillText: ''
         }
       } else if (
         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||

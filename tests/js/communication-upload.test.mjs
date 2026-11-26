@@ -102,7 +102,8 @@ test('unsupported, oversized and multiple attachments get field errors', async (
 })
 
 test('extractor control characters are omitted from optional search text', async () => {
-  const { form, choose } = setup({ extractPDFText: async () => 'text\0\f\nnext' })
+  const { form, state, choose } = setup({ extractPDFText: async () => 'text\0\f\nnext' })
   await choose('scan.pdf')
-  assert.equal(form.extracted_text, 'text\nnext')
+  assert.equal(state.previewObjects.value[0].autoFillText, 'text\nnext')
+  assert.equal(form.extracted_text, '')
 })
