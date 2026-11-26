@@ -1,0 +1,14 @@
+[Unit]
+Description=Archival PDF text extraction worker
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/archival-backend
+ExecStart=/usr/bin/php artisan queue:work database --queue=pdf-text --sleep=3 --tries=3 --timeout=900
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

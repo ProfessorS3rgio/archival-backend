@@ -76,6 +76,29 @@ on Linux production. Windows development also needs `pdftoppm` and
 `tesseract` available on `PATH` for scanned PDFs. If OCR is unavailable, the
 original PDF still uploads, but its `extracted_text` remains empty.
 
+On the `ImprovingUploadFIle` branch, PDF search text is extracted after the
+document is saved. The preview and Create button are available while optional
+form autofill runs. The stored PDF is processed by a database queue worker;
+search results may take a short time to include its text. Set up the worker
+before testing this branch on a server. The production checkout remains on
+`main` unless a separate deployment is explicitly planned.
+
+Run the additive queue migration, then install and start the dedicated worker:
+
+```sh
+runuser -u www-data -- php artisan migrate --force --path=database/migrations/2026_11_26_000000_create_pdf_extraction_queue_tables.php
+install -m 644 deploy/systemd/archival-pdf-text.service /etc/systemd/system/archival-pdf-text.service
+systemctl daemon-reload
+systemctl enable --now archival-pdf-text.service
+systemctl status archival-pdf-text.service
+```
+
+After later code updates, run `php artisan queue:restart` and check
+`systemctl status archival-pdf-text.service`. Keep `DB_QUEUE_RETRY_AFTER` above
+the worker's 900-second timeout (the default is 960). The PDF job always uses
+the database queue, so a local `queue:work database --queue=pdf-text` process
+is also needed when testing background extraction on Windows.
+
 When `deploy/php/99-archival-uploads.ini` changes, apply the PHP-FPM upload
 limits after pulling (the default 2 MB limit is lower than the form's 10 MB):
 

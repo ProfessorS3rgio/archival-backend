@@ -13,15 +13,18 @@ config([
 ]);
 
 use App\Models\MunicipalitiesCommunicationList;
+use App\Jobs\ExtractStoredPdfText;
+use App\Services\PdfTextExtractionService;
 use App\Models\SystemLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 set_exception_handler(function (Throwable $error): void { fwrite(STDERR, $error->getMessage()."\n"); exit(1); });
-foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_16_102709_create_settings_table', '2025_10_19_200000_create_municipalities_communication_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table'] as $file) {
+foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_16_102709_create_settings_table', '2025_10_19_200000_create_municipalities_communication_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table', '2026_11_26_000000_create_pdf_extraction_queue_tables'] as $file) {
     (require __DIR__.'/../../database/migrations/'.$file.'.php')->up();
 }
 $admin = User::create(['name' => 'Test Admin', 'email' => 'admin@example.test', 'username' => 'admin', 'password' => 'password', 'role' => 'admin']);
@@ -50,6 +53,7 @@ try {
     $record = MunicipalitiesCommunicationList::firstOrFail();
     check($response->isSuccessful() && $record->file_size > 2 * 1024 * 1024 && Storage::disk('private')->exists($record->file_url), 'A valid attachment above 2 MB saves successfully within the 10 MB application limit');
     check(strlen($record->file_url) < 100 && mb_strlen($record->file_name) <= 255, 'Long client filenames cannot overflow the database path columns');
+    check(DB::table('jobs')->where('queue', 'pdf-text')->count() === 1, 'PDF creation queues extraction without waiting for OCR');
     $url = '/municipal-communications/'.$record->getKey();
     $oldPath = $record->file_url;
     $metadata = $payload; unset($metadata['extracted_text']);
@@ -72,6 +76,12 @@ try {
     $response = send($url, [...$payload, '_method' => 'PUT', 'extracted_text' => 'New text'], ['files' => [pdf('replacement.pdf')]]);
     $record->refresh();
     check($response->isSuccessful() && $record->file_url !== $oldPath && ! Storage::disk('private')->exists($oldPath) && $record->extracted_text === 'New text', 'Successful replacement switches the file and then removes the original');
+    $extractor = Mockery::mock(PdfTextExtractionService::class);
+    $extractor->shouldReceive('extract')->once()->andReturn('Background PDF text');
+    (new ExtractStoredPdfText(MunicipalitiesCommunicationList::class, $record->getKey(), $oldPath))->handle($extractor);
+    check($record->fresh()->extracted_text === 'New text', 'An old queued job cannot overwrite a replacement attachment');
+    (new ExtractStoredPdfText(MunicipalitiesCommunicationList::class, $record->getKey(), $record->file_url))->handle($extractor);
+    check($record->fresh()->extracted_text === 'Background PDF text', 'Background extraction updates the saved attachment search text');
     $oldPath = $record->file_url;
 
     $response = send('/municipal-communications', $payload, ['files' => [pdf('a.pdf'), pdf('b.pdf')]]);

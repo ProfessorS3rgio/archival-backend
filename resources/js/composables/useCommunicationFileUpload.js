@@ -36,10 +36,11 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
   let generation = 0
   let activeForm = null
   let selectionBaseline = null
+  let pendingPdfExtraction = false
   const autoFillMessage = ref('')
   const baseline = form => Object.fromEntries(['title', 'subject', 'year', 'date_received'].map(field => [field, form[field]]))
   const applyAutoFill = () => {
-    if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value || processingFiles.value.some(Boolean)) return
+    if (!activeForm || !selectedFiles.value.length || !autoFillEnabled.value || processingFiles.value.some(Boolean) || pendingPdfExtraction) return
     const text = previewObjects.value[0]?.extractedText || ''
     const details = parseMunicipalCommunication(text, selectedFiles.value[0].name)
     const fields = fillMunicipalCommunication(activeForm, details, selectionBaseline, { editing })
@@ -67,6 +68,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
     selectedFiles.value = []
     previewObjects.value = []
     processingFiles.value = []
+    pendingPdfExtraction = false
     autoFillMessage.value = ''
   }
 
@@ -104,6 +106,11 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
       if (type === 'pdf' || ['jpg', 'jpeg', 'png'].includes(type)) {
         preview = { type: type === 'pdf' ? 'pdf' : 'image', url: objectUrls.createObjectURL(file), extractedText: '' }
         if (type === 'pdf') {
+          // The local PDF preview and Create button are ready before optional
+          // autofill extraction. The stored file is indexed after Create.
+          previewObjects.value = [preview]
+          processingFiles.value = [false]
+          pendingPdfExtraction = true
           try { preview.extractedText = await extractPDFText(file) } catch {
             preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
           }
@@ -117,7 +124,7 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
               })
               preview.extractedText = typeof response.data?.text === 'string' ? response.data.text : ''
               if (!preview.extractedText.trim()) {
-                preview.warning = 'This PDF has no readable text. Scanned documents require Tesseract OCR on the server.'
+                preview.warning = 'This PDF has no readable text. You can still preview and upload it; scanned documents require Tesseract OCR on the server.'
               }
             } catch {
               preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
@@ -147,13 +154,15 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
     } finally {
       // Ignore a preview that finishes after its file was removed or replaced.
       if (current === generation) {
+        pendingPdfExtraction = false
         preview.extractedText = typeof preview.extractedText === 'string' ? preview.extractedText.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '') : ''
         previewObjects.value = [preview]
         processingFiles.value = [false]
         syncText(form)
         applyAutoFill()
       } else {
-        revoke(preview)
+        // A preview shown immediately was already revoked by cleanup.
+        if (!['pdf', 'image'].includes(preview.type)) revoke(preview)
       }
     }
   }

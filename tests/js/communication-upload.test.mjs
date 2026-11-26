@@ -25,6 +25,17 @@ test('a PDF stays previewable and uploadable when text extraction fails', async 
   assert.equal(state.processingFiles.value[0], false)
 })
 
+test('PDF preview and Create readiness do not wait for text extraction', async () => {
+  let finish
+  const { state, form, choose } = setup({ extractPDFText: () => new Promise(resolve => { finish = resolve }) })
+  const pending = choose('slow.pdf')
+  assert.equal(state.previewObjects.value[0].type, 'pdf')
+  assert.equal(state.processingFiles.value[0], false)
+  assert.equal(form.files.length, 1)
+  finish('PDF text')
+  await pending
+})
+
 test('legacy DOC uses Office preview without invoking the DOCX parser', async () => {
   const { state, choose } = setup({ extractDOCXText: () => assert.fail('DOC is not DOCX') })
   await choose('legacy.doc', 'application/msword')

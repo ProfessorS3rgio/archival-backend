@@ -387,23 +387,14 @@ export function useFileUpload(autoFillEnabled = true) {
       }
 
       if (file.type === 'application/pdf') {
-        // Create object URL for PDF preview
+        // Preview the selected PDF immediately. Search text is indexed from
+        // the stored file by the queue after Create.
         const objectUrl = URL.createObjectURL(file)
-        
-        // Extract text from PDF for search functionality
-        let extractedText = null
-        try {
-          extractedText = await extractTextFromPDF(file)
-          console.log('PDF text extracted successfully, length:', extractedText?.length)
-        } catch (err) {
-          console.error('Failed to extract PDF text:', err)
-        }
-        
         previewObjects.value[index] = {
           type: 'pdf',
           url: objectUrl,
           content: null,
-          extractedText: extractedText
+          extractedText: ''
         }
       } else if (
         file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||

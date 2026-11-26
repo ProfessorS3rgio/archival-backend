@@ -40,7 +40,7 @@ function check(bool $condition, string $message): void
     echo "PASS: {$message}\n";
 }
 
-foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_17_100000_create_accomplish_lists_table', '2025_10_17_200000_create_project_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table'] as $file) {
+foreach (['2025_10_15_100000_create_users_table_custom', '2025_10_17_100000_create_accomplish_lists_table', '2025_10_17_200000_create_project_lists_table', '2025_10_22_000000_create_system_logs_table', '2025_10_30_063921_create_sangguniang_panlalawigan_terms_table', '2026_11_26_000000_create_pdf_extraction_queue_tables'] as $file) {
     (require __DIR__.'/../../database/migrations/'.$file.'.php')->up();
 }
 $migration = require __DIR__.'/../../database/migrations/2026_11_11_000000_add_parties_to_administrative_cases_and_boundary_disputes.php';
