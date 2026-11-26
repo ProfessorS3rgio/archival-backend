@@ -111,11 +111,25 @@ export function useCommunicationFileUpload({ request = axios.post, extractPDFTex
           previewObjects.value = [preview]
           processingFiles.value = [false]
           pendingPdfExtraction = true
+          if (autoFillEnabled.value) autoFillMessage.value = 'Reading the PDF for auto-fill. Scanned pages may take a little longer.'
           try { preview.autoFillText = await extractPDFText(file) } catch {
             preview.warning = 'Search text could not be extracted. You can still preview and upload this file.'
           }
           if (!preview.autoFillText.trim()) {
-            preview.warning = 'This PDF has no readable text. You can still preview and upload it; the server will check it after Create.'
+            try {
+              const data = new FormData()
+              data.append('file', file)
+              const response = await request('/api/convert-file', data, {
+                headers: { Accept: 'application/json' },
+                timeout: 180000,
+              })
+              preview.autoFillText = typeof response.data?.text === 'string' ? response.data.text : ''
+            } catch {
+              preview.warning = 'Auto-fill could not read this PDF. You can still preview and upload it.'
+            }
+          }
+          if (!preview.autoFillText.trim()) {
+            preview.warning = 'This PDF has no readable text. You can still preview and upload it; enter the details manually.'
           }
         }
       } else {

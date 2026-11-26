@@ -2,12 +2,13 @@ import { ref, watch } from 'vue'
 import axios from 'axios'
 import { useAutoFillPreference } from './useAutoFillPreference.js'
 
-export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } = {}) {
+export function useFileUpload(autoFillEnabled = true, { extractPDFText = null, extractScannedPDFText = null } = {}) {
   const isEditPage = typeof window !== 'undefined' && /\/edit$/i.test(window.location.pathname)
   const selectedFiles = ref([])
   const previewObjects = ref([])
   const fileMetadata = ref([])
   const processingFiles = ref([]) // Track which files are being processed
+  const autoFillBusy = ref(false)
   const mergingFiles = ref(false)
   let formWatcherStop = null
   let activeForm = null
@@ -26,19 +27,42 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } 
   })
 
   const extractTextFromPDF = async (file) => {
-    if (extractPDFText) return extractPDFText(file)
     console.log('Extracting text from PDF:', file.name)
-    const pdfjsLib = await import('pdfjs-dist')
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
-    const arrayBuffer = await file.arrayBuffer()
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
     let text = ''
-    for (let i = 1; i <= pdf.numPages; i++) {
-      const page = await pdf.getPage(i)
-      const textContent = await page.getTextContent()
-      text += textContent.items.map(item => item.str).join(' ') + '\n'
+    if (extractPDFText) {
+      text = await extractPDFText(file)
+    } else {
+      try {
+        const pdfjsLib = await import('pdfjs-dist')
+        pdfjsLib.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString() + '?module=1'
+        const arrayBuffer = await file.arrayBuffer()
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i)
+          const textContent = await page.getTextContent()
+          text += textContent.items.map(item => item.str).join(' ') + '\n'
+        }
+      } catch (error) {
+        console.error('PDF.js could not read the text layer; trying server OCR for auto-fill:', error)
+      }
     }
-    // Scanned PDFs are OCRed from the stored file after Create.
+    // PDF.js cannot read scanned pages. OCR here is only for form autofill;
+    // the queued job independently owns the saved extracted_text.
+    if (!text.trim()) {
+      if (extractScannedPDFText) {
+        text = await extractScannedPDFText(file)
+      } else {
+        const data = new FormData()
+        data.append('file', file)
+        const response = await axios.post('/api/convert-file', data, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          withCredentials: true,
+          timeout: 180000,
+        })
+        if (response.data?.error) throw new Error(response.data.error)
+        text = typeof response.data?.text === 'string' ? response.data.text : ''
+      }
+    }
     console.log('Extracted PDF text:', text.substring(0, 500) + '...')
     return text
   }
@@ -128,6 +152,15 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } 
     const headingTitle = headingMatch ? cleanTitleCandidate(headingMatch[1]) : ''
     if (headingTitle && headingTitle.split(/\s+/).length >= 2) {
       data.title = headingTitle.split(/\s+/).slice(0, 12).join(' ')
+    }
+
+    // OCR often interleaves the cover heading with names in a sidebar. The
+    // ordinance's formal title clause is a steadier source in that case.
+    if (!data.title) {
+      const titleClause = text.match(/Section\s*1\.?\s*Title\.?\s*This\s+Ordinance\s+shall\s+be\s+known[\s\S]{0,120}?["“]([^"”]{10,250})["”]/i)
+      if (titleClause) {
+        data.title = titleClause[1].replace(/\s+/g, ' ').replace(/[.\s]+$/, '').trim().split(/\s+/).slice(0, 12).join(' ')
+      }
     }
 
     console.log('Parsed data:', data)
@@ -275,6 +308,7 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } 
     }
 
     ensureFormWatcher(form)
+    autoFillBusy.value = true
 
     console.log('Starting auto-fill for file:', file.name, 'Type:', file.type)
     try {
@@ -359,6 +393,7 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } 
     } catch (error) {
       console.error('Error extracting data from document:', error)
     } finally {
+      autoFillBusy.value = false
       syncExtractedTextField(form)
     }
   }
@@ -621,6 +656,7 @@ export function useFileUpload(autoFillEnabled = true, { extractPDFText = null } 
     selectedFiles,
     previewObjects,
     processingFiles,
+    autoFillBusy,
     mergingFiles,
     autoFillEnabled: autoFillEnabledRef,
     autoFillSaving,

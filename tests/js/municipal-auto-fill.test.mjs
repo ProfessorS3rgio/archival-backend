@@ -35,6 +35,18 @@ test('uploading a readable PDF actually fills the municipal form, not just searc
   assert.equal(state.previewObjects.value[0].type, 'pdf')
 })
 
+test('server OCR can autofill a scanned municipal PDF without owning saved search text', async () => {
+  const { form, state, choose } = setup({
+    extractPDFText: async () => '',
+    request: async () => ({ data: { text } }),
+  })
+  await choose('scanned.pdf')
+  assert.equal(form.title, 'Request for certified copies')
+  assert.equal(form.subject, 'Ipil')
+  assert.equal(form.extracted_text, '')
+  assert.equal(state.previewObjects.value[0].autoFillText, text)
+})
+
 test('the saved disabled preference prevents filling and enabling later uses the selected file', async () => {
   const { form, state, choose } = setup({ autoFillEnabled: false, savePreference: async () => ({ data: { success: true, auto_fill: true } }) })
   await choose('letter.pdf')
