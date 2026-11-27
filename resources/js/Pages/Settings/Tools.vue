@@ -38,40 +38,8 @@
         </div>
       </div>
 
-      <!-- Settings Form -->
-      <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-        <div class="space-y-6">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Document Processing</h3>
-            
-            <div class="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Auto-fill Forms</h4>
-                <p class="text-sm text-gray-600 dark:text-gray-400">
-                  Automatically populate form fields when uploading documents
-                </p>
-              </div>
-              
-              <button
-                type="button"
-                @click="toggleAutoFill"
-                :disabled="processing"
-                :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-                  settings.auto_fill ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700',
-                  processing ? 'opacity-50 cursor-not-allowed' : ''
-                ]"
-              >
-                <span
-                  :class="[
-                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    settings.auto_fill ? 'translate-x-6' : 'translate-x-1'
-                  ]"
-                />
-              </button>
-            </div>
-          </div>
-        </div>
+      <div class="rounded-lg border border-gray-200 bg-white p-6 text-sm text-gray-600 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400">
+        There are no configurable tools right now.
       </div>
     </div>
   </AdminLayout>
@@ -81,43 +49,6 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
 import FloatingFooter from '@/Components/FloatingFooter.vue'
-import { useForm } from '@inertiajs/vue3'
 import AdminLayout from '@/Layouts/AdminLayout.vue'
-
-const props = defineProps({
-  settings: {
-    type: Object,
-    required: true
-  }
-})
-
-const settings = reactive({ ...props.settings })
-const processing = ref(false)
-
-const toggleAutoFill = async () => {
-  processing.value = true
-  
-  try {
-    const response = await fetch('/settings/auto-fill', {
-      method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-      },
-      body: JSON.stringify({
-        auto_fill: !settings.auto_fill
-      })
-    })
-    
-    if (response.ok) {
-      settings.auto_fill = !settings.auto_fill
-    }
-  } catch (error) {
-    console.error('Error updating setting:', error)
-  } finally {
-    processing.value = false
-  }
-}
 </script>

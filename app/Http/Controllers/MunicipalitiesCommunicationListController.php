@@ -75,7 +75,6 @@ class MunicipalitiesCommunicationListController extends Controller
     public function create()
     {
         return Inertia::render('Forms/MunicipalCommunicationForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
         ]);
     }
 
@@ -125,7 +124,6 @@ class MunicipalitiesCommunicationListController extends Controller
 
         return Inertia::render('Forms/MunicipalCommunicationForm', [
             'municipalCommunication' => $municipalCommunication,
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
             'isEditing' => true,
         ]);
     }

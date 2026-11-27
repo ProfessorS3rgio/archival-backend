@@ -206,7 +206,4 @@ foreach (['ordinances', 'resolutions', 'draft-ordinances', 'draft-resolutions'] 
     $class = $types[$route];
     check($response->getStatusCode() < 400 && $class::where('title', 'Staff-owned new '.$route)->first()?->added_by === $staff->id, "Staff {$route} creation uses their authenticated identity");
 }
-$beforeSettings = App\Models\Setting::all()->toArray();
-$response = accessRequest('/settings/auto-fill', $staff, 'PATCH', ['auto_fill' => false]);
-check($response->isSuccessful() && App\Models\Setting::all()->toArray() === $beforeSettings, 'Staff document auto-fill preference cannot change system-wide settings');
 Mockery::close();

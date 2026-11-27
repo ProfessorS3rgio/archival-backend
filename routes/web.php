@@ -85,30 +85,22 @@ Route::middleware('auth')->group(function () {
         ]);
     })->middleware(\App\Http\Middleware\AdminMiddleware::class);
     Route::get('/ordinances/create', function () {
-        return Inertia::render('Forms/OrdinanceForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
-        ]);
+        return Inertia::render('Forms/OrdinanceForm');
     })->name('ordinances.create');
 
 
     Route::get('/resolutions/create', function () {
-        return Inertia::render('Forms/ResolutionForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
-        ]);
+        return Inertia::render('Forms/ResolutionForm');
     })->name('resolutions.create');
 
 
     Route::get('/municipal-ordinances/create', function () {
-        return Inertia::render('Forms/OrdinanceForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
-        ]);
+        return Inertia::render('Forms/OrdinanceForm');
     })->name('municipal-ordinances.create');
 
 
     Route::get('/municipal-resolutions/create', function () {
-        return Inertia::render('Forms/ResolutionForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
-        ]);
+        return Inertia::render('Forms/ResolutionForm');
     })->name('municipal-resolutions.create');
 
     Route::get('/ordinances/provinces', [OrdinanceController::class, 'provincialIndex'])->name('ordinances.provincial');
@@ -157,7 +149,6 @@ Route::middleware('auth')->group(function () {
     
     // Settings routes
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-    Route::patch('/settings/auto-fill', [SettingsController::class, 'updateAutoFill'])->name('settings.update-auto-fill');
     
     // Change Password route (accessible to all authenticated users)
     Route::get('/settings/change-password', [App\Http\Controllers\AccountController::class, 'changePassword'])->name('settings.change-password');

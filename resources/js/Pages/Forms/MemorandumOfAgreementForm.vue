@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AdminLayout :title="formText.title">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
@@ -328,7 +328,6 @@ const form = useForm({
 
 const { submitUpload, uploadState, uploadProgress, uploadMessage } = useUploadSubmission(form)
 
-// Use the file upload composable (no auto-fill for MOAs)
 const {
   selectedFiles,
   previewObjects,
@@ -339,7 +338,7 @@ const {
   formatFileSize,
   getOfficeEmbedUrl,
   cleanupAllPreviews
-} = useFileUpload(false)
+} = useFileUpload()
 
 const getFileTypeFromName = (fileName) => {
   if (!fileName) return 'unknown'

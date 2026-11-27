@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AdminLayout :title="props.draft ? 'Edit Draft Ordinance' : 'Create Draft Ordinance'">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
@@ -24,37 +24,7 @@
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
               Basic Information
             </h3>
-
-            <!-- Auto-fill Toggle -->
-            <div class="flex items-center space-x-3">
-              <label for="auto_fill_toggle" class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Auto-fill from documents
-              </label>
-              <button
-                type="button"
-                @click.prevent.stop="toggleAutoFill"
-                :disabled="autoFillSaving"
-                :aria-checked="autoFillEnabled"
-                aria-label="Auto-fill from documents"
-                role="switch"
-                :class="[
-                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2',
-                  autoFillEnabled ? 'bg-yellow-600' : 'bg-gray-200 dark:bg-gray-700'
-                ]"
-              >
-                <span
-                  :class="[
-                    'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
-                    autoFillEnabled ? 'translate-x-6' : 'translate-x-1'
-                  ]"
-                />
-              </button>
-            </div>
           </div>
-
-          <p v-if="autoFillError" role="alert" class="text-sm text-red-600 dark:text-red-400">{{ autoFillError }}</p>
-          <p v-if="autoFillBusy" role="status" class="text-sm text-blue-700 dark:text-blue-300">Reading the PDF text for auto-fill.</p>
-          <p v-else-if="props.draft && !autoFillEnabled" class="text-sm text-gray-500 dark:text-gray-400">Auto-fill starts off while editing to protect saved details. Turn it on to fill from a new attachment.</p>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Author -->
@@ -394,10 +364,6 @@ const props = defineProps({
     type: Object,
     default: () => ({})
   },
-  autoFillEnabled: {
-    type: Boolean,
-    default: true
-  },
   draft: {
     type: Object,
     default: null
@@ -424,19 +390,14 @@ const {
   previewObjects,
   processingFiles,
   mergingFiles,
-  autoFillEnabled,
-  autoFillSaving,
-  autoFillBusy,
-  autoFillError,
   handleFileSelect,
   removeFile,
   mergeSelectedFiles,
   getFileType,
   formatFileSize,
-  toggleAutoFill,
   cleanupAllPreviews,
   getOfficeEmbedUrl
-} = useFileUpload(props.autoFillEnabled)
+} = useFileUpload()
 
 const processing = computed(() => form.processing)
 const errors = computed(() => form.errors)

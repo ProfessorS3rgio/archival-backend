@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <AdminLayout :title="formText.title">
     <div class="max-w-6xl mx-auto space-y-6">
       <!-- Header -->
@@ -402,7 +402,6 @@ const subjectOptions = computed(() => {
   return options
 })
 
-// Use the file upload composable with auto-fill disabled
 const {
   selectedFiles,
   previewObjects,
@@ -415,7 +414,7 @@ const {
   formatFileSize,
   cleanupAllPreviews,
   getOfficeEmbedUrl
-} = useFileUpload(false)
+} = useFileUpload()
 
 // Existing file removal
 const removeExistingFileFlag = ref(false)

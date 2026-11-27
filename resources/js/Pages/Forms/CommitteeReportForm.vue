@@ -392,16 +392,14 @@ const {
   previewObjects,
   processingFiles,
   mergingFiles,
-  autoFillEnabled,
   handleFileSelect,
   removeFile,
   mergeSelectedFiles,
   getFileType,
   formatFileSize,
-  toggleAutoFill,
   cleanupAllPreviews,
   getOfficeEmbedUrl
-} = useFileUpload(false) // Disable auto-fill for committee reports
+} = useFileUpload()
 
 // Dynamic text based on form type
 const formText = computed(() => {

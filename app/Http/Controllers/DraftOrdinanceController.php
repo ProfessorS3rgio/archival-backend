@@ -43,7 +43,6 @@ class DraftOrdinanceController extends Controller
     public function create()
     {
         return Inertia::render('Forms/DraftOrdinanceForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
         ]);
     }
 
@@ -187,7 +186,6 @@ class DraftOrdinanceController extends Controller
         });
 
         return Inertia::render('Forms/DraftOrdinanceForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
             'draft' => $draft,
         ]);
     }

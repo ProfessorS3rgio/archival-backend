@@ -138,7 +138,6 @@ class ResolutionController extends Controller
     public function create()
     {
         return Inertia::render('Forms/ResolutionForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
         ]);
     }
 
@@ -311,7 +310,6 @@ class ResolutionController extends Controller
 
         return Inertia::render('Forms/ResolutionForm', [
             'resolution' => $resolution,
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
         ]);
     }
 

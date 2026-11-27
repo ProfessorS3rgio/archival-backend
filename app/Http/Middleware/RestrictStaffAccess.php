@@ -11,7 +11,7 @@ class RestrictStaffAccess
     {
         if ($request->user()?->role === 'staff') {
             abort_if(
-                ($request->is('settings', 'settings/*') && ! $request->is('settings/change-password', 'settings/auto-fill'))
+                ($request->is('settings', 'settings/*') && ! $request->is('settings/change-password'))
                 || $request->is('system-logs', 'system-logs/*', 'log-viewer', 'log-viewer/*', 'sp-*', 'official-profile-pictures/*', 'debug-user'),
                 403,
                 'Staff can access their own records and account settings only.'

@@ -22,7 +22,6 @@
         "@vitejs/plugin-vue": "^6.0.1",
         "date-fns": "^4.1.0",
         "mammoth": "^1.11.0",
-        "pdfjs-dist": "^5.4.296",
         "pm2": "^6.0.13",
         "primeicons": "^7.0.0",
         "primevue": "^4.4.1",

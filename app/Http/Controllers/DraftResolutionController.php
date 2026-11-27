@@ -42,7 +42,6 @@ class DraftResolutionController extends Controller
     public function create()
     {
         return Inertia::render('Forms/DraftResolutionForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
         ]);
     }
 
@@ -176,7 +175,6 @@ class DraftResolutionController extends Controller
         });
 
         return Inertia::render('Forms/DraftResolutionForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
             'draft' => $draft,
         ]);
     }

@@ -138,7 +138,6 @@ class OrdinanceController extends Controller
     public function create()
     {
         return Inertia::render('Forms/OrdinanceForm', [
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
             'subjectOptions' => $this->getSubjectOptions(),
         ]);
     }
@@ -308,7 +307,6 @@ class OrdinanceController extends Controller
 
         return Inertia::render('Forms/OrdinanceForm', [
             'ordinance' => $ordinance,
-            'autoFillEnabled' => \App\Models\Setting::getAutoFillEnabled(),
             'subjectOptions' => $this->getSubjectOptions(),
         ]);
     }
